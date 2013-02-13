@@ -1,0 +1,56 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>uk.ac.ebi</groupId>
+    <artifactId>masscascade-visualisation</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>MassCascadeVisualisation</name>
+    <description>Suite for mass spectrometry data processing</description>
+    <parent>
+        <artifactId>masscascade</artifactId>
+        <groupId>uk.ac.ebi</groupId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <dependencies>
+        <dependency>
+            <artifactId>masscascade-core</artifactId>
+            <groupId>uk.ac.ebi</groupId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>java3d</groupId>
+            <artifactId>java3d-core</artifactId>
+            <version>1.5.1</version>
+        </dependency>
+        <dependency>
+            <groupId>java3d</groupId>
+            <artifactId>java3d-utils</artifactId>
+            <version>1.5.1</version>
+        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>log4j</groupId>-->
+            <!--<artifactId>log4j</artifactId>-->
+            <!--<version>1.2.13</version>-->
+        <!--</dependency>-->
+        <dependency>
+            <groupId>java3d</groupId>
+            <artifactId>vecmath</artifactId>
+            <version>1.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.freehep</groupId>
+            <artifactId>freehep-java3d</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jchart2d</groupId>
+            <artifactId>JChart2D</artifactId>
+            <version>3.3.0</version>
+        </dependency>
+    </dependencies>
+</project>

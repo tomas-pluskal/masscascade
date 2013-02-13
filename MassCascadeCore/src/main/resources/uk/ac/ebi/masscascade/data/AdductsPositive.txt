@@ -1,0 +1,39 @@
+# positive MS adducts
+# charge is taken account by dividing the mass difference by the nominal charge
+# Source:
+# Huang N.; Siegel M.M.1; Kruppa G.H.; Laukien F.H.
+# J Am Soc Mass Spectrom 1999, 10, 1166–1173
+# Automation of a Fourier transform ion cyclotron resonance mass spectrometer for acquisition, analysis,
+# and e-mailing of high-resolution exact-mass electrospray ionization mass spectral data
+M+3H,0.3357586667
+M+2H+Na,2.7781966667
+M+H+2Na,5.2553968
+M+3Na,7.6630726667
+M+2H,0.503638
+M+H+NH4,4.760275
+M+H+Na,5.9991235
+M+H+K,9.9926085
+M+ACN+2H,10.760275
+M+2Na,11.494609
+M+2ACN+2H,21.0169115
+M+3ACN+2H,31.2735485
+M+H,1.007276
+M+NH4,18.033823
+M+Na,22.989218
+M+CH3OH+H,33.033489
+M+K,38.963158
+M+ACN+H,42.033823
+M+2Na-H,44.97116
+M+IsoProp+H,61.06534
+M+ACN+Na,64.015765
+M+2K+H,76.91904
+M+DMSO+H,79.02122
+M+2ACN+H,83.06037
+M+IsoProp+Na+H,84.05511
+2M+H,2.014552
+2M+NH4,36.067646
+2M+Na,45.978436
+2M+3H2O+2H,56.04624
+2M+K,77.926316
+2M+ACN+H,84.067646
+2M+ACN+Na,128.03153

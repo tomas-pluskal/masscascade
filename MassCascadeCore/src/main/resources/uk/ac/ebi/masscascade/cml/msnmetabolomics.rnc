@@ -1,0 +1,111 @@
+default namespace = "http://www.xml-cml.org/schema"
+namespace cml = "http://www.xml-cml.org/dict/cml"
+namespace mzml = "http://sashimi.sourceforge.net/schema_revision/mzXML_3.0"
+namespace xsi = "http://www.w3.org/2001/XMLSchema-instance"
+
+# a RELAX NG compact syntax pattern for a cml document
+element cml {
+
+    # a RELAX NG compact syntax pattern for a list of meta data information
+    element metadataList {
+        element metadata {
+            attribute name { text },
+            attribute content { text }
+        }+
+    }?,
+
+    # a RELAX NG compact syntax pattern for a list of experimental parameters
+    element parameterList {
+        element parameter {
+            attribute dictRef { text },
+            attribute title { text },
+            attribute value { text }?,
+            element scalar {
+                attribute units { text },
+                xsd:double
+            }*
+        }+
+    }?,
+
+    # a RELAX NG compact syntax pattern for a sample
+    element sample {
+        attribute id { text },
+        attribute title { text }
+    }?,
+
+    # a RELAX NG compact syntax pattern for a list of spectra
+    element spectrumList {
+        element spectrum {
+            attribute id { text },
+            element metadataList {
+                element metadata {
+                    attribute name { text },
+                    attribute content { text }
+                }+
+            },
+            element spectrumData {
+                element xaxis {
+                    element array {
+                        attribute units { text },
+                        attribute size { xsd:int },
+                        attribute dataType { text },
+                        xsd:base64Binary
+                    }
+                },
+                element yaxis {
+                    element array {
+                        attribute units { text },
+                        attribute size { xsd:int },
+                        attribute dataType { text },
+                        xsd:base64Binary
+                    }
+                }
+            },
+            element peakList {
+                element peak {
+                    attribute ref { text }
+                }
+            }?
+        }+
+    }?,
+
+    # a RELAX NG compact syntax pattern for a list of peaks
+    element peakList {
+        element peak {
+            attribute id { text },
+            attribute xValue { xsd:double },
+            attribute xUnits { text },
+            attribute yValue { xsd:double },
+            attribute yUnits { text },
+            element molecule {
+                attribute ref { text }
+            }*
+        }+
+    }?,
+
+    # a RELAX NG compact syntax pattern for a list of molecules
+    element moleculeList {
+        element molecule {
+            attribute id { text },
+            attribute title { text },
+            element atomArray {
+                element atom {
+                    attribute id { text },
+                    attribute elementType { text },
+                    attribute x2 { xsd:double },
+                    attribute y2 { xsd:double },
+                    attribute formalCharge { xsd:int },
+                    attribute hydrogenCount { xsd:int }
+                }*
+            },
+            element bondArray {
+                element bond {
+                    attribute id { text },
+                    attribute atomRefs2 { text },
+                    attribute order { text },
+                    element bondStereo { text }?
+                }*
+            }
+        }+
+    }?
+}
