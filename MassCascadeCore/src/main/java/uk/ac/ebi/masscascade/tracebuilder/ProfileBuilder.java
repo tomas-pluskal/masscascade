@@ -135,8 +135,11 @@ public class ProfileBuilder extends ACallableTask {
             if (lastRt == 0) lastRt = Math.max(0, currRt - 1);
 
             if (traces.isEmpty()) {
-                for (XYPoint dataPoint : scan.getData())
-                    traces.add(new XYZTrace(dataPoint, currRt));
+                for (XYPoint dataPoint : scan.getData()) {
+                    XYZTrace trace = new XYZTrace(dataPoint, currRt);
+                    trace.push(new XYZPoint(lastRt, trace.get(0).y, Constants.MIN_ABUNDANCE));
+                    traces.add(trace);
+                }
                 continue;
             }
 

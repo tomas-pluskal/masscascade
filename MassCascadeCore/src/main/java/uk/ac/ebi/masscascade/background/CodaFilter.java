@@ -126,8 +126,9 @@ public class CodaFilter extends ACallableTask {
         double mcq = 0;
 
         for (int i = 0; i < intensities.length; i++)
-            mcq += (data.get(i + 1).z / scaleFactor) * (Math.abs(intensities[i] - mean) / stdDev);
+            mcq += (data.get(i + 1).z / scaleFactor) * ((intensities[i] - mean) / stdDev);
 
+        if (mcq < 0) mcq = 0;
         return mcq / Math.sqrt(data.size() - windowSize);
     }
 }
