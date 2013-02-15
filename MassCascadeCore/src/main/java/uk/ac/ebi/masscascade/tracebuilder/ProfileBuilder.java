@@ -57,7 +57,7 @@ import java.util.TreeSet;
  * <li>Parameter <code> MIN PROFILE WIDTH </code>- The minimum profile width in scans.</li>
  * </ul>
  */
-@Deprecated
+
 public class ProfileBuilder extends ACallableTask {
 
     private int minProfileWidth;

@@ -108,7 +108,6 @@ public class PsiMzmlReader extends ACallableTask {
     public RawContainer call() {
 
         MzMLUnmarshaller mzMLUnmarshaller = new MzMLUnmarshaller(mzmlFile);
-        LOGGER.log(Level.INFO, "Unmarshall mzml file: " + mzmlFile.getName());
         MzML mzml = mzMLUnmarshaller.unmarshall();
 
         // Meta information

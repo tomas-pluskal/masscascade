@@ -57,6 +57,7 @@ import java.util.Map;
  * <li>Parameter <code> MIN PROFILE WIDTH </code>- The minimum profile width in scans.</li>
  * </ul>
  */
+@Deprecated
 public class ProfileBuilderOld extends ACallableTask {
 
     private int minProfileWidth;
