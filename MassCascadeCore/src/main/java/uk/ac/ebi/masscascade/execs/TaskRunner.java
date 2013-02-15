@@ -19,6 +19,11 @@
 
 package uk.ac.ebi.masscascade.execs;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
@@ -38,25 +43,34 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
+/**
+ * The task runner simplifies running MassCascade on command line. It takes a set of task classes and parameter maps
+ * and executes them in order. The first task must be a reader task.
+ */
 public class TaskRunner {
 
     private static Logger LOGGER = Logger.getLogger(TaskRunner.class);
 
-    private LinkedHashMap<Class<? extends ACallableTask>, ParameterMap> tasks;
+    private final LinkedHashMap<Class<? extends ACallableTask>, ParameterMap> tasks;
 
     private File inDirectory;
     private File outDirectory;
     private File tmpDirectory;
-    private int taskCount;
     private int nThreads;
 
+    /**
+     * Constructs a task runner and sets the number of threads to the number of available processors.
+     *
+     * @param inDirectory  the input directory containing the mass spectrometry files
+     * @param outDirectory the output directory for the result
+     * @param tmpDirectory the working directory for temporary files
+     */
     public TaskRunner(File inDirectory, File outDirectory, File tmpDirectory) {
         this(inDirectory, outDirectory, tmpDirectory, Runtime.getRuntime().availableProcessors());
     }
@@ -72,73 +86,43 @@ public class TaskRunner {
         this.outDirectory = outDirectory;
         this.tmpDirectory = tmpDirectory;
         this.nThreads = nThreads;
-        this.taskCount = 1;
 
         tasks = new LinkedHashMap<Class<? extends ACallableTask>, ParameterMap>();
     }
 
+    /**
+     * Adds a new task class to the set. The parameter map defines the task class.
+     *
+     * @param taskClass    a task class
+     * @param parameterMap a parameter map
+     */
     public void add(Class<? extends ACallableTask> taskClass, ParameterMap parameterMap) {
         tasks.put(taskClass, parameterMap);
     }
 
+    /**
+     * Executes all tasks in order and writes the results in the output directory.
+     */
     public void run() {
 
-        List<Container> containerList = new ArrayList<Container>();
+        ListeningExecutorService threadPool = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(nThreads));
 
-//        LOGGER.log(Level.INFO, "Starting MassCascade with " + tasks.size() + " tasks and " + nThreads + " threads");
+        List<ListenableFuture<Container>> resultList = new ArrayList<ListenableFuture<Container>>();
+
+        File[] files = new File[0];
+        Class<? extends ACallableTask> taskClass = tasks.keySet().iterator().next();
+        if (taskClass.equals(XCaliburReader.class))
+            files = inDirectory.listFiles(new Filter(Constants.FILE_FORMATS.RAW));
+        else if (taskClass.equals(PsiMzmlReader.class))
+            files = inDirectory.listFiles(new Filter(Constants.FILE_FORMATS.MZML));
+        else if (taskClass.equals(CmlReader.class))
+            files = inDirectory.listFiles(new Filter(Constants.FILE_FORMATS.CML));
+
         long start = System.currentTimeMillis();
 
         try {
-            for (Map.Entry<Class<? extends ACallableTask>, ParameterMap> entry : tasks.entrySet()) {
 
-                if (taskCount == 1) {
-                    Class<? extends ACallableTask> taskClass = entry.getKey();
-                    if (!(taskClass.equals(CmlReader.class) || taskClass.equals(PsiMzmlReader.class) ||
-                            taskClass.equals(XCaliburReader.class)))
-                        throw new MassCascadeException("No file reader found");
-                    containerList = readFromDirectory(entry);
-                } else {
-                    containerList = executeTask(entry, containerList);
-                }
-
-                taskCount++;
-            }
-            long stop = System.currentTimeMillis();
-            int time = (int) Math.round((stop - start) / 1000d);
-
-            for (Container container : containerList) container.getDataFile().delete();
-
-//            LOGGER.log(Level.INFO, "Finished " + (taskCount - 1) + " of " + tasks.size() + " tasks in " + time + " s");
-            LOGGER.log(Level.INFO, nThreads + "," + time);
-
-        } catch (MassCascadeException exception) {
-            LOGGER.log(Level.ERROR, "MassCascade error: " + exception.getMessage());
-        }
-    }
-
-    private List<Container> readFromDirectory(
-            Map.Entry<Class<? extends ACallableTask>, ParameterMap> entry) throws MassCascadeException {
-
-        ExecutorService threadPool = Executors.newFixedThreadPool(nThreads);
-
-        List<Container> resultList = new ArrayList<Container>();
-
-        File[] files = new File[0];
-        if (entry.getKey().equals(XCaliburReader.class))
-            files = inDirectory.listFiles(new Filter(Constants.FILE_FORMATS.RAW));
-        else if (entry.getKey().equals(PsiMzmlReader.class))
-            files = inDirectory.listFiles(new Filter(Constants.FILE_FORMATS.MZML));
-        else if (entry.getKey().equals(CmlReader.class))
-            files = inDirectory.listFiles(new Filter(Constants.FILE_FORMATS.CML));
-
-        List<Future<Container>> callableList = new ArrayList<Future<Container>>();
-
-//        LOGGER.log(Level.INFO, "Found " + files.length + " files in \"" + inDirectory.getName() + "\"");
-//        LOGGER.log(Level.INFO, "Running task " + taskCount + ": " + entry.getKey().getSimpleName());
-
-        try {
             for (File file : files) {
-
                 String name = file.getName().substring(0, file.getName().lastIndexOf("."));
 
                 ParameterMap params = new ParameterMap();
@@ -146,67 +130,68 @@ public class TaskRunner {
                 params.put(Parameter.RAW_CONTAINER, new RawContainer(name, tmpDirectory.getAbsolutePath()));
                 params.put(Parameter.WORKING_DIRECTORY, tmpDirectory.getAbsolutePath());
 
-                Constructor<?> cstr = entry.getKey().getConstructor(ParameterMap.class);
+                Constructor<?> cstr = taskClass.getConstructor(ParameterMap.class);
                 ACallableTask task = (ACallableTask) cstr.newInstance(params);
 
-                callableList.add(threadPool.submit(task));
+                ListenableFuture<Container> future = threadPool.submit(task);
+                Futures.addCallback(future, new FutureCallback<Container>() {
+
+                    private Iterator<Map.Entry<Class<? extends ACallableTask>, ParameterMap>> iter;
+                    private List<File> tmpFiles;
+
+                    @Override
+                    public void onSuccess(Container container) {
+
+                        if (iter == null) {
+                            iter = tasks.entrySet().iterator();
+                            iter.next();
+
+                            tmpFiles = new ArrayList<File>();
+                        }
+
+                        tmpFiles.add(container.getDataFile());
+
+                        if (!iter.hasNext()) {
+                            for (File tmpFile : tmpFiles) tmpFile.delete();
+                            return;
+                        }
+
+                        try {
+                            Map.Entry<Class<? extends ACallableTask>, ParameterMap> entry = iter.next();
+                            ParameterMap params = entry.getValue();
+                            if (container instanceof RawContainer) params.put(Parameter.RAW_CONTAINER, container);
+                            else if (container instanceof ProfileContainer)
+                                params.put(Parameter.PROFILE_CONTAINER, container);
+                            else if (container instanceof SpectrumContainer)
+                                params.put(Parameter.SPECTRUM_CONTAINER, container);
+
+                            Constructor<?> cstr = entry.getKey().getConstructor(ParameterMap.class);
+                            ACallableTask task = (ACallableTask) cstr.newInstance(params);
+
+                            onSuccess(task.call());
+                        } catch (Exception exception) {
+                            LOGGER.log(Level.ERROR, "File could not be processed: " + exception.getMessage());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Throwable throwable) {
+                        LOGGER.log(Level.ERROR, "File could not be read: " + throwable.getMessage());
+                    }
+                });
+                resultList.add(future);
             }
 
             threadPool.shutdown();
-
-            for (Future<Container> future : callableList) {
-                RawContainer container = (RawContainer) future.get();
-                if (container != null) resultList.add(container);
-            }
-        } catch (Exception e) {
-            threadPool.shutdownNow();
-            Thread.currentThread().interrupt();
-            throw new MassCascadeException("Could not read the file: " + e.getMessage());
-        }
-//        LOGGER.log(Level.INFO, "Finished task " + taskCount + "");
-
-        return resultList;
-    }
-
-    private List<Container> executeTask(Map.Entry<Class<? extends ACallableTask>, ParameterMap> entry,
-            List<Container> containerList) throws MassCascadeException {
-
-//        LOGGER.log(Level.INFO, "Running task " + taskCount + ": " + entry.getKey().getSimpleName());
-
-        ExecutorService threadPool = Executors.newFixedThreadPool(nThreads);
-
-        List<Container> resultList = new ArrayList<Container>();
-        List<Future<Container>> callableList = new ArrayList<Future<Container>>();
-
-        try {
-            for (Container container : containerList) {
-                ParameterMap params = entry.getValue();
-                if (container instanceof RawContainer) params.put(Parameter.RAW_CONTAINER, container);
-                else if (container instanceof ProfileContainer) params.put(Parameter.PROFILE_CONTAINER, container);
-                else if (container instanceof SpectrumContainer) params.put(Parameter.SPECTRUM_CONTAINER, container);
-
-                Constructor<?> cstr = entry.getKey().getConstructor(ParameterMap.class);
-                ACallableTask task = (ACallableTask) cstr.newInstance(params);
-
-                callableList.add(threadPool.submit(task));
-            }
-
-            threadPool.shutdown();
-
-            for (Future<Container> future : callableList) {
-                Container container = future.get();
-                if (container != null) resultList.add(container);
-            }
-        } catch (Exception e) {
-            threadPool.shutdownNow();
-            Thread.currentThread().interrupt();
-            throw new MassCascadeException("Could not execute the task: " + e.getMessage());
-        } finally {
-//            LOGGER.log(Level.INFO, "Finished task " + taskCount + ": Deleting tmp files");
-            for (Container container : containerList) container.getDataFile().delete();
+            List<Container> con = Futures.allAsList(resultList).get();
+        } catch (Exception exception) {
+            LOGGER.log(Level.ERROR, "File could not be read: " + exception.getMessage());
         }
 
-        return resultList;
+        long stop = System.currentTimeMillis();
+        int time = (int) Math.round((stop - start) / 1000d);
+        LOGGER.log(Level.INFO, "Finished " + tasks.size() + " tasks on " + files.length +
+                " files in " + time + " s using " + nThreads);
     }
 
     class Filter implements FilenameFilter {

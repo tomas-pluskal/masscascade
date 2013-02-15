@@ -27,6 +27,9 @@ import uk.ac.ebi.masscascade.tracebuilder.ProfileBuilder;
 
 import java.io.File;
 
+/**
+ * Runs MassCascade via its API.
+ */
 public class TaskExec {
 
     public static void main(String[] args) {
@@ -38,42 +41,38 @@ public class TaskExec {
         File outDir = new File("C:/Users/stephan/Desktop/MassCascade/Out");
         File tmpDir = new File("C:/Users/stephan/Desktop/MassCascade/Tmp");
 
-        for (int i = 0; i < 6; i++) {
-            int nThreads = 3 + i;
-            for (int j = 0; j < 5; j++) {
+        int nThreads = 3;
 
-                TaskRunner taskRunner = new TaskRunner(inDir, outDir, tmpDir, nThreads);
+        TaskRunner taskRunner = new TaskRunner(inDir, outDir, tmpDir, nThreads);
 
-                /**
-                 * Reads mzML files using the class "PsiMzmlReader".
-                 *
-                 * The method doesn't require any input parameters if the task runner is used.
-                 */
-                ParameterMap params = new ParameterMap();
-                taskRunner.add(PsiMzmlReader.class, params);
+        /**
+         * Reads mzML files using the class "PsiMzmlReader".
+         *
+         * The method doesn't require any input parameters if the task runner is used.
+         */
+        ParameterMap params = new ParameterMap();
+        taskRunner.add(PsiMzmlReader.class, params);
 
-                /**
-                 * Reduces random noise using the class "NoiseReduction".
-                 */
-//                params = new ParameterMap();
-//                params.put(Parameter.SCAN_WINDOW, 5);
-//                params.put(Parameter.MZ_WINDOW_PPM, 10d);
-//                taskRunner.add(NoiseReduction.class, params);
+        /**
+         * Reduces random noise using the class "NoiseReduction".
+         */
+        params = new ParameterMap();
+        params.put(Parameter.SCAN_WINDOW, 5);
+        params.put(Parameter.MZ_WINDOW_PPM, 10d);
+        taskRunner.add(NoiseReduction.class, params);
 
-                /**
-                 * Extracts mass traces and builds profiles using the class "ProfileBuilder".
-                 */
-//                params = new ParameterMap();
-//                params.put(Parameter.MZ_WINDOW_PPM, 10d);
-//                params.put(Parameter.MIN_PROFILE_INTENSITY, 1000d);
-//                params.put(Parameter.MIN_PROFILE_WIDTH, 10);
-//                taskRunner.add(ProfileBuilder.class, params);
+        /**
+         * Extracts mass traces and builds profiles using the class "ProfileBuilder".
+         */
+        params = new ParameterMap();
+        params.put(Parameter.MZ_WINDOW_PPM, 10d);
+        params.put(Parameter.MIN_PROFILE_INTENSITY, 1000d);
+        params.put(Parameter.MIN_PROFILE_WIDTH, 10);
+        taskRunner.add(ProfileBuilder.class, params);
 
-                /**
-                 * Run all tasks.
-                 */
-                taskRunner.run();
-            }
-        }
+        /**
+         * Run all tasks.
+         */
+        taskRunner.run();
     }
 }
