@@ -26,7 +26,9 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import uk.ac.ebi.masscascade.core.container.file.FileContainerBuilder;
 import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
+import uk.ac.ebi.masscascade.core.container.memory.MemoryContainerBuilder;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
@@ -66,7 +68,29 @@ public class TaskRunner {
     private int nThreads;
 
     /**
-     * Constructs a task runner and sets the number of threads to the number of available processors.
+     * Constructs a task runner that keeps all files in memory.
+     *
+     * @param inDirectory  the input directory containing the mass spectrometry files
+     * @param outDirectory the output directory for the result
+     */
+    public TaskRunner(File inDirectory, File outDirectory) {
+        this(inDirectory, outDirectory, null);
+    }
+
+    /**
+     * Constructs a task runner that keeps all files in memory.
+     *
+     * @param inDirectory  the input directory containing the mass spectrometry files
+     * @param outDirectory the output directory for the result
+     * @param nThreads     the number of threads
+     */
+    public TaskRunner(File inDirectory, File outDirectory, int nThreads) {
+        this(inDirectory, outDirectory, null, nThreads);
+    }
+
+    /**
+     * Constructs a task runner that uses a temporary directory for files and sets the number of threads to the number
+     * of available processors.
      *
      * @param inDirectory  the input directory containing the mass spectrometry files
      * @param outDirectory the output directory for the result
@@ -76,12 +100,23 @@ public class TaskRunner {
         this(inDirectory, outDirectory, tmpDirectory, Runtime.getRuntime().availableProcessors());
     }
 
+    /**
+     * Constructs a task runner that uses a temporary directory for files and sets the number of threads.
+     *
+     * @param inDirectory  the input directory containing the mass spectrometry files
+     * @param outDirectory the output directory for the result
+     * @param tmpDirectory the working directory for temporary files
+     * @param nThreads     the number of threads
+     */
     public TaskRunner(File inDirectory, File outDirectory, File tmpDirectory, int nThreads) {
 
-        if (!tmpDirectory.exists() || !outDirectory.exists() || !inDirectory.exists())
+        if (!outDirectory.exists() || !inDirectory.exists())
             throw new MassCascadeException("Directory does not exist.");
-        else if (!tmpDirectory.isDirectory() || !outDirectory.isDirectory() || !inDirectory.isDirectory())
+        else if (!outDirectory.isDirectory() || !inDirectory.isDirectory())
             throw new MassCascadeException("File is not a directory.");
+
+        if (tmpDirectory != null && (!tmpDirectory.exists() || !tmpDirectory.isDirectory()))
+            throw new MassCascadeException("Tmp file is not a directory.");
 
         this.inDirectory = inDirectory;
         this.outDirectory = outDirectory;
@@ -128,8 +163,11 @@ public class TaskRunner {
 
                 ParameterMap params = new ParameterMap();
                 params.put(Parameter.DATA_FILE, file);
-                params.put(Parameter.RAW_CONTAINER, new FileRawContainer(name, tmpDirectory.getAbsolutePath()));
-                params.put(Parameter.WORKING_DIRECTORY, tmpDirectory.getAbsolutePath());
+                if (tmpDirectory == null) params.put(Parameter.RAW_CONTAINER,
+                        MemoryContainerBuilder.getInstance().newInstance(RawContainer.class, name));
+                else params.put(Parameter.RAW_CONTAINER,
+                        FileContainerBuilder.getInstance().newInstance(RawContainer.class, name,
+                                tmpDirectory.getAbsolutePath()));
 
                 Constructor<?> cstr = taskClass.getConstructor(ParameterMap.class);
                 CallableTask task = (CallableTask) cstr.newInstance(params);
@@ -150,10 +188,10 @@ public class TaskRunner {
                             tmpFiles = new ArrayList<File>();
                         }
 
-                        tmpFiles.add(container.getDataFile());
+                        if (tmpDirectory != null) tmpFiles.add(container.getDataFile());
 
                         if (!iter.hasNext()) {
-                            for (File tmpFile : tmpFiles) tmpFile.delete();
+                            if (tmpDirectory != null) for (File tmpFile : tmpFiles) tmpFile.delete();
                             return;
                         }
 
@@ -192,7 +230,7 @@ public class TaskRunner {
         long stop = System.currentTimeMillis();
         int time = (int) Math.round((stop - start) / 1000d);
         LOGGER.log(Level.INFO, "Finished " + tasks.size() + " tasks on " + files.length +
-                " files in " + time + " s using " + nThreads);
+                " files in " + time + " s using " + nThreads + " threads.");
     }
 
     class Filter implements FilenameFilter {

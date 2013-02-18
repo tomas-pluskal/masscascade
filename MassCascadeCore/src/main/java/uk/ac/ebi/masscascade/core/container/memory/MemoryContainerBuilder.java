@@ -29,6 +29,8 @@ import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 
+import java.util.Arrays;
+
 /**
  * A factory class to provide implementation independent <code> MemoryContainer </code>.
  */
@@ -59,6 +61,9 @@ public class MemoryContainerBuilder implements ContainerBuilder {
     @Override
     public <T extends Container> T newInstance(Class<T> containerClass,
             Object... params) throws IllegalArgumentException {
+
+        // hack to remove the working directory from the parameter array
+        if (params.length == 2 && params[1] instanceof String) params = Arrays.copyOf(params, params.length - 1);
         return factory.ofClass(containerClass, params);
     }
 }

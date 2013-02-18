@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * This is a spectrum that is comprised of a list of profiles.
  */
-public interface Spectrum extends Scan {
+public interface Spectrum extends Scan, Iterable<Profile> {
 
     /**
      * Adds a profile to the spectrum.

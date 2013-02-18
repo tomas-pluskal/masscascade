@@ -23,6 +23,7 @@ import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -93,7 +94,7 @@ public class IsotopeFinder extends CallableTask {
 
         IsotopeDetector isotopeDetector = new IsotopeDetector(CHARGE, massTolerance);
 
-        for (PseudoSpectrum spectrum : spectrumContainer) {
+        for (Spectrum spectrum : spectrumContainer) {
 
             isotopeDetector.findIsotopes(spectrum);
             outSpectrumContainer.addSpectrum(spectrum);

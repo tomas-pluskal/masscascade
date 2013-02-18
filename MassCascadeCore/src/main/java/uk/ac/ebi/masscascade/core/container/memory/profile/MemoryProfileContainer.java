@@ -162,7 +162,7 @@ public class MemoryProfileContainer extends MemoryContainer implements ProfileCo
      */
     @Override
     public String getWorkingDirectory() {
-        throw new MassCascadeException("Memory containers are not file based.");
+        return "";
     }
 
     /**

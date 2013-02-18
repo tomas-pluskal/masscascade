@@ -39,7 +39,7 @@ import java.util.Set;
 /**
  * Class holding all information for an annotated spectrum.
  */
-public class PseudoSpectrum extends ScanImpl implements Spectrum, Iterable<Profile> {
+public class PseudoSpectrum extends ScanImpl implements Spectrum {
 
     private final PropertyManager propertyManager;
     private final Map<Integer, Profile> profileMap;

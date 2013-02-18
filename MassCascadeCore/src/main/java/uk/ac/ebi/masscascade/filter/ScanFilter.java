@@ -85,8 +85,7 @@ public class ScanFilter extends CallableTask {
     public Container call() {
 
         String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer outRawContainer =
-                new FileRawContainer(id, rawContainer.getRawInfo(), rawContainer.getWorkingDirectory());
+        RawContainer outRawContainer = new FileRawContainer(id, rawContainer);
 
         for (RawLevel level : rawContainer.getRawLevels()) {
 

@@ -60,7 +60,7 @@ public class ParameterMap {
 
         if (parameter == null) throw new MassCascadeException("Parameter is null");
 
-        if (parameter.getType() != instance.getClass())
+        if (instance.getClass().isInstance(parameter.getType()))
             throw new MassCascadeException("Parameter value is not of type " + parameter.getType());
 
         parameters.put(parameter, instance);

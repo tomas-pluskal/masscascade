@@ -43,7 +43,15 @@ public class TaskExec {
 
         int nThreads = 3;
 
-        TaskRunner taskRunner = new TaskRunner(inDir, outDir, tmpDir, nThreads);
+        /**
+         * Creates a task runner that stores temporary files on disk.
+         */
+//        TaskRunner taskRunner = new TaskRunner(inDir, outDir, tmpDir, nThreads);
+
+        /**
+         * Creates a task runner that stores temporary files in memory.
+         */
+        TaskRunner taskRunner = new TaskRunner(inDir, outDir, nThreads);
 
         /**
          * Reads mzML files using the class "PsiMzmlReader".

@@ -27,6 +27,7 @@ import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Property;
 import uk.ac.ebi.masscascade.interfaces.Range;
+import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -89,13 +90,13 @@ public class IsotopeRemover extends CallableTask {
         Range rtRange;
         Set<Profile> profileSet;
 
-        for (PseudoSpectrum spectrum : spectrumContainer) {
+        for (Spectrum spectrum : spectrumContainer) {
 
             rtRange = new ExtendableRange();
             xyList = new XYList();
             profileSet = new HashSet<Profile>();
 
-            for (Profile profile : spectrum.getProfileList()) {
+            for (Profile profile : ((PseudoSpectrum) spectrum).getProfileList()) {
                 if (profile.hasProperty(PropertyManager.TYPE.Isotope)) {
                     for (Property prop : profile.getProperty(PropertyManager.TYPE.Isotope)) {
                         if (prop.getValue(Integer.class) == 0) {

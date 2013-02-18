@@ -26,6 +26,9 @@ import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.identification.AdductSingle;
 import uk.ac.ebi.masscascade.interfaces.Option;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
+import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 
 import java.io.File;
@@ -47,11 +50,11 @@ public enum Parameter implements Option {
     /*
      * File parameters for the raw, profile, and spectrum entities.
      */
-    RAW_CONTAINER("Raw file", null, FileRawContainer.class),
-    REFERENCE_RAW_CONTAINER("Reference raw file", null, FileRawContainer.class),
+    RAW_CONTAINER("Raw file", null, RawContainer.class),
+    REFERENCE_RAW_CONTAINER("Reference raw file", null, RawContainer.class),
     REFERENCE_RAW_MAP("Reference raw map", null, TreeMultimap.class),
-    PROFILE_CONTAINER("Profile file", null, FileProfileContainer.class),
-    SPECTRUM_CONTAINER("Spectrum file", null, FileSpectrumContainer.class),
+    PROFILE_CONTAINER("Profile file", null, ProfileContainer.class),
+    SPECTRUM_CONTAINER("Spectrum file", null, SpectrumContainer.class),
 
     /*
      * Additional file parameters for generic data and reference pointers.

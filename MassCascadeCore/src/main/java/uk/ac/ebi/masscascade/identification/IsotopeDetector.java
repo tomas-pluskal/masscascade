@@ -29,6 +29,7 @@ import org.jgrapht.graph.DirectedMultigraph;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Range;
+import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.properties.Isotope;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
@@ -74,9 +75,9 @@ public class IsotopeDetector {
      * Finds identification within the charge range and sets any detected identification as properties in the profile
      * object.
      */
-    public void findIsotopes(final PseudoSpectrum pseudoSpectrum) {
+    public void findIsotopes(final Spectrum pseudoSpectrum) {
 
-        final List<Profile> profileList = pseudoSpectrum.getProfileList();
+        final List<Profile> profileList = ((PseudoSpectrum) pseudoSpectrum).getProfileList();
         Collections.sort(profileList, new ProfileMassComparator());
         double[][] profileDeltas = getProfileMassDeltas(profileList);
 

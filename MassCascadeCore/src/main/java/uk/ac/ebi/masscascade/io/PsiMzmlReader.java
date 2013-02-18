@@ -95,7 +95,7 @@ public class PsiMzmlReader extends CallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         mzmlFile = params.get(Parameter.DATA_FILE, File.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
 
         if (mzmlFile == null || !mzmlFile.isFile()) throw new MassCascadeException("File not found.");
     }

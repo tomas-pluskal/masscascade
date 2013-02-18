@@ -79,7 +79,7 @@ public class MzFileBinning extends CallableTask {
 
         String id = rawContainer.getId() + IDENTIFIER;
         RawContainer outRawContainer =
-                new FileRawContainer(id, rawContainer.getRawInfo(), rawContainer.getWorkingDirectory());
+                new FileRawContainer(id, rawContainer);
 
         Scan scan;
         Scan binnedScan;

@@ -255,7 +255,7 @@ public class MemoryRawContainer extends MemoryContainer implements RawContainer 
      */
     @Override
     public String getWorkingDirectory() {
-        throw new MassCascadeException("Memory containers are not file based.");
+        return "";
     }
 
     /**

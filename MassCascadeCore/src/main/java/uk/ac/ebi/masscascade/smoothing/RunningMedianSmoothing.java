@@ -120,8 +120,7 @@ public class RunningMedianSmoothing extends CallableTask {
     public RawContainer call() {
 
         String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer smoothedRawContainer =
-                new FileRawContainer(id, rawContainer.getRawInfo(), rawContainer.getWorkingDirectory());
+        RawContainer smoothedRawContainer = new FileRawContainer(id, rawContainer);
 
         Scan scan;
         XYList smoothedData;

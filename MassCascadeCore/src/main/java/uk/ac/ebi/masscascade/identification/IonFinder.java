@@ -25,6 +25,7 @@ import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
@@ -156,7 +157,7 @@ public class IonFinder extends CallableTask {
                 outSpectrumContainer = new FileSpectrumContainer(id, spectrumContainer.getWorkingDirectory());
 
         double result;
-        for (PseudoSpectrum spectrum : spectrumContainer) {
+        for (Spectrum spectrum : spectrumContainer) {
 
             for (Profile profile : spectrum) {
 

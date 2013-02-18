@@ -92,7 +92,7 @@ public class NoiseReduction extends CallableTask {
 
         minTraceWidth = params.get(Parameter.SCAN_WINDOW, Integer.class);
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
     }
 
     /**
@@ -103,7 +103,8 @@ public class NoiseReduction extends CallableTask {
     public RawContainer call() {
 
         String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer outRawContainer = new FileRawContainer(id, rawContainer.getWorkingDirectory());
+        RawContainer outRawContainer =
+                rawContainer.getBuilder().newInstance(RawContainer.class, id, rawContainer.getWorkingDirectory());
 
         Multimap<Integer, XYTrace> completedTraces = TreeMultimap.create();
 
@@ -146,7 +147,8 @@ public class NoiseReduction extends CallableTask {
         for (int signalPos = 0; signalPos < dataPoints.size(); signalPos++) {
 
             XYPoint signal = dataPoints.get(signalPos);
-            double nextSignal = (signalPos == dataPoints.size() - 1) ? Double.MAX_VALUE : dataPoints.get(signalPos + 1).x;
+            double nextSignal =
+                    (signalPos == dataPoints.size() - 1) ? Double.MAX_VALUE : dataPoints.get(signalPos + 1).x;
 
             XYTrace signalTrace = new XYTrace(signal);
             XYTrace closestTrace = (XYTrace) DataUtils.getClosestKey(signalTrace, traces);

@@ -94,8 +94,7 @@ public class WaveletPeakPicking extends CallableTask {
     public RawContainer call() {
 
         String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer outRawContainer =
-                new FileRawContainer(id, rawContainer.getRawInfo(), rawContainer.getWorkingDirectory());
+        RawContainer outRawContainer = new FileRawContainer(id, rawContainer);
 
         for (int level = 1; level <= rawContainer.getRawLevels().size(); level++) {
 

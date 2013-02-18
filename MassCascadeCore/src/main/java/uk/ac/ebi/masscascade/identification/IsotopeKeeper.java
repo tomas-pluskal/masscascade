@@ -27,6 +27,7 @@ import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Property;
 import uk.ac.ebi.masscascade.interfaces.Range;
+import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -90,11 +91,11 @@ public class IsotopeKeeper extends CallableTask {
         Profile exProfile;
         Set<Profile> profileSet;
 
-        for (PseudoSpectrum spectrum : spectrumContainer) {
+        for (Spectrum spectrum : spectrumContainer) {
 
             Set<Integer> idSet = new HashSet<Integer>();
 
-            for (Profile profile : spectrum.getProfileList()) {
+            for (Profile profile : ((PseudoSpectrum) spectrum).getProfileList()) {
 
                 if (profile.hasProperty(PropertyManager.TYPE.Isotope)) {
                     idSet.add(profile.getId());

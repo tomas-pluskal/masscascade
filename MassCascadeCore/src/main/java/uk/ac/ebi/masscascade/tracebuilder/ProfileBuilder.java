@@ -104,7 +104,7 @@ public class ProfileBuilder extends CallableTask {
 
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         minIntensity = params.get(Parameter.MIN_PROFILE_INTENSITY, Double.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
         minProfileWidth = params.get(Parameter.MIN_PROFILE_WIDTH, Integer.class);
     }
 
@@ -116,7 +116,8 @@ public class ProfileBuilder extends CallableTask {
     public ProfileContainer call() {
 
         String id = rawContainer.getId() + IDENTIFIER;
-        profileContainer = rawContainer.getBuilder().newInstance(ProfileContainer.class, id, rawContainer.getWorkingDirectory());
+        profileContainer =
+                rawContainer.getBuilder().newInstance(ProfileContainer.class, id, rawContainer.getWorkingDirectory());
 
         for (RawLevel level : rawContainer.getRawLevels()) {
 

@@ -88,7 +88,7 @@ public class RtBinning extends CallableTask {
 
         String id = rawContainer.getId() + IDENTIFIER;
         RawContainer outRawContainer =
-                new FileRawContainer(id, rawContainer.getRawInfo(), rawContainer.getWorkingDirectory());
+                new FileRawContainer(id, rawContainer);
 
         for (int i = Constants.MSN.MS1.getLvl(); i <= rawContainer.getRawLevels().size(); i++) {
 

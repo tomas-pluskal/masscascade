@@ -96,8 +96,7 @@ public class FastDtwAlignment extends CallableTask {
         final TimeWarpInfo info = FastDTW.getWarpInfoBetween(tsI, tsJ, scanRadius);
 
         String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer alignedRawContainer =
-                new FileRawContainer(id, rawContainer.getRawInfo(), rawContainer.getWorkingDirectory());
+        RawContainer alignedRawContainer = new FileRawContainer(id, rawContainer);
 
         Scan tarScan = null;
         Scan refScan;
