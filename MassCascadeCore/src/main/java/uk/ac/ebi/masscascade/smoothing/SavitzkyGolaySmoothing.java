@@ -19,11 +19,12 @@
 
 package uk.ac.ebi.masscascade.smoothing;
 
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
+import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -38,7 +39,7 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
  * <li>Parameter <code> PROFILE FILE </code>- The input profile container.</li>
  * </ul>
  */
-public class SavitzkyGolaySmoothing extends ACallableTask {
+public class SavitzkyGolaySmoothing extends CallableTask {
 
     private ProfileContainer profileContainer;
     private int order;
@@ -70,7 +71,7 @@ public class SavitzkyGolaySmoothing extends ACallableTask {
         order = params.get(Parameter.POLYNOMIAL_ORDER, Integer.class);
         mzWindow = params.get(Parameter.DATA_WINDOW, Integer.class);
         msn = params.get(Parameter.MS_LEVEL, Constants.MSN.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
     }
 
     /**
@@ -87,7 +88,7 @@ public class SavitzkyGolaySmoothing extends ACallableTask {
         SavitzkyGolayFilter sgFilter = new SavitzkyGolayFilter(nLDp, nRDp);
 
         String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer = new ProfileContainer(id, profileContainer.getWorkingDirectory());
+        ProfileContainer outProfileContainer = new FileProfileContainer(id, profileContainer.getWorkingDirectory());
 
         double[] y;
         double[] smoothedY;

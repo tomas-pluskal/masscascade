@@ -19,12 +19,13 @@
 
 package uk.ac.ebi.masscascade.tracebuilder;
 
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
-import uk.ac.ebi.masscascade.core.raw.RawContainer;
+import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Scan;
@@ -58,7 +59,7 @@ import java.util.TreeSet;
  * </ul>
  */
 
-public class ProfileBuilder extends ACallableTask {
+public class ProfileBuilder extends CallableTask {
 
     private int minProfileWidth;
     private double ppm;
@@ -103,7 +104,7 @@ public class ProfileBuilder extends ACallableTask {
 
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         minIntensity = params.get(Parameter.MIN_PROFILE_INTENSITY, Double.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
         minProfileWidth = params.get(Parameter.MIN_PROFILE_WIDTH, Integer.class);
     }
 
@@ -115,7 +116,7 @@ public class ProfileBuilder extends ACallableTask {
     public ProfileContainer call() {
 
         String id = rawContainer.getId() + IDENTIFIER;
-        profileContainer = new ProfileContainer(id, rawContainer.getWorkingDirectory());
+        profileContainer = rawContainer.getBuilder().newInstance(ProfileContainer.class, id, rawContainer.getWorkingDirectory());
 
         for (RawLevel level : rawContainer.getRawLevels()) {
 

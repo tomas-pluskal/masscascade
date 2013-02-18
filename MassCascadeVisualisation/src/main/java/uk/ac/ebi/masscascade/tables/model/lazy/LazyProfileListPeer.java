@@ -19,9 +19,9 @@
 
 package uk.ac.ebi.masscascade.tables.model.lazy;
 
-import uk.ac.ebi.masscascade.core.chromatogram.ExtractedIonChromatogram;
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
+import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.tables.lazytable.util.LazyListService;
 import uk.ac.ebi.masscascade.utilities.ProfUtils;
 
@@ -42,7 +42,7 @@ public class LazyProfileListPeer implements LazyListService<Object[]> {
     private ProfileContainer profileContainer;
     private List<Integer> profileNumbers;
 
-    public LazyProfileListPeer(int rows, ProfileContainer profileContainer) {
+    public LazyProfileListPeer(int rows, FileProfileContainer profileContainer) {
 
         this.profileContainer = profileContainer;
         this.profileNumbers = new LinkedList<Integer>(profileContainer.getProfileNumbers().keySet());

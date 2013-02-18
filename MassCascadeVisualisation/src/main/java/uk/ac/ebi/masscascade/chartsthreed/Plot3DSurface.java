@@ -25,7 +25,7 @@ import uk.ac.ebi.masscascade.chartsthreed.axis.XAxisBuilder;
 import uk.ac.ebi.masscascade.chartsthreed.axis.YAxisBuilder;
 import uk.ac.ebi.masscascade.chartsthreed.axis.ZAxisBuilder;
 import uk.ac.ebi.masscascade.chartsthreed.data.Unbinned3DDataImpl;
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
+import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
 
 import javax.media.j3d.Group;
 import javax.media.j3d.LineArray;
@@ -37,7 +37,7 @@ import javax.vecmath.Point3f;
 public class Plot3DSurface extends Plot3D {
 
     private Binned2DData data;
-    private ProfileContainer peaks;
+    private FileProfileContainer peaks;
     private SurfaceBuilder surfaceBuilder;
     private LabelBuilder labelBuilder;
     private Node plot;
@@ -95,7 +95,7 @@ public class Plot3DSurface extends Plot3D {
         }
     }
 
-    public void setPeaks(ProfileContainer peaks) {
+    public void setPeaks(FileProfileContainer peaks) {
 
         if (init) {
             labelBuilder.updateLabels(peaks);

@@ -19,11 +19,12 @@
 
 package uk.ac.ebi.masscascade.tracebuilder;
 
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
+import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZList;
@@ -37,7 +38,7 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
  * <li>Parameter <code> PROFILE FILE </code>- The input profile container.</li>
  * </ul>
  */
-public class ProfileSplitter extends ACallableTask {
+public class ProfileSplitter extends CallableTask {
 
     private ProfileContainer profileContainer;
     private ProfileContainer outProfileContainer;
@@ -66,7 +67,7 @@ public class ProfileSplitter extends ACallableTask {
      */
     private void setParameters(ParameterMap params) throws MassCascadeException {
 
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
     }
 
     /**
@@ -77,7 +78,7 @@ public class ProfileSplitter extends ACallableTask {
     public ProfileContainer call() {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        outProfileContainer = new ProfileContainer(id, profileContainer.getWorkingDirectory());
+        outProfileContainer = new FileProfileContainer(id, profileContainer.getWorkingDirectory());
 
         for (Profile profile : profileContainer) extractTraces(profile);
 

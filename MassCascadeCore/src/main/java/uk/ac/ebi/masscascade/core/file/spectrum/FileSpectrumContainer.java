@@ -17,11 +17,15 @@
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package uk.ac.ebi.masscascade.core.spectrum;
+package uk.ac.ebi.masscascade.core.file.spectrum;
 
-import uk.ac.ebi.masscascade.core.FileManager;
-import uk.ac.ebi.masscascade.interfaces.Container;
+import uk.ac.ebi.masscascade.core.file.FileContainer;
+import uk.ac.ebi.masscascade.core.file.FileManager;
+import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
+import uk.ac.ebi.masscascade.core.spectrum.SpectrumIterator;
+import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
+import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -33,7 +37,7 @@ import java.util.Map;
 /**
  * Class containing a collection of spectra.
  */
-public class SpectrumContainer implements Container, Iterable<PseudoSpectrum> {
+public class FileSpectrumContainer extends FileContainer implements SpectrumContainer {
 
     private final String id;
     private final LinkedHashMap<Integer, Long> spectraMap;
@@ -46,7 +50,7 @@ public class SpectrumContainer implements Container, Iterable<PseudoSpectrum> {
      * @param id               the file identifier
      * @param workingDirectory the working directory
      */
-    public SpectrumContainer(String id, String workingDirectory) {
+    public FileSpectrumContainer(String id, String workingDirectory) {
 
         this.id = id;
         spectraMap = new LinkedHashMap<Integer, Long>();
@@ -62,7 +66,7 @@ public class SpectrumContainer implements Container, Iterable<PseudoSpectrum> {
      * @param dataFile    the tmp data file
      * @param spectrumSet the collection of spectra
      */
-    public SpectrumContainer(String id, String dataFile, Collection<Spectrum> spectrumSet) {
+    public FileSpectrumContainer(String id, String dataFile, Collection<Spectrum> spectrumSet) {
 
         this.id = id;
         spectraMap = new LinkedHashMap<Integer, Long>();
@@ -83,7 +87,7 @@ public class SpectrumContainer implements Container, Iterable<PseudoSpectrum> {
      * @param dataFile   the data file
      * @param spectraMap the map of profile id - file pointer associations
      */
-    public SpectrumContainer(String id, String dataFile, LinkedHashMap<Integer, Long> spectraMap) {
+    public FileSpectrumContainer(String id, String dataFile, LinkedHashMap<Integer, Long> spectraMap) {
 
         this.id = id;
 
@@ -92,10 +96,32 @@ public class SpectrumContainer implements Container, Iterable<PseudoSpectrum> {
     }
 
     /**
+     * Returns the spectra indices.
+     *
+     * @return the spectra indices
+     */
+    public Map<Integer, Long> getSpectraNumbers() {
+        return spectraMap;
+    }
+
+    /**
+     * Adds a spectrum to the collection.
+     *
+     * @param spectrum the profile
+     */
+    @Override
+    public void addSpectrum(Spectrum spectrum) {
+
+        long spectrumIndex = fileManager.write(spectrum);
+        spectraMap.put(spectrum.getIndex(), spectrumIndex);
+    }
+
+    /**
      * Returns the identifier of the collection.
      *
      * @return the identifier
      */
+    @Override
     public String getId() {
         return id;
     }
@@ -106,6 +132,7 @@ public class SpectrumContainer implements Container, Iterable<PseudoSpectrum> {
      * @param spectrumId the profile identifier
      * @return the spectrum
      */
+    @Override
     public synchronized Spectrum getSpectrum(int spectrumId) {
 
         long spectrumIndex = -1;
@@ -119,25 +146,11 @@ public class SpectrumContainer implements Container, Iterable<PseudoSpectrum> {
     }
 
     /**
-     * Adds a spectrum to the collection.
+     * Returns the size of the container.
      *
-     * @param spectrum the profile
+     * @return the container size
      */
-    public void addSpectrum(Spectrum spectrum) {
-
-        long spectrumIndex = fileManager.write(spectrum);
-        spectraMap.put(spectrum.getIndex(), spectrumIndex);
-    }
-
-    /**
-     * Returns the spectra indices.
-     *
-     * @return the spectra indices
-     */
-    public Map<Integer, Long> getSpectraNumbers() {
-        return spectraMap;
-    }
-
+    @Override
     public int size() {
         return spectraMap.size();
     }
@@ -147,6 +160,7 @@ public class SpectrumContainer implements Container, Iterable<PseudoSpectrum> {
      *
      * @return the working directory
      */
+    @Override
     public String getWorkingDirectory() {
         return fileManager.getWorkingDirectory();
     }
@@ -156,6 +170,7 @@ public class SpectrumContainer implements Container, Iterable<PseudoSpectrum> {
      *
      * @return if successful
      */
+    @Override
     public boolean removeAll() {
         return fileManager.removeFile();
     }
@@ -165,6 +180,7 @@ public class SpectrumContainer implements Container, Iterable<PseudoSpectrum> {
      *
      * @return the dta file
      */
+    @Override
     public File getDataFile() {
         return fileManager.getDataFile();
     }
@@ -172,6 +188,7 @@ public class SpectrumContainer implements Container, Iterable<PseudoSpectrum> {
     /**
      * Closes the file.
      */
+    @Override
     public void finaliseFile() {
         fileManager.closeFile();
     }
@@ -182,7 +199,7 @@ public class SpectrumContainer implements Container, Iterable<PseudoSpectrum> {
      * @return an Iterator.
      */
     @Override
-    public Iterator<PseudoSpectrum> iterator() {
+    public Iterator<Spectrum> iterator() {
         return new SpectrumIterator(new ArrayList<Long>(spectraMap.values()), fileManager);
     }
 }

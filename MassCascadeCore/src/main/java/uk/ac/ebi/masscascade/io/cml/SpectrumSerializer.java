@@ -24,7 +24,7 @@ import org.xmlcml.cml.element.CMLCml;
 import org.xmlcml.cml.element.CMLMetadataList;
 import org.xmlcml.cml.element.CMLSpectrum;
 import org.xmlcml.cml.element.CMLSpectrumList;
-import uk.ac.ebi.masscascade.core.spectrum.SpectrumContainer;
+import uk.ac.ebi.masscascade.core.file.spectrum.FileSpectrumContainer;
 
 import java.util.Map;
 
@@ -35,14 +35,14 @@ public class SpectrumSerializer extends ACmlSerializer {
 
     private static final Logger LOGGER = Logger.getLogger(SpectrumSerializer.class);
 
-    private SpectrumContainer spectrumContainer;
+    private FileSpectrumContainer spectrumContainer;
 
     /**
      * Constructs a serialization task.
      *
      * @param spectrumContainer a mass spectrometry data container
      */
-    public SpectrumSerializer(SpectrumContainer spectrumContainer) {
+    public SpectrumSerializer(FileSpectrumContainer spectrumContainer) {
 
         this.spectrumContainer = spectrumContainer;
     }

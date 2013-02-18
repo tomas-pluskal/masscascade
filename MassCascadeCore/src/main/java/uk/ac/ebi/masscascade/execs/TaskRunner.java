@@ -26,12 +26,13 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
-import uk.ac.ebi.masscascade.core.raw.RawContainer;
-import uk.ac.ebi.masscascade.core.spectrum.SpectrumContainer;
+import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
-import uk.ac.ebi.masscascade.interfaces.Container;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.container.Container;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
+import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.io.CmlReader;
 import uk.ac.ebi.masscascade.io.PsiMzmlReader;
 import uk.ac.ebi.masscascade.io.XCaliburReader;
@@ -57,7 +58,7 @@ public class TaskRunner {
 
     private static Logger LOGGER = Logger.getLogger(TaskRunner.class);
 
-    private final LinkedHashMap<Class<? extends ACallableTask>, ParameterMap> tasks;
+    private final LinkedHashMap<Class<? extends CallableTask>, ParameterMap> tasks;
 
     private File inDirectory;
     private File outDirectory;
@@ -87,7 +88,7 @@ public class TaskRunner {
         this.tmpDirectory = tmpDirectory;
         this.nThreads = nThreads;
 
-        tasks = new LinkedHashMap<Class<? extends ACallableTask>, ParameterMap>();
+        tasks = new LinkedHashMap<Class<? extends CallableTask>, ParameterMap>();
     }
 
     /**
@@ -96,7 +97,7 @@ public class TaskRunner {
      * @param taskClass    a task class
      * @param parameterMap a parameter map
      */
-    public void add(Class<? extends ACallableTask> taskClass, ParameterMap parameterMap) {
+    public void add(Class<? extends CallableTask> taskClass, ParameterMap parameterMap) {
         tasks.put(taskClass, parameterMap);
     }
 
@@ -110,7 +111,7 @@ public class TaskRunner {
         List<ListenableFuture<Container>> resultList = new ArrayList<ListenableFuture<Container>>();
 
         File[] files = new File[0];
-        Class<? extends ACallableTask> taskClass = tasks.keySet().iterator().next();
+        Class<? extends CallableTask> taskClass = tasks.keySet().iterator().next();
         if (taskClass.equals(XCaliburReader.class))
             files = inDirectory.listFiles(new Filter(Constants.FILE_FORMATS.RAW));
         else if (taskClass.equals(PsiMzmlReader.class))
@@ -127,16 +128,16 @@ public class TaskRunner {
 
                 ParameterMap params = new ParameterMap();
                 params.put(Parameter.DATA_FILE, file);
-                params.put(Parameter.RAW_CONTAINER, new RawContainer(name, tmpDirectory.getAbsolutePath()));
+                params.put(Parameter.RAW_CONTAINER, new FileRawContainer(name, tmpDirectory.getAbsolutePath()));
                 params.put(Parameter.WORKING_DIRECTORY, tmpDirectory.getAbsolutePath());
 
                 Constructor<?> cstr = taskClass.getConstructor(ParameterMap.class);
-                ACallableTask task = (ACallableTask) cstr.newInstance(params);
+                CallableTask task = (CallableTask) cstr.newInstance(params);
 
                 ListenableFuture<Container> future = threadPool.submit(task);
                 Futures.addCallback(future, new FutureCallback<Container>() {
 
-                    private Iterator<Map.Entry<Class<? extends ACallableTask>, ParameterMap>> iter;
+                    private Iterator<Map.Entry<Class<? extends CallableTask>, ParameterMap>> iter;
                     private List<File> tmpFiles;
 
                     @Override
@@ -157,7 +158,7 @@ public class TaskRunner {
                         }
 
                         try {
-                            Map.Entry<Class<? extends ACallableTask>, ParameterMap> entry = iter.next();
+                            Map.Entry<Class<? extends CallableTask>, ParameterMap> entry = iter.next();
                             ParameterMap params = entry.getValue();
                             if (container instanceof RawContainer) params.put(Parameter.RAW_CONTAINER, container);
                             else if (container instanceof ProfileContainer)
@@ -166,7 +167,7 @@ public class TaskRunner {
                                 params.put(Parameter.SPECTRUM_CONTAINER, container);
 
                             Constructor<?> cstr = entry.getKey().getConstructor(ParameterMap.class);
-                            ACallableTask task = (ACallableTask) cstr.newInstance(params);
+                            CallableTask task = (CallableTask) cstr.newInstance(params);
 
                             onSuccess(task.call());
                         } catch (Exception exception) {

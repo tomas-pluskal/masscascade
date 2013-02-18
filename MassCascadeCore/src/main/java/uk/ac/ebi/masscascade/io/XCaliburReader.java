@@ -21,10 +21,11 @@ package uk.ac.ebi.masscascade.io;
 
 import com.mindprod.ledatastream.LEDataInputStream;
 import org.apache.log4j.Level;
-import uk.ac.ebi.masscascade.core.raw.RawContainer;
+import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.ScanImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -50,7 +51,7 @@ import java.util.regex.Pattern;
  * <li>Parameter <code> WORKING DIRECTORY </code>- The working directory.</li>
  * </ul>
  */
-public class XCaliburReader extends ACallableTask {
+public class XCaliburReader extends CallableTask {
 
     private File file;
     private String workingDirectory;
@@ -95,7 +96,7 @@ public class XCaliburReader extends ACallableTask {
 
         file = params.get(Parameter.DATA_FILE, File.class);
         workingDirectory = params.get(Parameter.WORKING_DIRECTORY, String.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
 
         if (file == null || !file.isFile()) throw new MassCascadeException("File not found.");
     }

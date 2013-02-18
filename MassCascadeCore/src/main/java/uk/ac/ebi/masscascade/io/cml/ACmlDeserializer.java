@@ -19,7 +19,7 @@
 
 package uk.ac.ebi.masscascade.io.cml;
 
-import uk.ac.ebi.masscascade.interfaces.Container;
+import uk.ac.ebi.masscascade.interfaces.container.Container;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;

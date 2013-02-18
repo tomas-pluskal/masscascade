@@ -20,8 +20,8 @@
 package uk.ac.ebi.masscascade.utilities;
 
 import uk.ac.ebi.masscascade.core.PropertyManager;
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.interfaces.Property;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.properties.Adduct;

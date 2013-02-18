@@ -19,11 +19,12 @@
 
 package uk.ac.ebi.masscascade.deconvolution;
 
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
+import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -50,7 +51,7 @@ import java.util.TreeMap;
  * <li>Parameter <code> PROFILE FILE </code>- The input profile container.</li>
  * </ul>
  */
-public class BiehmanDeconvolution extends ACallableTask {
+public class BiehmanDeconvolution extends CallableTask {
 
     private static final int MIN_SIZE = 5;
     private static final int NF_HEIGHT_MULTIPLIER = 4;
@@ -61,7 +62,7 @@ public class BiehmanDeconvolution extends ACallableTask {
 
     private int profileId;
 
-    private ProfileContainer profileContainer;
+    private FileProfileContainer profileContainer;
     private NoiseEstimation noiseEstimation;
 
     /**
@@ -88,7 +89,7 @@ public class BiehmanDeconvolution extends ACallableTask {
 
         scanWindow = (params.get(Parameter.SCAN_WINDOW, Integer.class)) / 2;
         center = params.get(Parameter.CENTER, Boolean.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
 
         noiseEstimation = new NoiseEstimation();
         noiseEstimate = 0;
@@ -102,7 +103,7 @@ public class BiehmanDeconvolution extends ACallableTask {
     public ProfileContainer call() {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer = new ProfileContainer(id, profileContainer.getWorkingDirectory());
+        ProfileContainer outProfileContainer = new FileProfileContainer(id, profileContainer.getWorkingDirectory());
 
         profileId = 1;
 

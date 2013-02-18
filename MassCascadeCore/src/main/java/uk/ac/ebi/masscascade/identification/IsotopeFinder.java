@@ -19,10 +19,11 @@
 
 package uk.ac.ebi.masscascade.identification;
 
+import uk.ac.ebi.masscascade.core.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
-import uk.ac.ebi.masscascade.core.spectrum.SpectrumContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 
@@ -33,7 +34,7 @@ import uk.ac.ebi.masscascade.parameters.ParameterMap;
  * <li>Parameter <code> SPECTRUM FILE </code>- The input spectrum container.</li>
  * </ul>
  */
-public class IsotopeFinder extends ACallableTask {
+public class IsotopeFinder extends CallableTask {
 
     private static final int CHARGE = 3;
 
@@ -76,7 +77,7 @@ public class IsotopeFinder extends ACallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         massTolerance = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
+        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, FileSpectrumContainer.class);
     }
 
     /**
@@ -87,7 +88,8 @@ public class IsotopeFinder extends ACallableTask {
     public SpectrumContainer call() {
 
         String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer outSpectrumContainer = new SpectrumContainer(id, spectrumContainer.getWorkingDirectory());
+        SpectrumContainer
+                outSpectrumContainer = new FileSpectrumContainer(id, spectrumContainer.getWorkingDirectory());
 
         IsotopeDetector isotopeDetector = new IsotopeDetector(CHARGE, massTolerance);
 

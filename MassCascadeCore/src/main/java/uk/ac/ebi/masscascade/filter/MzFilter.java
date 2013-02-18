@@ -19,10 +19,11 @@
 
 package uk.ac.ebi.masscascade.filter;
 
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
+import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -41,7 +42,7 @@ import java.util.TreeSet;
  * <li>Parameter <code> PROFILE FILE </code>- The input profile container.</li>
  * </ul>
  */
-public class MzFilter extends ACallableTask {
+public class MzFilter extends CallableTask {
 
     // task variables
     private double ppm;
@@ -73,7 +74,7 @@ public class MzFilter extends ACallableTask {
 
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         mzForRemoval = params.get(Parameter.MZ_FOR_REMOVAL, (new TreeSet<Double>()).getClass());
-        sampleContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        sampleContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
 
         mzRanges = new HashMap<Double, Range>();
         for (double mz : mzForRemoval)
@@ -88,7 +89,7 @@ public class MzFilter extends ACallableTask {
     public ProfileContainer call() {
 
         String id = sampleContainer.getId() + IDENTIFIER;
-        ProfileContainer profileContainer = new ProfileContainer(id, sampleContainer.getWorkingDirectory());
+        ProfileContainer profileContainer = new FileProfileContainer(id, sampleContainer.getWorkingDirectory());
 
         for (Profile profile : sampleContainer) {
 

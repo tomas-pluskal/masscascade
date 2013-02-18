@@ -19,9 +19,10 @@
 
 package uk.ac.ebi.masscascade.binning;
 
-import uk.ac.ebi.masscascade.core.raw.RawContainer;
+import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
@@ -35,9 +36,9 @@ import uk.ac.ebi.masscascade.parameters.ParameterMap;
  * <li>Parameter <code> RAW FILE </code>- The input raw container.</li>
  * </ul>
  */
-public class MzFileBinning extends ACallableTask {
+public class MzFileBinning extends CallableTask {
 
-    private RawContainer rawContainer;
+    private FileRawContainer rawContainer;
 
     private double xWidth;
     private MzBinning.BinningType binType;
@@ -66,7 +67,7 @@ public class MzFileBinning extends ACallableTask {
 
         this.xWidth = params.get(Parameter.MZ_WINDOW_AMU, Double.class);
         this.binType = params.get(Parameter.AGGREGATION, MzBinning.BinningType.class);
-        this.rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        this.rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
     }
 
     /**
@@ -78,7 +79,7 @@ public class MzFileBinning extends ACallableTask {
 
         String id = rawContainer.getId() + IDENTIFIER;
         RawContainer outRawContainer =
-                new RawContainer(id, rawContainer.getRawInfo(), rawContainer.getWorkingDirectory());
+                new FileRawContainer(id, rawContainer.getRawInfo(), rawContainer.getWorkingDirectory());
 
         Scan scan;
         Scan binnedScan;

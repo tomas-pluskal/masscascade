@@ -19,16 +19,16 @@
 
 package uk.ac.ebi.masscascade.io;
 
-import org.apache.log4j.Level;
 import uk.ac.ebi.jmzml.model.mzml.BinaryDataArray;
 import uk.ac.ebi.jmzml.model.mzml.CVParam;
 import uk.ac.ebi.jmzml.model.mzml.MzML;
 import uk.ac.ebi.jmzml.model.mzml.Spectrum;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshaller;
-import uk.ac.ebi.masscascade.core.raw.RawContainer;
+import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.ScanImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
@@ -52,7 +52,7 @@ import java.util.regex.Pattern;
  * <li>Parameter <code> RAW FILE </code>- The target raw container.</li>
  * </ul>
  */
-public class PsiMzmlReader extends ACallableTask {
+public class PsiMzmlReader extends CallableTask {
 
     private File mzmlFile;
     private RawContainer rawContainer;
@@ -95,7 +95,7 @@ public class PsiMzmlReader extends ACallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         mzmlFile = params.get(Parameter.DATA_FILE, File.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
 
         if (mzmlFile == null || !mzmlFile.isFile()) throw new MassCascadeException("File not found.");
     }

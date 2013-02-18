@@ -40,7 +40,7 @@ import uk.ac.ebi.masscascade.identification.IonFinder;
 import uk.ac.ebi.masscascade.identification.IsotopeFinder;
 import uk.ac.ebi.masscascade.identification.IsotopeKeeper;
 import uk.ac.ebi.masscascade.identification.IsotopeRemover;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Index;
 import uk.ac.ebi.masscascade.io.CmlReader;
 import uk.ac.ebi.masscascade.io.CmlWriter;
@@ -110,7 +110,7 @@ public enum CoreTasks implements Index {
     DURBIN(DurbinWatsonFilter.class, "DW"),
     CODA(CodaFilter.class, "CD");
 
-    private final Class<? extends ACallableTask> className;
+    private final Class<? extends CallableTask> className;
     private final String identifier;
 
     /**
@@ -119,7 +119,7 @@ public enum CoreTasks implements Index {
      * @param className  the task class
      * @param identifier the abbreviated identifier
      */
-    private CoreTasks(Class<? extends ACallableTask> className, String identifier) {
+    private CoreTasks(Class<? extends CallableTask> className, String identifier) {
 
         this.className = className;
         this.identifier = "-" + identifier;
@@ -130,7 +130,7 @@ public enum CoreTasks implements Index {
      *
      * @return the callable class
      */
-    public synchronized Class<? extends ACallableTask> getCallableClass() {
+    public synchronized Class<? extends CallableTask> getCallableClass() {
 
         return className;
     }
@@ -161,7 +161,7 @@ public enum CoreTasks implements Index {
      * @param callableClass the task class
      * @return the enum
      */
-    public static CoreTasks getEnumFor(Class<? extends ACallableTask> callableClass) {
+    public static CoreTasks getEnumFor(Class<? extends CallableTask> callableClass) {
 
         for (CoreTasks x : CoreTasks.values())
             if (x.getCallableClass() == callableClass) return x;

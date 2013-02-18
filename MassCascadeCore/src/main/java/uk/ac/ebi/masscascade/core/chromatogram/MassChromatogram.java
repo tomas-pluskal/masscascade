@@ -29,7 +29,7 @@ import java.io.Serializable;
 /**
  * Class representing an extracted ion chromatogram in the time domain.
  */
-public class ExtractedIonChromatogram implements Chromatogram, Serializable {
+public class MassChromatogram implements Chromatogram, Serializable {
 
     private static final long serialVersionUID = -6719770232095785012L;
 
@@ -41,7 +41,7 @@ public class ExtractedIonChromatogram implements Chromatogram, Serializable {
     /**
      * Constructor for deserialization.
      */
-    public ExtractedIonChromatogram() {
+    public MassChromatogram() {
 
         id = "";
         mass = Double.NaN;
@@ -57,7 +57,7 @@ public class ExtractedIonChromatogram implements Chromatogram, Serializable {
      * @param xicData   the chromatogram data set
      * @param deviation the mass deviation
      */
-    public ExtractedIonChromatogram(String id, double mass, double deviation, XYList xicData) {
+    public MassChromatogram(String id, double mass, double deviation, XYList xicData) {
 
         this.id = id;
         this.mass = mass;

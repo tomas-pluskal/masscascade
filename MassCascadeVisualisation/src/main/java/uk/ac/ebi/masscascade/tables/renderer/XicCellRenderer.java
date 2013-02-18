@@ -19,7 +19,7 @@
 
 package uk.ac.ebi.masscascade.tables.renderer;
 
-import uk.ac.ebi.masscascade.core.chromatogram.ExtractedIonChromatogram;
+import uk.ac.ebi.masscascade.core.chromatogram.MassChromatogram;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
@@ -42,12 +42,12 @@ public class XicCellRenderer extends DefaultTableCellRenderer {
 
         Component c = super.getTableCellRendererComponent(jTable, value, isSelected, hasFocus, row, column);
 
-        if (c instanceof JLabel && value instanceof ExtractedIonChromatogram) {
+        if (c instanceof JLabel && value instanceof MassChromatogram) {
 
             JLabel label = (JLabel) c;
             label.setHorizontalAlignment(JLabel.RIGHT);
 
-            xyList = ((ExtractedIonChromatogram) value).getData();
+            xyList = ((MassChromatogram) value).getData();
         }
         return c;
     }

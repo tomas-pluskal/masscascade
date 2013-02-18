@@ -19,10 +19,11 @@
 
 package uk.ac.ebi.masscascade.background;
 
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
+import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.properties.Score;
@@ -38,7 +39,7 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYZList;
  * <li>Parameter <code> PROFILE CONTAINER </code>- The input profile container.</li>
  * </ul>
  */
-public class DurbinWatsonFilter extends ACallableTask {
+public class DurbinWatsonFilter extends CallableTask {
 
     private double dwThreshold;
     private ProfileContainer profileContainer;
@@ -59,7 +60,7 @@ public class DurbinWatsonFilter extends ACallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         dwThreshold = params.get(Parameter.DURBIN, Double.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
     }
 
     /**
@@ -71,7 +72,7 @@ public class DurbinWatsonFilter extends ACallableTask {
     public ProfileContainer call() {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer = new ProfileContainer(id, profileContainer.getWorkingDirectory());
+        ProfileContainer outProfileContainer = new FileProfileContainer(id, profileContainer.getWorkingDirectory());
 
         for (Profile profile : profileContainer) {
             double dw = getDurbinWatson(profile.getData());

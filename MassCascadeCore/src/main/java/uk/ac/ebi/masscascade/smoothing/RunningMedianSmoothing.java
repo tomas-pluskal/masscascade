@@ -19,10 +19,11 @@
 
 package uk.ac.ebi.masscascade.smoothing;
 
-import uk.ac.ebi.masscascade.core.raw.RawContainer;
+import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
@@ -44,12 +45,12 @@ import java.util.Queue;
  * <li>Parameter <code> RAW FILE </code>- The input raw container.</li>
  * </ul>
  */
-public class RunningMedianSmoothing extends ACallableTask {
+public class RunningMedianSmoothing extends CallableTask {
 
     private Queue<Double> window = new LinkedList<Double>();
     private int mzWindow;
     private Constants.MSN msn;
-    private RawContainer rawContainer;
+    private FileRawContainer rawContainer;
 
     /**
      * Constructs a running median smoother task.
@@ -75,7 +76,7 @@ public class RunningMedianSmoothing extends ACallableTask {
 
         mzWindow = params.get(Parameter.DATA_WINDOW, Integer.class);
         msn = params.get(Parameter.MS_LEVEL, Constants.MSN.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
     }
 
     /**
@@ -120,7 +121,7 @@ public class RunningMedianSmoothing extends ACallableTask {
 
         String id = rawContainer.getId() + IDENTIFIER;
         RawContainer smoothedRawContainer =
-                new RawContainer(id, rawContainer.getRawInfo(), rawContainer.getWorkingDirectory());
+                new FileRawContainer(id, rawContainer.getRawInfo(), rawContainer.getWorkingDirectory());
 
         Scan scan;
         XYList smoothedData;

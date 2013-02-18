@@ -19,10 +19,11 @@
 
 package uk.ac.ebi.masscascade.binning;
 
-import uk.ac.ebi.masscascade.core.raw.RawContainer;
+import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.ScanImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.parameters.Constants;
@@ -42,9 +43,9 @@ import java.util.Map;
  * <li>Parameter <code> RAW FILE </code>- The input raw container.</li>
  * </ul>
  */
-public class RtBinning extends ACallableTask {
+public class RtBinning extends CallableTask {
 
-    private RawContainer rawContainer;
+    private FileRawContainer rawContainer;
 
     private double timeWindow;
     private Scan tmpScan;
@@ -73,7 +74,7 @@ public class RtBinning extends ACallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         timeWindow = params.get(Parameter.SCAN_WINDOW, Double.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
 
         scanIndex = 1;
     }
@@ -87,7 +88,7 @@ public class RtBinning extends ACallableTask {
 
         String id = rawContainer.getId() + IDENTIFIER;
         RawContainer outRawContainer =
-                new RawContainer(id, rawContainer.getRawInfo(), rawContainer.getWorkingDirectory());
+                new FileRawContainer(id, rawContainer.getRawInfo(), rawContainer.getWorkingDirectory());
 
         for (int i = Constants.MSN.MS1.getLvl(); i <= rawContainer.getRawLevels().size(); i++) {
 

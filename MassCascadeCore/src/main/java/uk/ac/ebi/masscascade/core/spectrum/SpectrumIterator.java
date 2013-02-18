@@ -19,7 +19,8 @@
 
 package uk.ac.ebi.masscascade.core.spectrum;
 
-import uk.ac.ebi.masscascade.core.FileManager;
+import uk.ac.ebi.masscascade.core.file.FileManager;
+import uk.ac.ebi.masscascade.interfaces.Spectrum;
 
 import java.util.Iterator;
 import java.util.List;
@@ -27,7 +28,7 @@ import java.util.List;
 /**
  * Class implementing a pseudo spectra iterator, directly reading from the data file.
  */
-public class SpectrumIterator implements Iterator<PseudoSpectrum> {
+public class SpectrumIterator implements Iterator<Spectrum> {
 
     private final List<Long> spectrumPointers;
     private final FileManager fileManager;
@@ -68,7 +69,7 @@ public class SpectrumIterator implements Iterator<PseudoSpectrum> {
      *          iteration has no more elements.
      */
     @Override
-    public PseudoSpectrum next() {
+    public Spectrum next() {
 
         PseudoSpectrum profile = fileManager.read(spectrumPointers.get(currentPosition), PseudoSpectrum.class);
 
@@ -92,7 +93,6 @@ public class SpectrumIterator implements Iterator<PseudoSpectrum> {
      */
     @Override
     public void remove() {
-
         // do nothing
     }
 }

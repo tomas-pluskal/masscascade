@@ -17,14 +17,19 @@
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package uk.ac.ebi.masscascade.core.raw;
+package uk.ac.ebi.masscascade.core.file.raw;
 
 import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.core.FileManager;
+import uk.ac.ebi.masscascade.core.file.FileContainer;
+import uk.ac.ebi.masscascade.core.file.FileManager;
 import uk.ac.ebi.masscascade.core.chromatogram.BasePeakChromatogram;
 import uk.ac.ebi.masscascade.core.chromatogram.TotalIonChromatogram;
+import uk.ac.ebi.masscascade.core.raw.RawInfo;
+import uk.ac.ebi.masscascade.core.raw.RawIterator;
+import uk.ac.ebi.masscascade.core.raw.RawLevel;
+import uk.ac.ebi.masscascade.core.raw.ScanImpl;
 import uk.ac.ebi.masscascade.interfaces.Chromatogram;
-import uk.ac.ebi.masscascade.interfaces.Container;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
@@ -42,9 +47,9 @@ import java.util.Map;
 /**
  * Core class holding all mass spec relevant information.
  */
-public class RawContainer implements Container, Iterable<Scan> {
+public class FileRawContainer extends FileContainer implements RawContainer {
 
-    private static final Logger LOGGER = Logger.getLogger(RawContainer.class);
+    private static final Logger LOGGER = Logger.getLogger(FileRawContainer.class);
 
     private final String id;
 
@@ -66,7 +71,7 @@ public class RawContainer implements Container, Iterable<Scan> {
      * @param id               the file identifier
      * @param workingDirectory the working directory
      */
-    public RawContainer(String id, String workingDirectory) {
+    public FileRawContainer(String id, String workingDirectory) {
 
         this.id = id;
         rawInfo = new RawInfo(id, "Unknown", null);
@@ -89,7 +94,7 @@ public class RawContainer implements Container, Iterable<Scan> {
      * @param rawInfo          the raw file info container
      * @param workingDirectory the working directory
      */
-    public RawContainer(String id, RawInfo rawInfo, String workingDirectory) {
+    public FileRawContainer(String id, RawInfo rawInfo, String workingDirectory) {
         this(id, workingDirectory);
         this.rawInfo = rawInfo;
     }
@@ -100,7 +105,7 @@ public class RawContainer implements Container, Iterable<Scan> {
      * @param id           the file identifier
      * @param oldContainer the old raw container
      */
-    public RawContainer(String id, RawContainer oldContainer) {
+    public FileRawContainer(String id, RawContainer oldContainer) {
         this(id, oldContainer.getRawInfo(), oldContainer.getWorkingDirectory());
     }
 
@@ -115,7 +120,7 @@ public class RawContainer implements Container, Iterable<Scan> {
      * @param scanNumbers    scan index - randomaccesfile pointer associations
      * @param dataFile       the tmp data file
      */
-    public RawContainer(String id, RawInfo rawInfo, List<RawLevel> rawLevels, Long basePeakNumber,
+    public FileRawContainer(String id, RawInfo rawInfo, List<RawLevel> rawLevels, Long basePeakNumber,
             LinkedHashMap<Constants.MSN, Long> ticNumbers, List<LinkedHashMap<Integer, Long>> scanNumbers,
             String dataFile) {
 
@@ -138,6 +143,7 @@ public class RawContainer implements Container, Iterable<Scan> {
      *
      * @param scan the scan to be added
      */
+    @Override
     public void addScan(Scan scan) {
 
         Constants.MSN scanMSn = scan.getMsn();
@@ -174,6 +180,7 @@ public class RawContainer implements Container, Iterable<Scan> {
      *
      * @param scans the list of scans to be added
      */
+    @Override
     public void addScanList(List<Scan> scans) {
         for (Scan scan : scans) this.addScan(scan);
     }
@@ -183,6 +190,7 @@ public class RawContainer implements Container, Iterable<Scan> {
      *
      * @param date the creation date
      */
+    @Override
     public void finaliseFile(String date) {
 
         if (date != null) {
@@ -211,6 +219,7 @@ public class RawContainer implements Container, Iterable<Scan> {
      *
      * @return the file id
      */
+    @Override
     public String getId() {
         return id;
     }
@@ -220,6 +229,7 @@ public class RawContainer implements Container, Iterable<Scan> {
      *
      * @return the MSn information
      */
+    @Override
     public List<RawLevel> getRawLevels() {
         return rawLevels;
     }
@@ -229,6 +239,7 @@ public class RawContainer implements Container, Iterable<Scan> {
      *
      * @return the meta info
      */
+    @Override
     public RawInfo getRawInfo() {
         return rawInfo;
     }
@@ -250,6 +261,7 @@ public class RawContainer implements Container, Iterable<Scan> {
      *
      * @return the base profile chromatogram
      */
+    @Override
     public Chromatogram getBasePeakChromatogram() {
 
         if (basePeakNumber == -1) return null;
@@ -265,6 +277,7 @@ public class RawContainer implements Container, Iterable<Scan> {
      * @param msn the MSn level
      * @return the total ion chromatogram
      */
+    @Override
     public synchronized Chromatogram getTicChromatogram(Constants.MSN msn) {
 
         if (!ticNumbers.containsKey(msn)) return null;
@@ -298,6 +311,7 @@ public class RawContainer implements Container, Iterable<Scan> {
      *
      * @return the working directory
      */
+    @Override
     public String getWorkingDirectory() {
         return fileManager.getWorkingDirectory();
     }
@@ -307,6 +321,7 @@ public class RawContainer implements Container, Iterable<Scan> {
      *
      * @return if successful
      */
+    @Override
     public boolean removeAll() {
         return fileManager.removeFile();
     }
@@ -316,8 +331,19 @@ public class RawContainer implements Container, Iterable<Scan> {
      *
      * @return the dta file
      */
+    @Override
     public File getDataFile() {
         return fileManager.getDataFile();
+    }
+
+    /**
+     * Returns the size of the container
+     *
+     * @return the container's size
+     */
+    @Override
+    public int size() {
+        return scanNumbers.size();
     }
 
     /**
@@ -326,6 +352,7 @@ public class RawContainer implements Container, Iterable<Scan> {
      * @param i the scan index
      * @return the scan
      */
+    @Override
     public synchronized Scan getScan(int i) {
 
         long fileIndex = -1;
@@ -384,6 +411,7 @@ public class RawContainer implements Container, Iterable<Scan> {
      *
      * @return the map
      */
+    @Override
     public synchronized Map<Integer, HashMap<Integer, Double>> getMSnParentDaughterMap() {
 
         Map<Integer, HashMap<Integer, Double>> resultMap = new HashMap<Integer, HashMap<Integer, Double>>();
@@ -488,8 +516,8 @@ public class RawContainer implements Container, Iterable<Scan> {
      *
      * @return an Iterator.
      */
+    @Override
     public Iterable<Scan> iterator(final Constants.MSN msn) {
-
         return new Iterable<Scan>() {
 
             public Iterator<Scan> iterator() {

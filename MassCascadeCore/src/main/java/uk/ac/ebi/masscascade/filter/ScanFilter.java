@@ -19,11 +19,12 @@
 
 package uk.ac.ebi.masscascade.filter;
 
-import uk.ac.ebi.masscascade.core.raw.RawContainer;
+import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
-import uk.ac.ebi.masscascade.interfaces.Container;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.container.Container;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.parameters.Constants;
@@ -42,7 +43,7 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
  * <li>Parameter <code> RAW FILE </code>- The input raw container.</li>
  * </ul>
  */
-public class ScanFilter extends ACallableTask {
+public class ScanFilter extends CallableTask {
 
     private Range timeRange;
     private Range massRange;
@@ -73,7 +74,7 @@ public class ScanFilter extends ACallableTask {
 
         massRange = params.get(Parameter.MZ_RANGE, ExtendableRange.class);
         timeRange = params.get(Parameter.TIME_RANGE, ExtendableRange.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
     }
 
     /**
@@ -85,7 +86,7 @@ public class ScanFilter extends ACallableTask {
 
         String id = rawContainer.getId() + IDENTIFIER;
         RawContainer outRawContainer =
-                new RawContainer(id, rawContainer.getRawInfo(), rawContainer.getWorkingDirectory());
+                new FileRawContainer(id, rawContainer.getRawInfo(), rawContainer.getWorkingDirectory());
 
         for (RawLevel level : rawContainer.getRawLevels()) {
 

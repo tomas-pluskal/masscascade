@@ -20,11 +20,12 @@
 package uk.ac.ebi.masscascade.tracebuilder;
 
 import com.google.common.collect.TreeMultimap;
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
+import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -46,7 +47,7 @@ import java.util.TreeSet;
  * <li>Parameter <code> PROFILE FILE </code>- The input profile container.</li>
  * </ul>
  */
-public class ProfileJoiner extends ACallableTask {
+public class ProfileJoiner extends CallableTask {
 
     private ProfileContainer profileContainer;
     private double ppm;
@@ -76,7 +77,7 @@ public class ProfileJoiner extends ACallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
     }
 
     /**
@@ -119,7 +120,7 @@ public class ProfileJoiner extends ACallableTask {
     private ProfileContainer buildJoinedProfiles(TreeMultimap<Double, Integer> mzIdMap) {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer = new ProfileContainer(id, profileContainer.getWorkingDirectory());
+        ProfileContainer outProfileContainer = new FileProfileContainer(id, profileContainer.getWorkingDirectory());
 
         for (double mz : mzIdMap.keySet()) {
             Range mzRange = new ToleranceRange(mz, ppm);

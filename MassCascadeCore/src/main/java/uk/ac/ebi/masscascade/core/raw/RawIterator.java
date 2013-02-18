@@ -19,7 +19,7 @@
 
 package uk.ac.ebi.masscascade.core.raw;
 
-import uk.ac.ebi.masscascade.core.FileManager;
+import uk.ac.ebi.masscascade.core.file.FileManager;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 
 import java.util.Iterator;

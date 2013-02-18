@@ -21,12 +21,13 @@ package uk.ac.ebi.masscascade.gapfilling;
 
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
-import uk.ac.ebi.masscascade.core.chromatogram.ExtractedIonChromatogram;
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
+import uk.ac.ebi.masscascade.core.chromatogram.MassChromatogram;
+import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
@@ -45,12 +46,12 @@ import java.util.Collections;
  * <li>Parameter <code> PROFILE FILE </code>- The input profile container.</li>
  * </ul>
  */
-public class SplineFilling extends ACallableTask {
+public class SplineFilling extends CallableTask {
 
     // minimum number of scans (data points in XIC) for valid min. scan time estimation
     private static final double MIN_ESTIMATE = 5;
 
-    private ProfileContainer profileFile;
+    private FileProfileContainer profileFile;
     private ProfileContainer profileRun;
 
     private SplineInterpolator interpolator;
@@ -60,7 +61,7 @@ public class SplineFilling extends ACallableTask {
      *
      * @param profileFile the compiled profile data
      */
-    public SplineFilling(double timeFactor, ProfileContainer profileFile) {
+    public SplineFilling(double timeFactor, FileProfileContainer profileFile) {
 
         super(SplineFilling.class);
 
@@ -92,7 +93,7 @@ public class SplineFilling extends ACallableTask {
      */
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        profileFile = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        profileFile = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
         interpolator = new SplineInterpolator();
     }
 
@@ -104,7 +105,7 @@ public class SplineFilling extends ACallableTask {
     public ProfileContainer call() {
 
         String id = profileFile.getId() + IDENTIFIER;
-        profileRun = new ProfileContainer(id, profileFile.getWorkingDirectory());
+        profileRun = new FileProfileContainer(id, profileFile.getWorkingDirectory());
 
         Profile profile;
         for (int peakNo : profileFile.getProfileNumbers().keySet()) {
@@ -125,7 +126,7 @@ public class SplineFilling extends ACallableTask {
     private void gapFillPeak(Profile profile) {
 
         // interpolated point cannot exceed max point in XIC, i.e., no need to reset the profile details
-        ExtractedIonChromatogram xic = (ExtractedIonChromatogram) profile.getTrace();
+        MassChromatogram xic = (MassChromatogram) profile.getTrace();
 
         XYList xicData = xic.getData();
         Collections.sort(xicData);

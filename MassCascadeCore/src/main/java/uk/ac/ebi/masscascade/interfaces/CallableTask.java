@@ -19,20 +19,26 @@
 
 package uk.ac.ebi.masscascade.interfaces;
 
-import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.parameters.ParameterMap;
+import org.apache.log4j.Logger;
+import uk.ac.ebi.masscascade.interfaces.container.Container;
+import uk.ac.ebi.masscascade.parameters.CoreTasks;
 
-import java.util.concurrent.Callable;
+public abstract class CallableTask implements Task {
 
-/**
- * Interface for all mass spectrometry tasks.
- */
-public interface CallableTask extends Callable<Container> {
+    protected final Logger LOGGER;
+    protected final String IDENTIFIER;
+
+    public CallableTask(Class<? extends CallableTask> taskClass) {
+
+        LOGGER = Logger.getLogger(taskClass);
+        IDENTIFIER = CoreTasks.getEnumFor(taskClass).getIdentifier();
+    }
 
     /**
      * Executes the task and processes the data.
      *
      * @return the processed mass spectrometry run
      */
-    Container call();
+    @Override
+    public abstract Container call();
 }

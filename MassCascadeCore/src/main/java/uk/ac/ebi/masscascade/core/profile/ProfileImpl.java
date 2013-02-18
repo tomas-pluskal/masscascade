@@ -21,7 +21,7 @@ package uk.ac.ebi.masscascade.core.profile;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import uk.ac.ebi.masscascade.core.PropertyManager;
-import uk.ac.ebi.masscascade.core.chromatogram.ExtractedIonChromatogram;
+import uk.ac.ebi.masscascade.core.chromatogram.MassChromatogram;
 import uk.ac.ebi.masscascade.interfaces.Chromatogram;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Property;
@@ -292,7 +292,7 @@ public class ProfileImpl implements Profile {
      * @return the peak trace
      */
     public Chromatogram getTrace() {
-        return new ExtractedIonChromatogram(id + "", centerPoint.y, deviation, data.getXZSlice());
+        return new MassChromatogram(id + "", centerPoint.y, deviation, data.getXZSlice());
     }
 
     /**

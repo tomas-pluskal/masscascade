@@ -19,7 +19,7 @@
 
 package uk.ac.ebi.masscascade.parameters;
 
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Index;
 import uk.ac.ebi.masscascade.ws.chemspider.ChemSpiderSearch;
 import uk.ac.ebi.masscascade.ws.massbank.MassBankSearch;
@@ -30,7 +30,7 @@ public enum WebTasks implements Index {
     CHEMSPIDER(ChemSpiderSearch.class, "DCS"),
     MASSBANK(MassBankSearch.class, "DMB");
 
-    private final Class<? extends ACallableTask> className;
+    private final Class<? extends CallableTask> className;
     private final String identifier;
 
     /**
@@ -39,7 +39,7 @@ public enum WebTasks implements Index {
      * @param className  the task class
      * @param identifier the abbreviated identifier
      */
-    private WebTasks(Class<? extends ACallableTask> className, String identifier) {
+    private WebTasks(Class<? extends CallableTask> className, String identifier) {
 
         this.className = className;
         this.identifier = "-" + identifier;
@@ -50,7 +50,7 @@ public enum WebTasks implements Index {
      *
      * @return the callable class
      */
-    public synchronized Class<? extends ACallableTask> getCallableClass() {
+    public synchronized Class<? extends CallableTask> getCallableClass() {
 
         return className;
     }
@@ -82,12 +82,12 @@ public enum WebTasks implements Index {
      * @return the class
      */
     @SuppressWarnings("unchecked")
-    private static Class<? extends ACallableTask> getClassFor(String className) {
+    private static Class<? extends CallableTask> getClassFor(String className) {
 
-        Class<? extends ACallableTask> theClass = null;
+        Class<? extends CallableTask> theClass = null;
 
         try {
-            theClass = (Class<? extends ACallableTask>) Class.forName(className);
+            theClass = (Class<? extends CallableTask>) Class.forName(className);
         } catch (ClassNotFoundException e) {
             // should never happen
             e.printStackTrace();
@@ -102,7 +102,7 @@ public enum WebTasks implements Index {
      * @param callableClass the task class
      * @return the enum
      */
-    public static CoreTasks getEnumFor(Class<? extends ACallableTask> callableClass) {
+    public static CoreTasks getEnumFor(Class<? extends CallableTask> callableClass) {
 
         for (CoreTasks x : CoreTasks.values())
             if (x.getCallableClass() == callableClass) return x;

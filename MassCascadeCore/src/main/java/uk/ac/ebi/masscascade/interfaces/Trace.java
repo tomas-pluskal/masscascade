@@ -19,8 +19,6 @@
 
 package uk.ac.ebi.masscascade.interfaces;
 
-import uk.ac.ebi.masscascade.utilities.xyz.XYZTrace;
-
 public interface Trace extends Comparable<Trace> {
 
     /**

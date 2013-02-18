@@ -17,40 +17,19 @@
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package uk.ac.ebi.masscascade.interfaces;
+package uk.ac.ebi.masscascade.core.memory;
 
-import java.io.File;
+import uk.ac.ebi.masscascade.interfaces.container.Container;
+import uk.ac.ebi.masscascade.interfaces.container.ContainerBuilder;
 
-/**
- * Interface for file-based container.
- */
-public interface Container {
+public class MemoryContainer {
 
     /**
-     * Returns the file identifier
+     * Returns a {@link ContainerBuilder} for the data classes that extend this class.
      *
-     * @return the identifier
+     * @return The {@link ContainerBuilder} matching this {@link Container}
      */
-    String getId();
-
-    /**
-     * Returns the current working directory.
-     *
-     * @return the working directory
-     */
-    String getWorkingDirectory();
-
-    /**
-     * Deletes all data from the container.
-     *
-     * @return if successful
-     */
-    boolean removeAll();
-
-    /**
-     * Returns the actual data file.
-     *
-     * @return the dta file
-     */
-    File getDataFile();
+    public ContainerBuilder getBuilder() {
+        return MemoryContainerBuilder.getInstance();
+    }
 }

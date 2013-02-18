@@ -26,7 +26,7 @@ import org.xmlcml.cml.element.CMLMetadata;
 import org.xmlcml.cml.element.CMLMetadataList;
 import org.xmlcml.cml.element.CMLSpectrum;
 import org.xmlcml.cml.element.CMLSpectrumList;
-import uk.ac.ebi.masscascade.core.raw.RawContainer;
+import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.RawInfo;
 import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.parameters.Constants;
@@ -42,14 +42,14 @@ public class RawSerializer extends ACmlSerializer {
 
     private static final Logger LOGGER = Logger.getLogger(RawSerializer.class);
 
-    private RawContainer msFile;
+    private FileRawContainer msFile;
 
     /**
      * Constructs a serialization task.
      *
      * @param msFile a mass spectrometry data container
      */
-    public RawSerializer(RawContainer msFile) {
+    public RawSerializer(FileRawContainer msFile) {
 
         this.msFile = msFile;
     }

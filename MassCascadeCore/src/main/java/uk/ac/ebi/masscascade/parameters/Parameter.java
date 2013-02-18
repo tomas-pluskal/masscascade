@@ -21,9 +21,9 @@ package uk.ac.ebi.masscascade.parameters;
 
 import com.google.common.collect.TreeMultimap;
 import uk.ac.ebi.masscascade.binning.MzBinning;
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
-import uk.ac.ebi.masscascade.core.raw.RawContainer;
-import uk.ac.ebi.masscascade.core.spectrum.SpectrumContainer;
+import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
+import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
+import uk.ac.ebi.masscascade.core.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.identification.AdductSingle;
 import uk.ac.ebi.masscascade.interfaces.Option;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
@@ -47,11 +47,11 @@ public enum Parameter implements Option {
     /*
      * File parameters for the raw, profile, and spectrum entities.
      */
-    RAW_CONTAINER("Raw file", null, RawContainer.class),
-    REFERENCE_RAW_CONTAINER("Reference raw file", null, RawContainer.class),
+    RAW_CONTAINER("Raw file", null, FileRawContainer.class),
+    REFERENCE_RAW_CONTAINER("Reference raw file", null, FileRawContainer.class),
     REFERENCE_RAW_MAP("Reference raw map", null, TreeMultimap.class),
-    PROFILE_CONTAINER("Profile file", null, ProfileContainer.class),
-    SPECTRUM_CONTAINER("Spectrum file", null, SpectrumContainer.class),
+    PROFILE_CONTAINER("Profile file", null, FileProfileContainer.class),
+    SPECTRUM_CONTAINER("Spectrum file", null, FileSpectrumContainer.class),
 
     /*
      * Additional file parameters for generic data and reference pointers.

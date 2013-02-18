@@ -20,7 +20,8 @@
 package uk.ac.ebi.masscascade.io.cml;
 
 import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.core.spectrum.SpectrumContainer;
+import uk.ac.ebi.masscascade.core.file.spectrum.FileSpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -157,7 +158,7 @@ public class SpectrumDeserializer extends ACmlDeserializer {
                     } else if (event.asEndElement().getName().getLocalPart().endsWith(SPECTRUMLIST)) {
                         // hack to avoid EOFException thrown by the loop condition
                         parser.close();
-                        return new SpectrumContainer(fileName, dataFile, spectraNumbers);
+                        return new FileSpectrumContainer(fileName, dataFile, spectraNumbers);
                     } else if (event.asEndElement().getName().getLocalPart().endsWith(SPECTRUM)) {
                         spectraNumbers.put(id, pointer);
                         isSpectrum = false;
@@ -170,6 +171,6 @@ public class SpectrumDeserializer extends ACmlDeserializer {
             }
         }
 
-        return new SpectrumContainer(fileName, dataFile, spectraNumbers);
+        return new FileSpectrumContainer(fileName, dataFile, spectraNumbers);
     }
 }

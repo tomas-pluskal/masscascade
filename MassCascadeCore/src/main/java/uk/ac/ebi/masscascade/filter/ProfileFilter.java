@@ -19,10 +19,11 @@
 
 package uk.ac.ebi.masscascade.filter;
 
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
+import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -37,7 +38,7 @@ import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
  * <li>Parameter <code> PROFILE FILE </code>- The input profile container.</li>
  * </ul>
  */
-public class ProfileFilter extends ACallableTask {
+public class ProfileFilter extends CallableTask {
 
     // task variables
     private Range timeRange;
@@ -72,7 +73,7 @@ public class ProfileFilter extends ACallableTask {
         timeRange = params.get(Parameter.TIME_RANGE, ExtendableRange.class);
         profileWidthRange = params.get(Parameter.PROFILE_RANGE, ExtendableRange.class);
         minIntensity = params.get(Parameter.MIN_PROFILE_INTENSITY, Double.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
     }
 
     /**
@@ -83,7 +84,7 @@ public class ProfileFilter extends ACallableTask {
     public ProfileContainer call() {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer = new ProfileContainer(id, profileContainer.getWorkingDirectory());
+        ProfileContainer outProfileContainer = new FileProfileContainer(id, profileContainer.getWorkingDirectory());
 
         for (Profile profile : profileContainer) {
 

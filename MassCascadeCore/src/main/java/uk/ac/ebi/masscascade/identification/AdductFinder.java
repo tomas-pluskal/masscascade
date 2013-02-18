@@ -19,10 +19,11 @@
 
 package uk.ac.ebi.masscascade.identification;
 
+import uk.ac.ebi.masscascade.core.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
-import uk.ac.ebi.masscascade.core.spectrum.SpectrumContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -38,7 +39,7 @@ import java.util.ArrayList;
  * <li>Parameter <code> SPECTRUM FILE </code>- The input spectrum container.</li>
  * </ul>
  */
-public class AdductFinder extends ACallableTask {
+public class AdductFinder extends CallableTask {
 
     private AdductDetector adductDetector;
     private SpectrumContainer spectrumContainer;
@@ -65,7 +66,7 @@ public class AdductFinder extends ACallableTask {
      */
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
+        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, FileSpectrumContainer.class);
         adductDetector = new AdductDetector(params.get(Parameter.MZ_WINDOW_PPM, Double.class),
                 params.get(Parameter.ION_MODE, Constants.ION_MODE.class));
         adductDetector.setAdductList(params.get(Parameter.ADDUCT_LIST, (new ArrayList<AdductSingle>()).getClass()));
@@ -79,7 +80,8 @@ public class AdductFinder extends ACallableTask {
     public SpectrumContainer call() {
 
         String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer outSpectrumContainer = new SpectrumContainer(id, spectrumContainer.getWorkingDirectory());
+        SpectrumContainer
+                outSpectrumContainer = new FileSpectrumContainer(id, spectrumContainer.getWorkingDirectory());
 
         for (PseudoSpectrum spectrum : spectrumContainer) {
 

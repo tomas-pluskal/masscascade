@@ -20,7 +20,7 @@
 package uk.ac.ebi.masscascade.io.cml;
 
 import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.core.raw.RawContainer;
+import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.RawInfo;
 import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.interfaces.Range;
@@ -53,7 +53,7 @@ public class RawDeserializer extends ACmlDeserializer {
     private static final Logger LOGGER = Logger.getLogger(CmlReader.class);
 
     // data container
-    private RawContainer msFile;
+    private FileRawContainer msFile;
 
     // Meta information
     private String fileName = "";
@@ -127,7 +127,7 @@ public class RawDeserializer extends ACmlDeserializer {
      * @throws javax.xml.stream.XMLStreamException
      *          unexpected behaviour
      */
-    public RawContainer getFile() throws XMLStreamException {
+    public FileRawContainer getFile() throws XMLStreamException {
 
         // event callbacks
         boolean isMetaDataList = false;
@@ -280,7 +280,7 @@ public class RawDeserializer extends ACmlDeserializer {
                     } else if (event.asEndElement().getName().getLocalPart().endsWith(SPECTRUMLIST)) {
                         isSpectrumList = false;
                         RawInfo rawInfo = new RawInfo(fileName, fileOwner, creationDate);
-                        msFile = new RawContainer(fileName, rawInfo, rawLevels, basePeakNumber, ticNumbers, scanNumbers,
+                        msFile = new FileRawContainer(fileName, rawInfo, rawLevels, basePeakNumber, ticNumbers, scanNumbers,
                                 dataFile);
 
                         // hack to avoid EOFException thrown by the loop condition

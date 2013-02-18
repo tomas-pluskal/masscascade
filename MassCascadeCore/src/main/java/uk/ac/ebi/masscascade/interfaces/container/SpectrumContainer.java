@@ -17,27 +17,22 @@
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package uk.ac.ebi.masscascade.interfaces;
+package uk.ac.ebi.masscascade.interfaces.container;
 
-import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.parameters.CoreTasks;
+import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
+import uk.ac.ebi.masscascade.interfaces.Spectrum;
 
-public abstract class ACallableTask implements CallableTask {
+import java.util.Iterator;
 
-    protected final Logger LOGGER;
-    protected final String IDENTIFIER;
+public interface SpectrumContainer extends Container, Iterable<Spectrum> {
 
-    public ACallableTask(Class<? extends ACallableTask> taskClass) {
+    Spectrum getSpectrum(int spectrumId);
 
-        LOGGER = Logger.getLogger(taskClass);
-        IDENTIFIER = CoreTasks.getEnumFor(taskClass).getIdentifier();
-    }
+    void addSpectrum(Spectrum spectrum);
 
-    /**
-     * Executes the task and processes the data.
-     *
-     * @return the processed mass spectrometry run
-     */
-    @Override
-    public abstract Container call();
+    boolean removeAll();
+
+    void finaliseFile();
+
+    Iterator<Spectrum> iterator();
 }

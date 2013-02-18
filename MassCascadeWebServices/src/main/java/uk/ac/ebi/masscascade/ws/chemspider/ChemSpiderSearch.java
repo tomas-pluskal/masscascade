@@ -20,10 +20,11 @@
 package uk.ac.ebi.masscascade.ws.chemspider;
 
 import org.apache.log4j.Level;
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
+import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -43,14 +44,14 @@ import java.util.concurrent.Future;
 /**
  * Class to execute a simple mz query against ChemSpider.
  */
-public class ChemSpiderSearch extends ACallableTask {
+public class ChemSpiderSearch extends CallableTask {
 
     private String token;
     private Constants.ION_MODE ionMode;
     private double massTolerance;
     private String[] databases;
     private ChemSpiderWrapper wrapper;
-    private ProfileContainer profileContainer;
+    private FileProfileContainer profileContainer;
 
     /**
      * Constructor for a ChemSpider search task.
@@ -77,7 +78,7 @@ public class ChemSpiderSearch extends ACallableTask {
         massTolerance = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         ionMode = params.get(Parameter.ION_MODE, Constants.ION_MODE.class);
         token = params.get(Parameter.SECURITY_TOKEN, String.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
     }
 
     /**
@@ -88,7 +89,7 @@ public class ChemSpiderSearch extends ACallableTask {
     public ProfileContainer call() {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outContainer = new ProfileContainer(id, profileContainer.getWorkingDirectory());
+        ProfileContainer outContainer = new FileProfileContainer(id, profileContainer.getWorkingDirectory());
 
         wrapper = new ChemSpiderWrapper();
         databases = wrapper.getMassSpecAPIGetDatabasesResults();

@@ -27,9 +27,8 @@ import org.xmlcml.cml.element.CMLPeak;
 import org.xmlcml.cml.element.CMLPeakList;
 import org.xmlcml.cml.element.CMLSpectrum;
 import org.xmlcml.cml.element.CMLSpectrumList;
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
+import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,14 +38,14 @@ public class ProfileSerializer extends ACmlSerializer {
 
     private static final Logger LOGGER = Logger.getLogger(ProfileSerializer.class);
 
-    private ProfileContainer profileContainer;
+    private FileProfileContainer profileContainer;
 
     /**
      * Constructs a serialization task.
      *
      * @param profileContainer a mass spectrometry data container
      */
-    public ProfileSerializer(ProfileContainer profileContainer) {
+    public ProfileSerializer(FileProfileContainer profileContainer) {
 
         this.profileContainer = profileContainer;
     }
@@ -91,7 +90,7 @@ public class ProfileSerializer extends ACmlSerializer {
     private CMLSpectrumList getSpectrumList() {
 
         Map<Integer, Long> peakNumbers = profileContainer.getProfileNumbers();
-        TreeMultimap<Double, Integer> peakTimes = profileContainer.getProfileTimes();
+        TreeMultimap<Double, Integer> peakTimes = profileContainer.getTimes();
 
         CMLSpectrumList cmlSpectrumList = new CMLSpectrumList();
 

@@ -19,11 +19,12 @@
 
 package uk.ac.ebi.masscascade.deconvolution;
 
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
+import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -47,7 +48,7 @@ import java.util.List;
  * <li>Parameter <code> PROFILE FILE </code>- The input profile container.</li>
  * </ul>
  */
-public class SavitzkyGolayDeconvolution extends ACallableTask {
+public class SavitzkyGolayDeconvolution extends CallableTask {
 
     // Savitzky-Golay filter width.
     private static final int SG_FILTER_LEVEL = 12;
@@ -57,7 +58,7 @@ public class SavitzkyGolayDeconvolution extends ACallableTask {
     private double intensity;
     private int profileIndex;
 
-    private ProfileContainer profileContainer;
+    private FileProfileContainer profileContainer;
 
     /**
      * Constructor for a profile deconvolution task.
@@ -84,7 +85,7 @@ public class SavitzkyGolayDeconvolution extends ACallableTask {
         width = params.get(Parameter.SCAN_WINDOW, Double.class);
         intensity = params.get(Parameter.MIN_PROFILE_INTENSITY, Double.class);
         intensityThreshold = params.get(Parameter.DERIVATIVE_THRESHOLD, Double.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
 
         profileIndex = 1;
     }
@@ -97,7 +98,7 @@ public class SavitzkyGolayDeconvolution extends ACallableTask {
     public ProfileContainer call() {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer = new ProfileContainer(id, profileContainer.getWorkingDirectory());
+        ProfileContainer outProfileContainer = new FileProfileContainer(id, profileContainer.getWorkingDirectory());
 
         Profile profile;
         XYList profileData;

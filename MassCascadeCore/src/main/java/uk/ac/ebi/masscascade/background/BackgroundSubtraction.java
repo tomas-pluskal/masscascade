@@ -20,10 +20,11 @@
 package uk.ac.ebi.masscascade.background;
 
 import com.google.common.collect.TreeMultimap;
-import uk.ac.ebi.masscascade.core.raw.RawContainer;
+import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.interfaces.Trace;
@@ -57,7 +58,7 @@ import java.util.TreeSet;
  * <li>Parameter <code> RAW CONTAINER </code>- The input raw container.</li>
  * </ul>
  */
-public class BackgroundSubtraction extends ACallableTask {
+public class BackgroundSubtraction extends CallableTask {
 
     // task variables
     private double timeWindow;
@@ -110,10 +111,10 @@ public class BackgroundSubtraction extends ACallableTask {
         timeWindow = params.get(Parameter.TIME_WINDOW, Double.class);
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         intensityScale = params.get(Parameter.SCALE_FACTOR, Double.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
 
         if (params.containsKey(Parameter.REFERENCE_RAW_CONTAINER))
-            bgRawContainer = params.get(Parameter.REFERENCE_RAW_CONTAINER, RawContainer.class);
+            bgRawContainer = params.get(Parameter.REFERENCE_RAW_CONTAINER, FileRawContainer.class);
         else if (params.containsKey(Parameter.REFERENCE_RAW_MAP))
             reference = params.get(Parameter.REFERENCE_RAW_MAP, TreeMultimap.class);
     }
@@ -130,7 +131,7 @@ public class BackgroundSubtraction extends ACallableTask {
 
         // prepares the new scan container
         String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer outRawContainer = new RawContainer(id, rawContainer);
+        RawContainer outRawContainer = new FileRawContainer(id, rawContainer);
 
         for (RawLevel level : rawContainer.getRawLevels()) {
 

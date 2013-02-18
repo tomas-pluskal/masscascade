@@ -17,14 +17,16 @@
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package uk.ac.ebi.masscascade.core.profile;
+package uk.ac.ebi.masscascade.core.file.profile;
 
 import com.google.common.collect.TreeMultimap;
 import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.core.FileManager;
-import uk.ac.ebi.masscascade.core.PropertyManager;
-import uk.ac.ebi.masscascade.interfaces.Container;
+import uk.ac.ebi.masscascade.core.file.FileContainer;
+import uk.ac.ebi.masscascade.core.file.FileManager;
+import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
+import uk.ac.ebi.masscascade.core.profile.ProfileIterator;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 
 import java.io.File;
 import java.util.*;
@@ -32,9 +34,9 @@ import java.util.*;
 /**
  * Class containing a collection of profiles.
  */
-public class ProfileContainer implements Container, Iterable<Profile> {
+public class FileProfileContainer extends FileContainer implements ProfileContainer {
 
-    private static final Logger LOGGER = Logger.getLogger(ProfileContainer.class);
+    private static final Logger LOGGER = Logger.getLogger(FileProfileContainer.class);
 
     private final String id;
 
@@ -49,7 +51,7 @@ public class ProfileContainer implements Container, Iterable<Profile> {
      * @param id               the file identifier
      * @param workingDirectory the working directory
      */
-    public ProfileContainer(String id, String workingDirectory) {
+    public FileProfileContainer(String id, String workingDirectory) {
 
         this.id = id;
 
@@ -68,7 +70,7 @@ public class ProfileContainer implements Container, Iterable<Profile> {
      * @param profileTimes  the map of retention time - profile id associations
      * @param profileNumber the map of profile id - file pointer associations
      */
-    public ProfileContainer(String id, String dataFile, TreeMultimap<Double, Integer> profileTimes,
+    public FileProfileContainer(String id, String dataFile, TreeMultimap<Double, Integer> profileTimes,
             LinkedHashMap<Integer, Long> profileNumber) {
 
         this.id = id;
@@ -84,6 +86,7 @@ public class ProfileContainer implements Container, Iterable<Profile> {
      *
      * @param profile the profile
      */
+    @Override
     public void addProfile(Profile profile) {
 
         long fileIndex = fileManager.write(profile);
@@ -97,6 +100,7 @@ public class ProfileContainer implements Container, Iterable<Profile> {
      *
      * @param profileList the profile list
      */
+    @Override
     public void addProfileList(List<Profile> profileList) {
 
         fileManager.openFile();
@@ -107,6 +111,7 @@ public class ProfileContainer implements Container, Iterable<Profile> {
     /**
      * Closes the file.
      */
+    @Override
     public void finaliseFile() {
 
         fileManager.closeFile();
@@ -117,6 +122,7 @@ public class ProfileContainer implements Container, Iterable<Profile> {
      *
      * @return the identifier
      */
+    @Override
     public String getId() {
         return id;
     }
@@ -126,7 +132,8 @@ public class ProfileContainer implements Container, Iterable<Profile> {
      *
      * @return the profile retention times.
      */
-    public TreeMultimap<Double, Integer> getProfileTimes() {
+    @Override
+    public TreeMultimap<Double, Integer> getTimes() {
         return profileTimes;
     }
 
@@ -144,6 +151,7 @@ public class ProfileContainer implements Container, Iterable<Profile> {
      *
      * @return the file manager
      */
+    @Override
     public FileManager getFileManager() {
         return fileManager;
     }
@@ -154,6 +162,7 @@ public class ProfileContainer implements Container, Iterable<Profile> {
      * @param i the profile identifier
      * @return the profile
      */
+    @Override
     public synchronized Profile getProfile(int i) {
 
         long fileIndex = -1;
@@ -183,6 +192,7 @@ public class ProfileContainer implements Container, Iterable<Profile> {
      *
      * @return the working directory
      */
+    @Override
     public String getWorkingDirectory() {
         return fileManager.getWorkingDirectory();
     }
@@ -192,8 +202,19 @@ public class ProfileContainer implements Container, Iterable<Profile> {
      *
      * @return the dta file
      */
+    @Override
     public File getDataFile() {
         return fileManager.getDataFile();
+    }
+
+    /**
+     * Returns the size of the container
+     *
+     * @return the container's size
+     */
+    @Override
+    public int size() {
+        return profileNumber.size();
     }
 
     /**
@@ -201,6 +222,7 @@ public class ProfileContainer implements Container, Iterable<Profile> {
      *
      * @return if successful
      */
+    @Override
     public boolean removeAll() {
         return fileManager.removeFile();
     }

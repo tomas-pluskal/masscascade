@@ -1,0 +1,199 @@
+/*
+ * Copyright (c) 2013, Stephan Beisken. All rights reserved.
+ *
+ * This file is part of MassCascade.
+ *
+ * MassCascade is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * MassCascade is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package uk.ac.ebi.masscascade.core.memory.profile;
+
+import com.google.common.collect.TreeMultimap;
+import org.apache.log4j.Logger;
+import uk.ac.ebi.masscascade.core.file.FileManager;
+import uk.ac.ebi.masscascade.core.memory.MemoryContainer;
+import uk.ac.ebi.masscascade.exception.MassCascadeException;
+import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+
+/**
+ * Class containing a collection of profiles.
+ */
+public class MemoryProfileContainer extends MemoryContainer implements ProfileContainer {
+
+    private static final Logger LOGGER = Logger.getLogger(MemoryProfileContainer.class);
+
+    private final String id;
+
+    private final TreeMultimap<Double, Integer> times;
+    private final LinkedHashMap<Integer, Profile> profileMap;
+
+    /**
+     * Constructs an empty profile file.
+     *
+     * @param id               the file identifier
+     * @param workingDirectory the working directory
+     */
+    public MemoryProfileContainer(String id, String workingDirectory) {
+
+        this.id = id;
+
+        times = TreeMultimap.create();
+        profileMap = new LinkedHashMap<Integer, Profile>();
+    }
+
+    /**
+     * Constructs a populated profile file.
+     *
+     * @param id            the file identifier
+     * @param dataFile      the tmp data file
+     * @param times  the map of retention time - profile id associations
+     * @param profileMap the map of profile id - file pointer associations
+     */
+    public MemoryProfileContainer(String id, String dataFile, TreeMultimap<Double, Integer> times,
+            LinkedHashMap<Integer, Profile> profileMap) {
+
+        this.id = id;
+
+        this.times = times;
+        this.profileMap = profileMap;
+    }
+
+    /**
+     * Adds a profile to the collection.
+     *
+     * @param profile the profile
+     */
+    public void addProfile(Profile profile) {
+
+        profileMap.put(profile.getId(), profile);
+        times.put(profile.getRetentionTime(), profile.getId());
+    }
+
+    /**
+     * Adds a list of profiles to the collection.
+     *
+     * @param profileList the profile list
+     */
+    public void addProfileList(List<Profile> profileList) {
+        for (Profile profile : profileList) addProfile(profile);
+    }
+
+    /**
+     * Closes the file.
+     */
+    public void finaliseFile() {
+        // nothing to do
+    }
+
+    /**
+     * Returns the identifier of the collection.
+     *
+     * @return the identifier
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * Returns the retention times of the profiles.
+     *
+     * @return the profile retention times.
+     */
+    public TreeMultimap<Double, Integer> getTimes() {
+        return times;
+    }
+
+    /**
+     * Returns the file manager.
+     *
+     * @return the file manager
+     */
+    public FileManager getFileManager() {
+        throw new MassCascadeException("Memory containers are not file based.");
+    }
+
+    /**
+     * Returns a profile by its identifier.
+     *
+     * @param i the profile identifier
+     * @return the profile
+     */
+    public Profile getProfile(int i) {
+        return profileMap.containsKey(i) ? profileMap.get(i) : null;
+    }
+
+    /**
+     * Returns the complete profile list.
+     *
+     * @return the profile list
+     */
+    public List<Profile> getProfileList() {
+        return new ArrayList<Profile>(profileMap.values());
+    }
+
+    /**
+     * Returns the current working directory.
+     *
+     * @return the working directory
+     */
+    public String getWorkingDirectory() {
+        throw new MassCascadeException("Memory containers are not file based.");
+    }
+
+    /**
+     * Returns the actual data file.
+     *
+     * @return the dta file
+     */
+    public File getDataFile() {
+        throw new MassCascadeException("Memory containers are not file based.");
+    }
+
+    /**
+     * Deletes all data from the container.
+     *
+     * @return if successful
+     */
+    public boolean removeAll() {
+        profileMap.clear();
+        times.clear();
+        return profileMap.size() == 0;
+    }
+
+    /**
+     * Gets the size of the container.
+     *
+     * @return the size
+     */
+    public int size() {
+        return profileMap.size();
+    }
+
+    /**
+     * Returns an iterator over a set of elements of type T.
+     *
+     * @return an Iterator.
+     */
+    @Override
+    public Iterator<Profile> iterator() {
+        return profileMap.values().iterator();
+    }
+}

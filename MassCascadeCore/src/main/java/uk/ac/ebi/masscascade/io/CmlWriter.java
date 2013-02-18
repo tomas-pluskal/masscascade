@@ -28,13 +28,14 @@ import org.xmlcml.cml.element.CMLSpectrumData;
 import org.xmlcml.cml.element.CMLSpectrumList;
 import org.xmlcml.cml.element.CMLXaxis;
 import org.xmlcml.cml.element.CMLYaxis;
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
-import uk.ac.ebi.masscascade.core.raw.RawContainer;
+import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
+import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.RawInfo;
 import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
-import uk.ac.ebi.masscascade.interfaces.Container;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.container.Container;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
@@ -57,9 +58,9 @@ import java.util.List;
  * <li>Parameter <code> PROFILE FILE </code>- The profile container to be saved.</li>
  * </ul>
  */
-public class CmlWriter extends ACallableTask {
+public class CmlWriter extends CallableTask {
 
-    private RawContainer rawContainer;
+    private FileRawContainer rawContainer;
     private ProfileContainer peakContainer;
     private CMLCml rootCML;
     private String path;
@@ -88,10 +89,10 @@ public class CmlWriter extends ACallableTask {
 
         path = params.get(Parameter.OUTPUT_DIRECTORY, String.class);
 
-        if (params.containsKey(Parameter.RAW_CONTAINER)) rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        if (params.containsKey(Parameter.RAW_CONTAINER)) rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
 
         if (params.containsKey(Parameter.PROFILE_CONTAINER))
-            peakContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+            peakContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
     }
 
     /**

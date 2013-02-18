@@ -20,13 +20,14 @@
 package uk.ac.ebi.masscascade.identification;
 
 import uk.ac.ebi.masscascade.core.PropertyManager;
+import uk.ac.ebi.masscascade.core.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
-import uk.ac.ebi.masscascade.core.spectrum.SpectrumContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Property;
 import uk.ac.ebi.masscascade.interfaces.Range;
+import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.properties.Adduct;
@@ -44,7 +45,7 @@ import java.util.Set;
  * <li>Parameter <code> SPECTRUM FILE </code>- The input spectrum container.</li>
  * </ul>
  */
-public class IsotopeKeeper extends ACallableTask {
+public class IsotopeKeeper extends CallableTask {
 
     private SpectrumContainer spectrumContainer;
 
@@ -70,7 +71,7 @@ public class IsotopeKeeper extends ACallableTask {
      */
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
+        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, FileSpectrumContainer.class);
     }
 
     /**
@@ -81,7 +82,8 @@ public class IsotopeKeeper extends ACallableTask {
     public SpectrumContainer call() {
 
         String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer outSpectrumContainer = new SpectrumContainer(id, spectrumContainer.getWorkingDirectory());
+        SpectrumContainer
+                outSpectrumContainer = new FileSpectrumContainer(id, spectrumContainer.getWorkingDirectory());
 
         XYList xyList;
         Range rtRange;

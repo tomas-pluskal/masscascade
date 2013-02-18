@@ -17,14 +17,15 @@
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package uk.ac.ebi.masscascade.core;
+package uk.ac.ebi.masscascade.core.file;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.google.common.collect.TreeMultimap;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import uk.ac.ebi.masscascade.core.PropertyManager;
 import uk.ac.ebi.masscascade.core.chromatogram.BasePeakChromatogram;
-import uk.ac.ebi.masscascade.core.chromatogram.ExtractedIonChromatogram;
+import uk.ac.ebi.masscascade.core.chromatogram.MassChromatogram;
 import uk.ac.ebi.masscascade.core.chromatogram.TotalIonChromatogram;
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
 import uk.ac.ebi.masscascade.core.raw.ScanImpl;
@@ -112,7 +113,7 @@ public class FileManager implements RunManager, Serializable {
         kryo.register(PseudoSpectrum.class);
         kryo.register(TotalIonChromatogram.class);
         kryo.register(BasePeakChromatogram.class);
-        kryo.register(ExtractedIonChromatogram.class);
+        kryo.register(MassChromatogram.class);
         kryo.register(ExtendableRange.class);
         kryo.register(ToleranceRange.class);
         kryo.register(MovingRange.class);

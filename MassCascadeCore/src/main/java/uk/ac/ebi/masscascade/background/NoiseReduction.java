@@ -21,11 +21,12 @@ package uk.ac.ebi.masscascade.background;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
-import uk.ac.ebi.masscascade.core.raw.RawContainer;
+import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.core.raw.ScanImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.interfaces.Trace;
 import uk.ac.ebi.masscascade.parameters.Constants;
@@ -54,7 +55,7 @@ import java.util.TreeMap;
  * <li>Parameter <code> RAW CONTAINER </code>- The input raw container.</li>
  * </ul>
  */
-public class NoiseReduction extends ACallableTask {
+public class NoiseReduction extends CallableTask {
 
     // task variables
     private int minTraceWidth;
@@ -91,7 +92,7 @@ public class NoiseReduction extends ACallableTask {
 
         minTraceWidth = params.get(Parameter.SCAN_WINDOW, Integer.class);
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
     }
 
     /**
@@ -102,7 +103,7 @@ public class NoiseReduction extends ACallableTask {
     public RawContainer call() {
 
         String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer outRawContainer = new RawContainer(id, rawContainer.getWorkingDirectory());
+        RawContainer outRawContainer = new FileRawContainer(id, rawContainer.getWorkingDirectory());
 
         Multimap<Integer, XYTrace> completedTraces = TreeMultimap.create();
 

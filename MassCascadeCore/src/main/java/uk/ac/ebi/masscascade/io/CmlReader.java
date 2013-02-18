@@ -20,10 +20,11 @@
 package uk.ac.ebi.masscascade.io;
 
 import org.apache.log4j.Level;
-import uk.ac.ebi.masscascade.core.raw.RawContainer;
+import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.ScanImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -53,7 +54,7 @@ import java.util.Iterator;
  * <li>Parameter <code> WORKING DIRECTORY </code>- The working directory.</li>
  * </ul>
  */
-public class CmlReader extends ACallableTask {
+public class CmlReader extends CallableTask {
 
     // CML element definitions
     private static final String METADATALIST = "metadataList";
@@ -385,7 +386,7 @@ public class CmlReader extends ACallableTask {
 
     private void constructFile() {
 
-        rawContainer = new RawContainer(fileName, workingDirectory);
+        rawContainer = new FileRawContainer(fileName, workingDirectory);
     }
 
     private void freeMemoryAndReset() {

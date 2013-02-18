@@ -19,10 +19,11 @@
 
 package uk.ac.ebi.masscascade.centroiding;
 
-import uk.ac.ebi.masscascade.core.raw.RawContainer;
+import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.ScanImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
@@ -42,12 +43,12 @@ import java.util.List;
  * <li>Parameter <code> RAW FILE </code>- The input raw container.</li>
  * </ul>
  */
-public class WaveletPeakPicking extends ACallableTask {
+public class WaveletPeakPicking extends CallableTask {
 
     private int scaleLevel;
     private double noiseLevel;
     private double windowSize;
-    private RawContainer rawContainer;
+    private FileRawContainer rawContainer;
 
     /**
      * Parameter of the wavelet, NPOINTS is the number of wavelet values to use
@@ -82,7 +83,7 @@ public class WaveletPeakPicking extends ACallableTask {
         noiseLevel = params.get(Parameter.NOISE_INTENSITY, Double.class);
         scaleLevel = params.get(Parameter.SCALE_FACTOR, Integer.class);
         windowSize = params.get(Parameter.WAVELET_WIDTH, Double.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
     }
 
     /**
@@ -94,7 +95,7 @@ public class WaveletPeakPicking extends ACallableTask {
 
         String id = rawContainer.getId() + IDENTIFIER;
         RawContainer outRawContainer =
-                new RawContainer(id, rawContainer.getRawInfo(), rawContainer.getWorkingDirectory());
+                new FileRawContainer(id, rawContainer.getRawInfo(), rawContainer.getWorkingDirectory());
 
         for (int level = 1; level <= rawContainer.getRawLevels().size(); level++) {
 

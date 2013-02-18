@@ -19,14 +19,15 @@
 
 package uk.ac.ebi.masscascade.distance;
 
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
+import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
+import uk.ac.ebi.masscascade.core.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
-import uk.ac.ebi.masscascade.core.spectrum.SpectrumContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
+import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
@@ -48,9 +49,9 @@ import java.util.Set;
  * <li>Parameter <code> SCAN WINDOW </code>- The approximate distance between two scans in seconds.</li>
  * </ul>
  */
-public class BiehmanSimilarity extends ACallableTask {
+public class BiehmanSimilarity extends CallableTask {
 
-    private ProfileContainer profileContainer;
+    private FileProfileContainer profileContainer;
     private SpectrumContainer spectrumContainer;
 
     private int binNumber;
@@ -80,7 +81,7 @@ public class BiehmanSimilarity extends ACallableTask {
      */
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
         binNumber = params.get(Parameter.BINS, Integer.class);
         scanDistance = params.get(Parameter.SCAN_WINDOW, Double.class);
     }
@@ -93,10 +94,10 @@ public class BiehmanSimilarity extends ACallableTask {
     public SpectrumContainer call() {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        spectrumContainer = new SpectrumContainer(id, profileContainer.getWorkingDirectory());
+        spectrumContainer = new FileSpectrumContainer(id, profileContainer.getWorkingDirectory());
 
         Range rtRange = new ExtendableRange();
-        for (double rt : profileContainer.getProfileTimes().keySet()) {
+        for (double rt : profileContainer.getTimes().keySet()) {
             rtRange.extendRange(rt);
         }
 

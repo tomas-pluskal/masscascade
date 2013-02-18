@@ -26,7 +26,7 @@ public interface Index {
      *
      * @return the callable class
      */
-    Class<? extends ACallableTask> getCallableClass();
+    Class<? extends CallableTask> getCallableClass();
 
     /**
      * Returns the abbreviated identifier.

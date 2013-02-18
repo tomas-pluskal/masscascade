@@ -21,11 +21,12 @@ package uk.ac.ebi.masscascade.ws.massbank;
 
 import org.apache.axis2.AxisFault;
 import org.apache.log4j.Level;
+import uk.ac.ebi.masscascade.core.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
-import uk.ac.ebi.masscascade.core.spectrum.SpectrumContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -46,7 +47,7 @@ import java.util.concurrent.Future;
 /**
  * Class to execute a spectrum query against MassBank.
  */
-public class MassBankSearch extends ACallableTask {
+public class MassBankSearch extends CallableTask {
 
     private int cutoff;
     private int maxNumOfResults;
@@ -88,7 +89,7 @@ public class MassBankSearch extends ACallableTask {
         instruments = params.get(Parameter.INSTRUMENTS, (new ArrayList<String>()).getClass());
         tolerance = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         maxNumOfResults = params.get(Parameter.RESULTS, Integer.class);
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
+        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, FileSpectrumContainer.class);
     }
 
     /**
@@ -99,7 +100,7 @@ public class MassBankSearch extends ACallableTask {
     public SpectrumContainer call() {
 
         String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer outContainer = new SpectrumContainer(id, spectrumContainer.getWorkingDirectory());
+        SpectrumContainer outContainer = new FileSpectrumContainer(id, spectrumContainer.getWorkingDirectory());
 
         try {
 

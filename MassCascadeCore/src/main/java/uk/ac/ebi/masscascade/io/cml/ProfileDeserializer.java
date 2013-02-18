@@ -21,7 +21,8 @@ package uk.ac.ebi.masscascade.io.cml;
 
 import com.google.common.collect.TreeMultimap;
 import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
+import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -32,12 +33,8 @@ import javax.xml.stream.events.XMLEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Class for CML-based profile deserialization.
@@ -180,7 +177,7 @@ public class ProfileDeserializer extends ACmlDeserializer {
                     } else if (event.asEndElement().getName().getLocalPart().endsWith(SPECTRUMLIST)) {
                         // hack to avoid EOFException thrown by the loop condition
                         parser.close();
-                        return new ProfileContainer(fileName, dataFile, peakTimes, peakNumbers);
+                        return new FileProfileContainer(fileName, dataFile, peakTimes, peakNumbers);
                     } else if (event.asEndElement().getName().getLocalPart().endsWith(SPECTRUM)) {
                         isSpectrum = false;
                     } else if (event.asEndElement().getName().getLocalPart().endsWith(PEAKLIST)) {
@@ -198,6 +195,6 @@ public class ProfileDeserializer extends ACmlDeserializer {
             }
         }
 
-        return new ProfileContainer(fileName, dataFile, peakTimes, peakNumbers);
+        return new FileProfileContainer(fileName, dataFile, peakTimes, peakNumbers);
     }
 }

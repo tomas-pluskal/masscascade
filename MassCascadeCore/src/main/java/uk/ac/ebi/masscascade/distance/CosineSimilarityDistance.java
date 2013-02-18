@@ -23,14 +23,15 @@ import org.jgrapht.*;
 import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
-import uk.ac.ebi.masscascade.core.profile.ProfileContainer;
+import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
+import uk.ac.ebi.masscascade.core.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
-import uk.ac.ebi.masscascade.core.spectrum.SpectrumContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.ACallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
+import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
@@ -51,9 +52,9 @@ import java.util.Set;
  * </ul>
  */
 @SuppressWarnings( "deprecation" )
-public class CosineSimilarityDistance extends ACallableTask {
+public class CosineSimilarityDistance extends CallableTask {
 
-    private ProfileContainer profileContainer;
+    private FileProfileContainer profileContainer;
     private SpectrumContainer spectrumContainer;
 
     private int bins;
@@ -83,7 +84,7 @@ public class CosineSimilarityDistance extends ACallableTask {
      */
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
         threshold = params.get(Parameter.CORRELATION_THRESHOLD, Double.class);
         bins = params.get(Parameter.BINS, Integer.class);
 
@@ -98,7 +99,7 @@ public class CosineSimilarityDistance extends ACallableTask {
     public SpectrumContainer call() {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        spectrumContainer = new SpectrumContainer(id, profileContainer.getWorkingDirectory());
+        spectrumContainer = new FileSpectrumContainer(id, profileContainer.getWorkingDirectory());
 
         correlate(profileContainer.getProfileList());
 
