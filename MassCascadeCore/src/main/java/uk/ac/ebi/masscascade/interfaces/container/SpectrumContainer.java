@@ -19,20 +19,39 @@
 
 package uk.ac.ebi.masscascade.interfaces.container;
 
-import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
 
 import java.util.Iterator;
 
+/**
+ * This is a spectrum container holding spectrum data.
+ */
 public interface SpectrumContainer extends Container, Iterable<Spectrum> {
 
+    /**
+     * Returns a spectrum by its identifier.
+     *
+     * @param spectrumId the profile identifier
+     * @return the spectrum
+     */
     Spectrum getSpectrum(int spectrumId);
 
+    /**
+     * Adds a spectrum to the collection.
+     *
+     * @param spectrum the profile
+     */
     void addSpectrum(Spectrum spectrum);
 
-    boolean removeAll();
-
+    /**
+     * Closes the file.
+     */
     void finaliseFile();
 
+    /**
+     * Returns an iterator over a set of elements of type T.
+     *
+     * @return an Iterator.
+     */
     Iterator<Spectrum> iterator();
 }

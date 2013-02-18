@@ -20,7 +20,7 @@
 package uk.ac.ebi.masscascade.interfaces;
 
 /**
- * Interface for mass spectrometry-relevant value ranges.
+ * This is a range defined by a lower and upper bound.
  */
 public interface Range extends Comparable<Range> {
 

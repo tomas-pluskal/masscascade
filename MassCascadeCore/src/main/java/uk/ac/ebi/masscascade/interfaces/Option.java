@@ -20,26 +20,26 @@
 package uk.ac.ebi.masscascade.interfaces;
 
 /**
- * Interface describing the required methods for a valid task option.
+ * This is an option describing required methods for a valid task option.
  */
 public interface Option {
 
     /**
-     * Gets the description of the option.
+     * Returns the description of the option.
      *
      * @return the description
      */
     String getDescription();
 
     /**
-     * Gets the default value of the option.
+     * Returns the default value of the option.
      *
      * @return the default value
      */
     Object getDefaultValue();
 
     /**
-     * Gets the class of the option's value.
+     * Returns the class of the option's value.
      *
      * @return the option's value
      */

@@ -19,7 +19,7 @@
 
 package uk.ac.ebi.masscascade.core.spectrum;
 
-import uk.ac.ebi.masscascade.core.file.FileManager;
+import uk.ac.ebi.masscascade.core.container.file.FileManager;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
 
 import java.util.Iterator;

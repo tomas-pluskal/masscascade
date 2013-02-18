@@ -20,35 +20,63 @@
 package uk.ac.ebi.masscascade.interfaces.container;
 
 import com.google.common.collect.TreeMultimap;
-import uk.ac.ebi.masscascade.core.file.FileManager;
+import uk.ac.ebi.masscascade.core.container.file.FileManager;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 
-import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * This is a profile container holding profile data.
+ */
 public interface ProfileContainer extends Container, Iterable<Profile> {
 
+    /**
+     * Adds a profile to the collection.
+     *
+     * @param profile the profile
+     */
     void addProfile(Profile profile);
 
+    /**
+     * Adds a list of profiles to the collection.
+     *
+     * @param profileList the profile list
+     */
     void addProfileList(List<Profile> profileList);
 
+    /**
+     * Closes the file.
+     */
     void finaliseFile();
 
-    String getId();
-
+    /**
+     * Returns the retention times of the profiles.
+     *
+     * @return the profile retention times.
+     */
     TreeMultimap<Double, Integer> getTimes();
 
+    /**
+     * Returns the file manager.
+     *
+     * @return the file manager
+     */
     FileManager getFileManager();
 
+    /**
+     * Returns a profile by its identifier.
+     *
+     * @param i the profile identifier
+     * @return the profile
+     */
     Profile getProfile(int i);
 
-    String getWorkingDirectory();
-
-    File getDataFile();
-
-    boolean removeAll();
-
+    /**
+     * Returns an iterator over a set of elements of type T.
+     *
+     * @return an Iterator.
+     */
     @Override
     Iterator<Profile> iterator();
 }

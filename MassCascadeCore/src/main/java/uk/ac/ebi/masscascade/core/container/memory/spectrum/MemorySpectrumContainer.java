@@ -17,9 +17,9 @@
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package uk.ac.ebi.masscascade.core.memory.spectrum;
+package uk.ac.ebi.masscascade.core.container.memory.spectrum;
 
-import uk.ac.ebi.masscascade.core.memory.MemoryContainer;
+import uk.ac.ebi.masscascade.core.container.memory.MemoryContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
@@ -40,7 +40,7 @@ public class MemorySpectrumContainer extends MemoryContainer implements Spectrum
     /**
      * Constructs an empty spectra file.
      *
-     * @param id               the file identifier
+     * @param id the file identifier
      */
     public MemorySpectrumContainer(String id) {
 
@@ -91,7 +91,7 @@ public class MemorySpectrumContainer extends MemoryContainer implements Spectrum
      * @param spectrumId the profile identifier
      * @return the spectrum
      */
-    public synchronized Spectrum getSpectrum(int spectrumId) {
+    public Spectrum getSpectrum(int spectrumId) {
         return (spectraMap.containsKey(spectrumId)) ? spectraMap.get(spectrumId) : null;
     }
 

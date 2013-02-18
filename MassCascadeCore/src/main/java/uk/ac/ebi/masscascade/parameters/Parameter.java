@@ -21,9 +21,9 @@ package uk.ac.ebi.masscascade.parameters;
 
 import com.google.common.collect.TreeMultimap;
 import uk.ac.ebi.masscascade.binning.MzBinning;
-import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
-import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
-import uk.ac.ebi.masscascade.core.file.spectrum.FileSpectrumContainer;
+import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
+import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
+import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.identification.AdductSingle;
 import uk.ac.ebi.masscascade.interfaces.Option;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;

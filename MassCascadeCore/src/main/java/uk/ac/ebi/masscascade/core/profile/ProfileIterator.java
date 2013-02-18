@@ -19,11 +19,10 @@
 
 package uk.ac.ebi.masscascade.core.profile;
 
-import uk.ac.ebi.masscascade.core.file.FileManager;
+import uk.ac.ebi.masscascade.core.container.file.FileManager;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 /**

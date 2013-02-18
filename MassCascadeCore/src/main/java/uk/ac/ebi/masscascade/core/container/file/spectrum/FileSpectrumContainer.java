@@ -17,13 +17,12 @@
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package uk.ac.ebi.masscascade.core.file.spectrum;
+package uk.ac.ebi.masscascade.core.container.file.spectrum;
 
-import uk.ac.ebi.masscascade.core.file.FileContainer;
-import uk.ac.ebi.masscascade.core.file.FileManager;
+import uk.ac.ebi.masscascade.core.container.file.FileContainer;
+import uk.ac.ebi.masscascade.core.container.file.FileManager;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.core.spectrum.SpectrumIterator;
-import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 
@@ -43,6 +42,15 @@ public class FileSpectrumContainer extends FileContainer implements SpectrumCont
     private final LinkedHashMap<Integer, Long> spectraMap;
 
     private final FileManager fileManager;
+
+    /**
+     * Constructs an empty spectra file.
+     *
+     * @param id the file identifier
+     */
+    public FileSpectrumContainer(String id) {
+        this(id, System.getProperty("java.io.tmpdir"));
+    }
 
     /**
      * Constructs an empty spectra file.

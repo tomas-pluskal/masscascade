@@ -24,7 +24,7 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
 /**
- * Interface for all 'raw' scans.
+ * This is a scan that is comprised of m/z-intensity data points.
  */
 public interface Scan {
 

@@ -17,10 +17,10 @@
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package uk.ac.ebi.masscascade.core.memory.raw;
+package uk.ac.ebi.masscascade.core.container.memory.raw;
 
 import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.core.memory.MemoryContainer;
+import uk.ac.ebi.masscascade.core.container.memory.MemoryContainer;
 import uk.ac.ebi.masscascade.core.chromatogram.BasePeakChromatogram;
 import uk.ac.ebi.masscascade.core.chromatogram.TotalIonChromatogram;
 import uk.ac.ebi.masscascade.core.raw.RawInfo;
@@ -243,7 +243,7 @@ public class MemoryRawContainer extends MemoryContainer implements RawContainer 
      * @return the total ion chromatogram
      */
     @Override
-    public synchronized Chromatogram getTicChromatogram(Constants.MSN msn) {
+    public Chromatogram getTicChromatogram(Constants.MSN msn) {
 
         return (tics.containsKey(msn)) ? tics.get(msn) : null;
     }

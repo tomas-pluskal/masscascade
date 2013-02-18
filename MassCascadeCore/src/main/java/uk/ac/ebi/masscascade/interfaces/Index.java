@@ -19,6 +19,9 @@
 
 package uk.ac.ebi.masscascade.interfaces;
 
+/**
+ * This is an index enumerating all available task classes that can run within the callable framework.
+ */
 public interface Index {
 
     /**

@@ -26,41 +26,41 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Interface for all extracted spectra.
+ * This is a spectrum that is comprised of a list of profiles.
  */
 public interface Spectrum extends Scan {
 
     /**
      * Adds a profile to the spectrum.
      *
-     * @param peak a profile
+     * @param profile a profile
      */
-    void addProfile(Profile peak);
+    void addProfile(Profile profile);
 
     /**
-     * Returns the rt range.
+     * Returns the retention time range.
      *
-     * @return the rt range
+     * @return the retention time range
      */
     Range getRtRange();
 
     /**
-     * Gets a profile by its identifier.
+     * Returns a profile by its identifier.
      *
-     * @param peakId an identifier
+     * @param profileId an identifier
      * @return the profile
      */
-    Profile getProfile(int peakId);
+    Profile getProfile(int profileId);
 
     /**
-     * Returns a profile map containing profile id - profile associations.
+     * Returns a profile map containing profile id to profile object associations.
      *
      * @return the profile map
      */
     Map<Integer, Profile> getProfileMap();
 
     /**
-     * Retrieves the value of the selected property.
+     * Returns the value of the selected property.
      *
      * @return the property value
      */

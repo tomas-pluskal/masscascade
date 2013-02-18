@@ -17,12 +17,15 @@
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package uk.ac.ebi.masscascade.core.memory;
+package uk.ac.ebi.masscascade.core.container.memory;
 
 import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.interfaces.container.ContainerBuilder;
 
-public class MemoryContainer {
+/**
+ * This is an abstract class that is extended by all memory-based data containers.
+ */
+public abstract class MemoryContainer {
 
     /**
      * Returns a {@link ContainerBuilder} for the data classes that extend this class.

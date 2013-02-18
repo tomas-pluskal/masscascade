@@ -21,7 +21,7 @@ package uk.ac.ebi.masscascade.io.cml;
 
 import com.google.common.collect.TreeMultimap;
 import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
+import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 
 import javax.xml.stream.XMLStreamConstants;

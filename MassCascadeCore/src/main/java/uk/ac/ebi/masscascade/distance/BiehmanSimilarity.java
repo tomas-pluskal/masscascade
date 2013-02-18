@@ -19,8 +19,8 @@
 
 package uk.ac.ebi.masscascade.distance;
 
-import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
-import uk.ac.ebi.masscascade.core.file.spectrum.FileSpectrumContainer;
+import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
+import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;

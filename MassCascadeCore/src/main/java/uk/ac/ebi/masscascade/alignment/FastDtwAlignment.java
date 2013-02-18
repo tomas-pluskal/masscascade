@@ -22,7 +22,7 @@ package uk.ac.ebi.masscascade.alignment;
 import com.dtw.FastDTW;
 import com.dtw.TimeWarpInfo;
 import com.timeseries.TimeSeries;
-import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
+import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.ScanImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;

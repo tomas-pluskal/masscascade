@@ -25,7 +25,7 @@ import uk.ac.ebi.masscascade.chartsthreed.axis.XAxisBuilder;
 import uk.ac.ebi.masscascade.chartsthreed.axis.YAxisBuilder;
 import uk.ac.ebi.masscascade.chartsthreed.axis.ZAxisBuilder;
 import uk.ac.ebi.masscascade.chartsthreed.data.Unbinned3DDataImpl;
-import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
+import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
 
 import javax.media.j3d.Group;
 import javax.media.j3d.LineArray;

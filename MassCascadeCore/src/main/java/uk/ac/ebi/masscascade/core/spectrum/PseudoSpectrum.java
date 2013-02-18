@@ -118,13 +118,13 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum, Iterable<Profi
     /**
      * Returns a profile by id.
      *
-     * @param peakId the profile identifier
+     * @param profileId the profile identifier
      * @return the profile
      */
-    public Profile getProfile(int peakId) {
+    public Profile getProfile(int profileId) {
 
-        if (profileMap.containsKey(peakId)) {
-            return profileMap.get(peakId);
+        if (profileMap.containsKey(profileId)) {
+            return profileMap.get(profileId);
         }
         return null;
     }

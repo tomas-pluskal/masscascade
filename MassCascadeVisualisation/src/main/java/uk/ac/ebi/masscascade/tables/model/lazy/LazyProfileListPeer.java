@@ -19,7 +19,7 @@
 
 package uk.ac.ebi.masscascade.tables.model.lazy;
 
-import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
+import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.tables.lazytable.util.LazyListService;

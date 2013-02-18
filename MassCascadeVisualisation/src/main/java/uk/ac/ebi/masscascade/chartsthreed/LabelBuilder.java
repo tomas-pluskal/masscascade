@@ -20,7 +20,7 @@
 package uk.ac.ebi.masscascade.chartsthreed;
 
 import org.freehep.j3d.plot.Binned2DData;
-import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
+import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 
 import javax.media.j3d.*;

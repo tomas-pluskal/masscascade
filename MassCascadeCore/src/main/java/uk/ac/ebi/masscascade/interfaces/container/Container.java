@@ -22,7 +22,7 @@ package uk.ac.ebi.masscascade.interfaces.container;
 import java.io.File;
 
 /**
- * Interface for file-based container.
+ * This is a container holding data.
  */
 public interface Container {
 

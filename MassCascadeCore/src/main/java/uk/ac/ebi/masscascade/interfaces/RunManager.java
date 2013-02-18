@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Interface for the random access file manager implementations.
+ * This is a random access file manager. It writes and reads objects to a random access file.
  */
 public interface RunManager {
 

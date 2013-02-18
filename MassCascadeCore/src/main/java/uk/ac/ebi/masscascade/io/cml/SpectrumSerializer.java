@@ -24,7 +24,7 @@ import org.xmlcml.cml.element.CMLCml;
 import org.xmlcml.cml.element.CMLMetadataList;
 import org.xmlcml.cml.element.CMLSpectrum;
 import org.xmlcml.cml.element.CMLSpectrumList;
-import uk.ac.ebi.masscascade.core.file.spectrum.FileSpectrumContainer;
+import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
 
 import java.util.Map;
 

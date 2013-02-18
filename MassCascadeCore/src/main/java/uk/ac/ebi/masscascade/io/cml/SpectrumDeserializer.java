@@ -20,7 +20,7 @@
 package uk.ac.ebi.masscascade.io.cml;
 
 import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.core.file.spectrum.FileSpectrumContainer;
+import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 
 import javax.xml.stream.XMLStreamConstants;

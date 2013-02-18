@@ -31,28 +31,88 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This is a raw container holding scan data.
+ */
 public interface RawContainer extends Container, Iterable<Scan> {
 
+    /**
+     * Adds a scan to the raw file and serializes the scan information.
+     *
+     * @param scan the scan to be added
+     */
     void addScan(Scan scan);
 
+    /**
+     * Adds a list of scans and serializes the information.
+     *
+     * @param scans the list of scans to be added
+     */
     void addScanList(List<Scan> scans);
 
+    /**
+     * Wraps up loose ends and closes the raw file construction process.
+     *
+     * @param date the creation date
+     */
     void finaliseFile(String date);
 
+    /**
+     * Returns the list of MSn information.
+     *
+     * @return the MSn information
+     */
     List<RawLevel> getRawLevels();
 
+    /**
+     * Returns the file meta info.
+     *
+     * @return the meta info
+     */
     RawInfo getRawInfo();
 
+    /**
+     * Returns the base profile chromatogram.
+     *
+     * @return the base profile chromatogram
+     */
     Chromatogram getBasePeakChromatogram();
 
+    /**
+     * Returns the total ion chromatogram of level MSn.
+     *
+     * @param msn the MSn level
+     * @return the total ion chromatogram
+     */
     Chromatogram getTicChromatogram(Constants.MSN msn);
 
+    /**
+     * Returns the scan with the given scan index.
+     *
+     * @param i the scan index
+     * @return the scan
+     */
     Scan getScan(int i);
 
+    /**
+     * Returns the parent scan -> daughter scan -> parent mass association map.
+     *
+     * @return the map
+     */
     Map<Integer, HashMap<Integer, Double>> getMSnParentDaughterMap();
 
+    /**
+     * Returns an iterator over a set of elements of type Scan.
+     *
+     * @return an Iterator.
+     */
     @Override
     Iterator<Scan> iterator();
 
+    /**
+     * Returns an iterator over a set of elements of type Scan for a given MSn level.
+     *
+     * @return an Iterator.
+     */
     Iterable<Scan> iterator(Constants.MSN msn);
 }

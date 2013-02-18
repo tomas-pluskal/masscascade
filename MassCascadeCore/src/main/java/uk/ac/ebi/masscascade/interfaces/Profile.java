@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Interface for all profile, signal, and feature implementations
+ * This is a profile that is comprised of data points defining time, m/z, and intensity values.
  */
 public interface Profile {
 

@@ -17,12 +17,15 @@
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package uk.ac.ebi.masscascade.core.file;
+package uk.ac.ebi.masscascade.core.container.file;
 
 import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.interfaces.container.ContainerBuilder;
 
-public class FileContainer {
+/**
+ * This is an abstract class that is extended by all file-based data containers.
+ */
+public abstract class FileContainer {
 
     /**
      * Returns a {@link ContainerBuilder} for the data classes that extend this class.

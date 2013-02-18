@@ -17,68 +17,62 @@
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package uk.ac.ebi.masscascade.core.file.profile;
+package uk.ac.ebi.masscascade.core.container.memory.profile;
 
 import com.google.common.collect.TreeMultimap;
 import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.core.file.FileContainer;
-import uk.ac.ebi.masscascade.core.file.FileManager;
-import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
-import uk.ac.ebi.masscascade.core.profile.ProfileIterator;
+import uk.ac.ebi.masscascade.core.container.file.FileManager;
+import uk.ac.ebi.masscascade.core.container.memory.MemoryContainer;
+import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * Class containing a collection of profiles.
  */
-public class FileProfileContainer extends FileContainer implements ProfileContainer {
+public class MemoryProfileContainer extends MemoryContainer implements ProfileContainer {
 
-    private static final Logger LOGGER = Logger.getLogger(FileProfileContainer.class);
+    private static final Logger LOGGER = Logger.getLogger(MemoryProfileContainer.class);
 
     private final String id;
 
-    private final TreeMultimap<Double, Integer> profileTimes;
-    private final LinkedHashMap<Integer, Long> profileNumber;
-
-    private final FileManager fileManager;
+    private final TreeMultimap<Double, Integer> times;
+    private final LinkedHashMap<Integer, Profile> profileMap;
 
     /**
      * Constructs an empty profile file.
      *
-     * @param id               the file identifier
-     * @param workingDirectory the working directory
+     * @param id the file identifier
      */
-    public FileProfileContainer(String id, String workingDirectory) {
+    public MemoryProfileContainer(String id) {
 
         this.id = id;
 
-        profileTimes = TreeMultimap.create();
-        profileNumber = new LinkedHashMap<Integer, Long>();
-
-        fileManager = new FileManager(workingDirectory);
-        fileManager.openFile();
+        times = TreeMultimap.create();
+        profileMap = new LinkedHashMap<Integer, Profile>();
     }
 
     /**
      * Constructs a populated profile file.
      *
-     * @param id            the file identifier
-     * @param dataFile      the tmp data file
-     * @param profileTimes  the map of retention time - profile id associations
-     * @param profileNumber the map of profile id - file pointer associations
+     * @param id         the file identifier
+     * @param dataFile   the tmp data file
+     * @param times      the map of retention time - profile id associations
+     * @param profileMap the map of profile id - file pointer associations
      */
-    public FileProfileContainer(String id, String dataFile, TreeMultimap<Double, Integer> profileTimes,
-            LinkedHashMap<Integer, Long> profileNumber) {
+    public MemoryProfileContainer(String id, String dataFile, TreeMultimap<Double, Integer> times,
+            LinkedHashMap<Integer, Profile> profileMap) {
 
         this.id = id;
 
-        this.profileTimes = profileTimes;
-        this.profileNumber = profileNumber;
-
-        fileManager = new FileManager(new File(dataFile));
+        this.times = times;
+        this.profileMap = profileMap;
     }
 
     /**
@@ -89,10 +83,8 @@ public class FileProfileContainer extends FileContainer implements ProfileContai
     @Override
     public void addProfile(Profile profile) {
 
-        long fileIndex = fileManager.write(profile);
-
-        profileNumber.put(profile.getId(), fileIndex);
-        profileTimes.put(profile.getRetentionTime(), profile.getId());
+        profileMap.put(profile.getId(), profile);
+        times.put(profile.getRetentionTime(), profile.getId());
     }
 
     /**
@@ -102,10 +94,7 @@ public class FileProfileContainer extends FileContainer implements ProfileContai
      */
     @Override
     public void addProfileList(List<Profile> profileList) {
-
-        fileManager.openFile();
         for (Profile profile : profileList) addProfile(profile);
-        fileManager.closeFile();
     }
 
     /**
@@ -113,8 +102,7 @@ public class FileProfileContainer extends FileContainer implements ProfileContai
      */
     @Override
     public void finaliseFile() {
-
-        fileManager.closeFile();
+        // nothing to do
     }
 
     /**
@@ -134,16 +122,7 @@ public class FileProfileContainer extends FileContainer implements ProfileContai
      */
     @Override
     public TreeMultimap<Double, Integer> getTimes() {
-        return profileTimes;
-    }
-
-    /**
-     * Returns the profile indices.
-     *
-     * @return the profile indices
-     */
-    public Map<Integer, Long> getProfileNumbers() {
-        return profileNumber;
+        return times;
     }
 
     /**
@@ -153,7 +132,7 @@ public class FileProfileContainer extends FileContainer implements ProfileContai
      */
     @Override
     public FileManager getFileManager() {
-        return fileManager;
+        throw new MassCascadeException("Memory containers are not file based.");
     }
 
     /**
@@ -163,14 +142,8 @@ public class FileProfileContainer extends FileContainer implements ProfileContai
      * @return the profile
      */
     @Override
-    public synchronized Profile getProfile(int i) {
-
-        long fileIndex = -1;
-        if (profileNumber.containsKey(i)) fileIndex = profileNumber.get(i);
-        if (fileIndex == -1) return null;
-        Profile profile = fileManager.read(fileIndex, ProfileImpl.class);
-
-        return profile;
+    public Profile getProfile(int i) {
+        return profileMap.containsKey(i) ? profileMap.get(i) : null;
     }
 
     /**
@@ -178,13 +151,8 @@ public class FileProfileContainer extends FileContainer implements ProfileContai
      *
      * @return the profile list
      */
-    public synchronized List<Profile> getProfileList() {
-
-        List<Profile> profileList = new ArrayList<Profile>();
-
-        for (Long l : profileNumber.values()) profileList.add(fileManager.read(l, ProfileImpl.class));
-
-        return profileList;
+    public List<Profile> getProfileList() {
+        return new ArrayList<Profile>(profileMap.values());
     }
 
     /**
@@ -194,7 +162,7 @@ public class FileProfileContainer extends FileContainer implements ProfileContai
      */
     @Override
     public String getWorkingDirectory() {
-        return fileManager.getWorkingDirectory();
+        throw new MassCascadeException("Memory containers are not file based.");
     }
 
     /**
@@ -204,17 +172,7 @@ public class FileProfileContainer extends FileContainer implements ProfileContai
      */
     @Override
     public File getDataFile() {
-        return fileManager.getDataFile();
-    }
-
-    /**
-     * Returns the size of the container
-     *
-     * @return the container's size
-     */
-    @Override
-    public int size() {
-        return profileNumber.size();
+        throw new MassCascadeException("Memory containers are not file based.");
     }
 
     /**
@@ -224,7 +182,9 @@ public class FileProfileContainer extends FileContainer implements ProfileContai
      */
     @Override
     public boolean removeAll() {
-        return fileManager.removeFile();
+        profileMap.clear();
+        times.clear();
+        return profileMap.size() == 0;
     }
 
     /**
@@ -232,8 +192,9 @@ public class FileProfileContainer extends FileContainer implements ProfileContai
      *
      * @return the size
      */
-    public int getContainerSize() {
-        return profileNumber.size();
+    @Override
+    public int size() {
+        return profileMap.size();
     }
 
     /**
@@ -243,6 +204,6 @@ public class FileProfileContainer extends FileContainer implements ProfileContai
      */
     @Override
     public Iterator<Profile> iterator() {
-        return new ProfileIterator(new ArrayList<Long>(profileNumber.values()), fileManager);
+        return profileMap.values().iterator();
     }
 }

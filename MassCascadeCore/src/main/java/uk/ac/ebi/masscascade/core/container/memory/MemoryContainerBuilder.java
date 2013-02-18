@@ -17,18 +17,21 @@
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package uk.ac.ebi.masscascade.core.memory;
+package uk.ac.ebi.masscascade.core.container.memory;
 
 import uk.ac.ebi.masscascade.core.ContainerFactory;
-import uk.ac.ebi.masscascade.core.memory.profile.MemoryProfileContainer;
-import uk.ac.ebi.masscascade.core.memory.raw.MemoryRawContainer;
-import uk.ac.ebi.masscascade.core.memory.spectrum.MemorySpectrumContainer;
+import uk.ac.ebi.masscascade.core.container.memory.profile.MemoryProfileContainer;
+import uk.ac.ebi.masscascade.core.container.memory.raw.MemoryRawContainer;
+import uk.ac.ebi.masscascade.core.container.memory.spectrum.MemorySpectrumContainer;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.interfaces.container.ContainerBuilder;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 
+/**
+ * A factory class to provide implementation independent <code> MemoryContainer </code>.
+ */
 public class MemoryContainerBuilder implements ContainerBuilder {
 
     private static ContainerBuilder instance = null;

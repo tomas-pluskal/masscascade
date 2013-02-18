@@ -19,6 +19,9 @@
 
 package uk.ac.ebi.masscascade.interfaces;
 
+/**
+ * This is a mass chromatographic trace.
+ */
 public interface Trace extends Comparable<Trace> {
 
     /**
@@ -36,9 +39,9 @@ public interface Trace extends Comparable<Trace> {
     int size();
 
     /**
-     * Returns the m/z average of the trace.
+     * Returns the average value of the trace.
      *
-     * @return the m/z average
+     * @return the average value
      */
     double getAvg();
 }

@@ -17,11 +17,11 @@
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package uk.ac.ebi.masscascade.core.file.raw;
+package uk.ac.ebi.masscascade.core.container.file.raw;
 
 import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.core.file.FileContainer;
-import uk.ac.ebi.masscascade.core.file.FileManager;
+import uk.ac.ebi.masscascade.core.container.file.FileContainer;
+import uk.ac.ebi.masscascade.core.container.file.FileManager;
 import uk.ac.ebi.masscascade.core.chromatogram.BasePeakChromatogram;
 import uk.ac.ebi.masscascade.core.chromatogram.TotalIonChromatogram;
 import uk.ac.ebi.masscascade.core.raw.RawInfo;
@@ -69,6 +69,15 @@ public class FileRawContainer extends FileContainer implements RawContainer {
      * Constructs an empty mass spec raw file.
      *
      * @param id               the file identifier
+     */
+    public FileRawContainer(String id) {
+        this(id, System.getProperty("java.io.tmpdir"));
+    }
+
+    /**
+     * Constructs an empty mass spec raw file.
+     *
+     * @param id               the file identifier
      * @param workingDirectory the working directory
      */
     public FileRawContainer(String id, String workingDirectory) {
@@ -90,23 +99,12 @@ public class FileRawContainer extends FileContainer implements RawContainer {
     /**
      * Constructs an empty mass spec raw file.
      *
-     * @param id               the file identifier
-     * @param rawInfo          the raw file info container
-     * @param workingDirectory the working directory
-     */
-    public FileRawContainer(String id, RawInfo rawInfo, String workingDirectory) {
-        this(id, workingDirectory);
-        this.rawInfo = rawInfo;
-    }
-
-    /**
-     * Constructs an empty mass spec raw file.
-     *
      * @param id           the file identifier
      * @param oldContainer the old raw container
      */
     public FileRawContainer(String id, RawContainer oldContainer) {
-        this(id, oldContainer.getRawInfo(), oldContainer.getWorkingDirectory());
+        this(id, oldContainer.getWorkingDirectory());
+        this.rawInfo = oldContainer.getRawInfo();
     }
 
     /**

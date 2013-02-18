@@ -23,6 +23,9 @@ import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.parameters.CoreTasks;
 
+/**
+ * This is a callable task stub that instantiates the logging facility and retrieves the task identifier.
+ */
 public abstract class CallableTask implements Task {
 
     protected final Logger LOGGER;

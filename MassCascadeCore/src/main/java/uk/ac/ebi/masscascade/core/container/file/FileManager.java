@@ -17,7 +17,7 @@
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package uk.ac.ebi.masscascade.core.file;
+package uk.ac.ebi.masscascade.core.container.file;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.google.common.collect.TreeMultimap;

@@ -17,12 +17,12 @@
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package uk.ac.ebi.masscascade.core.file;
+package uk.ac.ebi.masscascade.core.container.file;
 
 import uk.ac.ebi.masscascade.core.ContainerFactory;
-import uk.ac.ebi.masscascade.core.file.profile.FileProfileContainer;
-import uk.ac.ebi.masscascade.core.file.raw.FileRawContainer;
-import uk.ac.ebi.masscascade.core.file.spectrum.FileSpectrumContainer;
+import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
+import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
+import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.interfaces.container.ContainerBuilder;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
@@ -30,7 +30,7 @@ import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 
 /**
- * A factory class to provide implementation independent <code> MemoryContainer </code>.
+ * A factory class to provide implementation independent <code> FileContainer </code>.
  */
 public class FileContainerBuilder implements ContainerBuilder {
 

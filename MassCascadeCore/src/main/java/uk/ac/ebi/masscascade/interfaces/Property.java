@@ -22,7 +22,7 @@ package uk.ac.ebi.masscascade.interfaces;
 import uk.ac.ebi.masscascade.core.PropertyManager;
 
 /**
- * Interface for property classes.
+ * This is a property that characterises objects.
  */
 public interface Property {
 
