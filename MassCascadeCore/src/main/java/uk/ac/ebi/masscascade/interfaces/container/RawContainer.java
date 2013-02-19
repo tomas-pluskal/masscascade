@@ -102,6 +102,14 @@ public interface RawContainer extends Container, Iterable<Scan> {
     Map<Integer, HashMap<Integer, Double>> getMSnParentDaughterMap();
 
     /**
+     * Returns the scan with the given array index.
+     *
+     * @param i the array index
+     * @return the scan at the index
+     */
+    Scan getScanByIndex(int i);
+
+    /**
      * Returns an iterator over a set of elements of type Scan.
      *
      * @return an Iterator.

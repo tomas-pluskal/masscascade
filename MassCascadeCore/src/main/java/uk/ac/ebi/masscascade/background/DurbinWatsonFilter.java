@@ -60,7 +60,7 @@ public class DurbinWatsonFilter extends CallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         dwThreshold = params.get(Parameter.DURBIN, Double.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
     }
 
     /**
@@ -69,10 +69,12 @@ public class DurbinWatsonFilter extends CallableTask {
      * @return the profile container
      * @throws Exception unexptected behaviour
      */
+    @Override
     public ProfileContainer call() {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer = new FileProfileContainer(id, profileContainer.getWorkingDirectory());
+        ProfileContainer outProfileContainer = profileContainer.getBuilder().newInstance(ProfileContainer.class, id,
+                profileContainer.getWorkingDirectory());
 
         for (Profile profile : profileContainer) {
             double dw = getDurbinWatson(profile.getData());

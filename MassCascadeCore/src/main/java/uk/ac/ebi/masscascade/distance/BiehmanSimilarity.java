@@ -27,6 +27,7 @@ import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -51,7 +52,7 @@ import java.util.Set;
  */
 public class BiehmanSimilarity extends CallableTask {
 
-    private FileProfileContainer profileContainer;
+    private ProfileContainer profileContainer;
     private SpectrumContainer spectrumContainer;
 
     private int binNumber;
@@ -81,7 +82,7 @@ public class BiehmanSimilarity extends CallableTask {
      */
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
         binNumber = params.get(Parameter.BINS, Integer.class);
         scanDistance = params.get(Parameter.SCAN_WINDOW, Double.class);
     }
@@ -91,24 +92,24 @@ public class BiehmanSimilarity extends CallableTask {
      *
      * @return the trace container
      */
+    @Override
     public SpectrumContainer call() {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        spectrumContainer = new FileSpectrumContainer(id, profileContainer.getWorkingDirectory());
+        spectrumContainer = profileContainer.getBuilder().newInstance(SpectrumContainer.class, id,
+                profileContainer.getWorkingDirectory());
 
         Range rtRange = new ExtendableRange();
-        for (double rt : profileContainer.getTimes().keySet()) {
-            rtRange.extendRange(rt);
-        }
+        for (double rt : profileContainer.getTimes().keySet()) rtRange.extendRange(rt);
 
         double binWidth = scanDistance / binNumber;
         int noOfBins = (int) (rtRange.getSize() / binWidth) + 1;
         Bin[] bins = new Bin[noOfBins];
 
-        Profile profile;
-        for (int profileId : profileContainer.getProfileNumbers().keySet()) {
+        Set<Integer> allProfileIds = new HashSet<Integer>();
 
-            profile = profileContainer.getProfile(profileId);
+        for (Profile profile : profileContainer) {
+            allProfileIds.add(profile.getId());
             XYList profileData = profile.getTrace().getData();
 
             int traceMax = -1;
@@ -149,8 +150,6 @@ public class BiehmanSimilarity extends CallableTask {
                 bins[binIndex].add((sharpnessMaxL + sharpnessMaxR) / 2d, profile.getId());
             }
         }
-
-        Set<Integer> allProfileIds = new HashSet<Integer>(profileContainer.getProfileNumbers().keySet());
 
         int index = 1;
         boolean isComponent = false;
@@ -204,6 +203,7 @@ public class BiehmanSimilarity extends CallableTask {
                 if (bins[i - 1] != null) tmpIds.addAll(bins[i - 1].getProfileIds());
                 if (bins[i + 1] != null) tmpIds.addAll(bins[i + 1].getProfileIds());
 
+                Profile profile;
                 for (int profileId : tmpIds) {
                     profile = profileContainer.getProfile(profileId);
                     profileSet.add(profile);
@@ -223,6 +223,7 @@ public class BiehmanSimilarity extends CallableTask {
             }
         }
 
+        Profile profile;
         for (int profileId : allProfileIds) {
 
             profile = profileContainer.getProfile(profileId);

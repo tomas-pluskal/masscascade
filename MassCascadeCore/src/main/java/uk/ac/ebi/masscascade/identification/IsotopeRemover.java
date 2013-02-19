@@ -72,7 +72,7 @@ public class IsotopeRemover extends CallableTask {
      */
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, FileSpectrumContainer.class);
+        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
     }
 
     /**
@@ -80,11 +80,12 @@ public class IsotopeRemover extends CallableTask {
      *
      * @return the deisotoped peak collection
      */
+    @Override
     public SpectrumContainer call() {
 
         String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer
-                outSpectrumContainer = new FileSpectrumContainer(id, spectrumContainer.getWorkingDirectory());
+        SpectrumContainer outSpectrumContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
+                spectrumContainer.getWorkingDirectory());
 
         XYList xyList;
         Range rtRange;
@@ -112,8 +113,7 @@ public class IsotopeRemover extends CallableTask {
                 }
             }
             outSpectrumContainer.addSpectrum(
-                    new PseudoSpectrum(spectrum.getIndex(), xyList, rtRange, spectrum.getRetentionTime(),
-                            profileSet));
+                    new PseudoSpectrum(spectrum.getIndex(), xyList, rtRange, spectrum.getRetentionTime(), profileSet));
         }
 
         outSpectrumContainer.finaliseFile();

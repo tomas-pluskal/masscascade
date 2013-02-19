@@ -20,6 +20,7 @@
 package uk.ac.ebi.masscascade.binning;
 
 import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
+import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
@@ -38,7 +39,7 @@ import uk.ac.ebi.masscascade.parameters.ParameterMap;
  */
 public class MzFileBinning extends CallableTask {
 
-    private FileRawContainer rawContainer;
+    private RawContainer rawContainer;
 
     private double xWidth;
     private MzBinning.BinningType binType;
@@ -67,7 +68,7 @@ public class MzFileBinning extends CallableTask {
 
         this.xWidth = params.get(Parameter.MZ_WINDOW_AMU, Double.class);
         this.binType = params.get(Parameter.AGGREGATION, MzBinning.BinningType.class);
-        this.rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
+        this.rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
     }
 
     /**
@@ -75,27 +76,25 @@ public class MzFileBinning extends CallableTask {
      *
      * @return the processed sample file
      */
+    @Override
     public RawContainer call() {
 
         String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer outRawContainer =
-                new FileRawContainer(id, rawContainer);
+        RawContainer outRawContainer = rawContainer.getBuilder().newInstance(RawContainer.class, id, rawContainer);
 
-        Scan scan;
         Scan binnedScan;
         MzBinning binImpl;
 
-        for (int level = Constants.MSN.MS1.getLvl(); level <= rawContainer.getRawLevels().size(); level++) {
+        for (RawLevel level : rawContainer.getRawLevels()) {
 
-            for (int number : rawContainer.getScanNumbers(Constants.MSN.get(level)).keySet()) {
-                scan = rawContainer.getScan(number);
-                binImpl = new MzBinning(scan, xWidth, binType);
-                binnedScan = binImpl.call();
-                outRawContainer.addScan(binnedScan);
-
-                scan = null;
-                binImpl = null;
-                binnedScan = null;
+            if (level.getMsn() == Constants.MSN.MS1) {
+                for (Scan scan : rawContainer) {
+                    binImpl = new MzBinning(scan, xWidth, binType);
+                    binnedScan = binImpl.call();
+                    outRawContainer.addScan(binnedScan);
+                    binImpl = null;
+                    binnedScan = null;
+                }
             }
         }
 

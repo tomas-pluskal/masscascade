@@ -92,7 +92,7 @@ public class CmlWriter extends CallableTask {
         if (params.containsKey(Parameter.RAW_CONTAINER)) rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
 
         if (params.containsKey(Parameter.PROFILE_CONTAINER))
-            peakContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
+            peakContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
     }
 
     /**
@@ -100,6 +100,7 @@ public class CmlWriter extends CallableTask {
      *
      * @return the cml container
      */
+    @Override
     public Container call() {
 
         // HEADER

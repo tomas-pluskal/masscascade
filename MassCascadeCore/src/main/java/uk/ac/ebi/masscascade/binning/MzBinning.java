@@ -64,6 +64,7 @@ public class MzBinning implements Callable<Scan> {
      * @return the binned scan
      * @throws Exception unexpected behaviour
      */
+    @Override
     public Scan call() {
 
         Range mzRange = scan.getMzRange();

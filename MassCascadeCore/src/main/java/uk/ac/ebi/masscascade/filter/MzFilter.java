@@ -74,7 +74,7 @@ public class MzFilter extends CallableTask {
 
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         mzForRemoval = params.get(Parameter.MZ_FOR_REMOVAL, (new TreeSet<Double>()).getClass());
-        sampleContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
+        sampleContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
 
         mzRanges = new HashMap<Double, Range>();
         for (double mz : mzForRemoval)
@@ -86,10 +86,12 @@ public class MzFilter extends CallableTask {
      *
      * @return the filtered profile collection
      */
+    @Override
     public ProfileContainer call() {
 
         String id = sampleContainer.getId() + IDENTIFIER;
-        ProfileContainer profileContainer = new FileProfileContainer(id, sampleContainer.getWorkingDirectory());
+        ProfileContainer profileContainer = sampleContainer.getBuilder().newInstance(ProfileContainer.class, id,
+                sampleContainer.getWorkingDirectory());
 
         for (Profile profile : sampleContainer) {
 

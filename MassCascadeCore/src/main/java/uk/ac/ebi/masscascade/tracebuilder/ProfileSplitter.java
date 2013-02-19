@@ -67,7 +67,7 @@ public class ProfileSplitter extends CallableTask {
      */
     private void setParameters(ParameterMap params) throws MassCascadeException {
 
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
     }
 
     /**
@@ -75,10 +75,12 @@ public class ProfileSplitter extends CallableTask {
      *
      * @return the mass spec profile container
      */
+    @Override
     public ProfileContainer call() {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        outProfileContainer = new FileProfileContainer(id, profileContainer.getWorkingDirectory());
+        outProfileContainer = profileContainer.getBuilder().newInstance(ProfileContainer.class, id,
+                profileContainer.getWorkingDirectory());
 
         for (Profile profile : profileContainer) extractTraces(profile);
 

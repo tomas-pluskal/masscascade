@@ -74,7 +74,7 @@ public class ScanFilter extends CallableTask {
 
         massRange = params.get(Parameter.MZ_RANGE, ExtendableRange.class);
         timeRange = params.get(Parameter.TIME_RANGE, ExtendableRange.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
     }
 
     /**
@@ -82,10 +82,11 @@ public class ScanFilter extends CallableTask {
      *
      * @return the filtered scan collection
      */
+    @Override
     public Container call() {
 
         String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer outRawContainer = new FileRawContainer(id, rawContainer);
+        RawContainer outRawContainer = rawContainer.getBuilder().newInstance(RawContainer.class, id, rawContainer);
 
         for (RawLevel level : rawContainer.getRawLevels()) {
 

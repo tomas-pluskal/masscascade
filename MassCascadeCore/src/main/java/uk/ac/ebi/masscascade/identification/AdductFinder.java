@@ -67,7 +67,7 @@ public class AdductFinder extends CallableTask {
      */
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, FileSpectrumContainer.class);
+        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
         adductDetector = new AdductDetector(params.get(Parameter.MZ_WINDOW_PPM, Double.class),
                 params.get(Parameter.ION_MODE, Constants.ION_MODE.class));
         adductDetector.setAdductList(params.get(Parameter.ADDUCT_LIST, (new ArrayList<AdductSingle>()).getClass()));
@@ -78,14 +78,14 @@ public class AdductFinder extends CallableTask {
      *
      * @return the isotope-detected profiles
      */
+    @Override
     public SpectrumContainer call() {
 
         String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer
-                outSpectrumContainer = new FileSpectrumContainer(id, spectrumContainer.getWorkingDirectory());
+        SpectrumContainer outSpectrumContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
+                spectrumContainer.getWorkingDirectory());
 
         for (Spectrum spectrum : spectrumContainer) {
-
             adductDetector.findAdducts(((PseudoSpectrum) spectrum).getProfileList());
             outSpectrumContainer.addSpectrum(spectrum);
         }

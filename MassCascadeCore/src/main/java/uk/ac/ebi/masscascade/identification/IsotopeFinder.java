@@ -78,7 +78,7 @@ public class IsotopeFinder extends CallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         massTolerance = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, FileSpectrumContainer.class);
+        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
     }
 
     /**
@@ -86,16 +86,16 @@ public class IsotopeFinder extends CallableTask {
      *
      * @return the isotope-detected peaks
      */
+    @Override
     public SpectrumContainer call() {
 
         String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer
-                outSpectrumContainer = new FileSpectrumContainer(id, spectrumContainer.getWorkingDirectory());
+        SpectrumContainer outSpectrumContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
+                spectrumContainer.getWorkingDirectory());
 
         IsotopeDetector isotopeDetector = new IsotopeDetector(CHARGE, massTolerance);
 
         for (Spectrum spectrum : spectrumContainer) {
-
             isotopeDetector.findIsotopes(spectrum);
             outSpectrumContainer.addSpectrum(spectrum);
         }

@@ -46,27 +46,22 @@ public class AdductSingle {
     }
 
     public String getName() {
-
         return name;
     }
 
     public double getMass() {
-
         return mass;
     }
 
     public int getCharge() {
-
         return charge;
     }
 
     public boolean isCluster() {
-
         return cluster;
     }
 
     public int getClusterSize() {
-
         return clusterSize;
     }
 }

@@ -62,7 +62,7 @@ public class BiehmanDeconvolution extends CallableTask {
 
     private int profileId;
 
-    private FileProfileContainer profileContainer;
+    private ProfileContainer profileContainer;
     private NoiseEstimation noiseEstimation;
 
     /**
@@ -89,7 +89,7 @@ public class BiehmanDeconvolution extends CallableTask {
 
         scanWindow = (params.get(Parameter.SCAN_WINDOW, Integer.class)) / 2;
         center = params.get(Parameter.CENTER, Boolean.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
 
         noiseEstimation = new NoiseEstimation();
         noiseEstimate = 0;
@@ -103,14 +103,12 @@ public class BiehmanDeconvolution extends CallableTask {
     public ProfileContainer call() {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer = new FileProfileContainer(id, profileContainer.getWorkingDirectory());
+        ProfileContainer outProfileContainer = profileContainer.getBuilder().newInstance(ProfileContainer.class, id,
+                profileContainer.getWorkingDirectory());
 
         profileId = 1;
 
-        Profile profile;
-        for (int profileId : profileContainer.getProfileNumbers().keySet()) {
-
-            profile = profileContainer.getProfile(profileId);
+        for (Profile profile  : profileContainer) {
 
             if (profile.getMzData().size() < MIN_SIZE) continue;
             if (isNoise(profile.getTrace().getData())) continue;

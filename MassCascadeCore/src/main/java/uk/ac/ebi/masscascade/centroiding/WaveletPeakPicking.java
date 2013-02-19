@@ -20,6 +20,7 @@
 package uk.ac.ebi.masscascade.centroiding;
 
 import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
+import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.core.raw.ScanImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
@@ -48,7 +49,7 @@ public class WaveletPeakPicking extends CallableTask {
     private int scaleLevel;
     private double noiseLevel;
     private double windowSize;
-    private FileRawContainer rawContainer;
+    private RawContainer rawContainer;
 
     /**
      * Parameter of the wavelet, NPOINTS is the number of wavelet values to use
@@ -83,7 +84,7 @@ public class WaveletPeakPicking extends CallableTask {
         noiseLevel = params.get(Parameter.NOISE_INTENSITY, Double.class);
         scaleLevel = params.get(Parameter.SCALE_FACTOR, Integer.class);
         windowSize = params.get(Parameter.WAVELET_WIDTH, Double.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
     }
 
     /**
@@ -91,23 +92,22 @@ public class WaveletPeakPicking extends CallableTask {
      *
      * @return the mass detected mass spec sample
      */
+    @Override
     public RawContainer call() {
 
         String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer outRawContainer = new FileRawContainer(id, rawContainer);
+        RawContainer outRawContainer = rawContainer.getBuilder().newInstance(RawContainer.class, id, rawContainer);
 
-        for (int level = 1; level <= rawContainer.getRawLevels().size(); level++) {
+        for (RawLevel level : rawContainer.getRawLevels()) {
 
-            Scan scan;
             List<XYPoint> dataDataPoints;
             XYList processedData;
             List<XYPoint> waveletDataPoints;
 
-            if (level == Constants.MSN.MS1.getLvl()) {
+            if (level.getMsn() == Constants.MSN.MS1) {
 
-                for (int number : rawContainer.getScanNumbers(Constants.MSN.MS1).keySet()) {
+                for (Scan scan : rawContainer) {
 
-                    scan = rawContainer.getScan(number);
                     dataDataPoints = scan.getData();
                     processedData = new XYList();
 
@@ -201,12 +201,7 @@ public class WaveletPeakPicking extends CallableTask {
                                     scan.getParentMz()));
                 }
             } else {
-
-                for (int number : rawContainer.getScanNumbers(Constants.MSN.get(level)).keySet()) {
-
-                    scan = rawContainer.getScan(number);
-                    outRawContainer.addScan(scan);
-                }
+                for (Scan scan : rawContainer.iterator(level.getMsn())) outRawContainer.addScan(scan);
             }
         }
 

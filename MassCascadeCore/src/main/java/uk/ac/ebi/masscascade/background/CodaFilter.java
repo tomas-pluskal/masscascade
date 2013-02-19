@@ -63,7 +63,7 @@ public class CodaFilter extends CallableTask {
 
         mcqThreshold = params.get(Parameter.CODA, Double.class);
         windowSize = params.get(Parameter.DATA_WINDOW, Integer.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
     }
 
     /**
@@ -72,10 +72,12 @@ public class CodaFilter extends CallableTask {
      * @return the profile container
      * @throws Exception unexptected behaviour
      */
+    @Override
     public ProfileContainer call() {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer = new FileProfileContainer(id, profileContainer.getWorkingDirectory());
+        ProfileContainer outProfileContainer =
+                profileContainer.getBuilder().newInstance(ProfileContainer.class, id, profileContainer);
 
         for (Profile profile : profileContainer) {
             double mcq = getMCQ(profile.getData());
@@ -117,7 +119,7 @@ public class CodaFilter extends CallableTask {
             mean += delta / n;
             m2 += delta * (intensity - mean);
 
-            intensities[i-1] = intensity;
+            intensities[i - 1] = intensity;
         }
 
         for (int i = data.size() - windowSize; i < data.size() - 1; i++) scaleFactor += data.get(i).z * data.get(i).z;

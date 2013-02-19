@@ -51,7 +51,7 @@ public class SplineFilling extends CallableTask {
     // minimum number of scans (data points in XIC) for valid min. scan time estimation
     private static final double MIN_ESTIMATE = 5;
 
-    private FileProfileContainer profileFile;
+    private ProfileContainer profileFile;
     private ProfileContainer profileRun;
 
     private SplineInterpolator interpolator;
@@ -61,7 +61,7 @@ public class SplineFilling extends CallableTask {
      *
      * @param profileFile the compiled profile data
      */
-    public SplineFilling(double timeFactor, FileProfileContainer profileFile) {
+    public SplineFilling(double timeFactor, ProfileContainer profileFile) {
 
         super(SplineFilling.class);
 
@@ -93,7 +93,7 @@ public class SplineFilling extends CallableTask {
      */
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        profileFile = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
+        profileFile = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
         interpolator = new SplineInterpolator();
     }
 
@@ -102,17 +102,14 @@ public class SplineFilling extends CallableTask {
      *
      * @return the gap-filled mass spec profile list
      */
+    @Override
     public ProfileContainer call() {
 
         String id = profileFile.getId() + IDENTIFIER;
-        profileRun = new FileProfileContainer(id, profileFile.getWorkingDirectory());
+        profileRun =
+                profileFile.getBuilder().newInstance(ProfileContainer.class, id, profileFile.getWorkingDirectory());
 
-        Profile profile;
-        for (int peakNo : profileFile.getProfileNumbers().keySet()) {
-
-            profile = profileFile.getProfile(peakNo);
-            gapFillPeak(profile);
-        }
+        for (Profile profile : profileFile) gapFillPeak(profile);
 
         profileRun.finaliseFile();
         return profileRun;

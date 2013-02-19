@@ -111,10 +111,10 @@ public class BackgroundSubtraction extends CallableTask {
         timeWindow = params.get(Parameter.TIME_WINDOW, Double.class);
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         intensityScale = params.get(Parameter.SCALE_FACTOR, Double.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
 
         if (params.containsKey(Parameter.REFERENCE_RAW_CONTAINER))
-            bgRawContainer = params.get(Parameter.REFERENCE_RAW_CONTAINER, FileRawContainer.class);
+            bgRawContainer = params.get(Parameter.REFERENCE_RAW_CONTAINER, RawContainer.class);
         else if (params.containsKey(Parameter.REFERENCE_RAW_MAP))
             reference = params.get(Parameter.REFERENCE_RAW_MAP, TreeMultimap.class);
     }
@@ -132,7 +132,7 @@ public class BackgroundSubtraction extends CallableTask {
 
         // prepares the new scan container
         String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer outRawContainer = new FileRawContainer(id, rawContainer);
+        RawContainer outRawContainer = rawContainer.getBuilder().newInstance(RawContainer.class, id, rawContainer);
 
         for (RawLevel level : rawContainer.getRawLevels()) {
 

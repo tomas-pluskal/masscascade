@@ -31,6 +31,7 @@ import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -51,10 +52,10 @@ import java.util.Set;
  * <li>Parameter <code> PROFILE FILE </code>- The input profile container.</li>
  * </ul>
  */
-@SuppressWarnings( "deprecation" )
+@SuppressWarnings("deprecation")
 public class CosineSimilarityDistance extends CallableTask {
 
-    private FileProfileContainer profileContainer;
+    private ProfileContainer profileContainer;
     private SpectrumContainer spectrumContainer;
 
     private int bins;
@@ -84,7 +85,7 @@ public class CosineSimilarityDistance extends CallableTask {
      */
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
         threshold = params.get(Parameter.CORRELATION_THRESHOLD, Double.class);
         bins = params.get(Parameter.BINS, Integer.class);
 
@@ -96,10 +97,12 @@ public class CosineSimilarityDistance extends CallableTask {
      *
      * @return the trace container
      */
+    @Override
     public SpectrumContainer call() {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        spectrumContainer = new FileSpectrumContainer(id, profileContainer.getWorkingDirectory());
+        spectrumContainer = profileContainer.getBuilder().newInstance(SpectrumContainer.class, id,
+                profileContainer.getWorkingDirectory());
 
         correlate(profileContainer.getProfileList());
 
@@ -113,7 +116,7 @@ public class CosineSimilarityDistance extends CallableTask {
      *
      * @param profileList the list of profiles
      */
-    @SuppressWarnings( "deprecation" )
+    @SuppressWarnings("deprecation")
     public void correlate(List<Profile> profileList) {
 
         double vectorDistance;

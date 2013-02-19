@@ -71,7 +71,7 @@ public class SavitzkyGolaySmoothing extends CallableTask {
         order = params.get(Parameter.POLYNOMIAL_ORDER, Integer.class);
         mzWindow = params.get(Parameter.DATA_WINDOW, Integer.class);
         msn = params.get(Parameter.MS_LEVEL, Constants.MSN.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
     }
 
     /**
@@ -79,6 +79,7 @@ public class SavitzkyGolaySmoothing extends CallableTask {
      *
      * @return the smoothed mass spec profile
      */
+    @Override
     public ProfileContainer call() {
 
         int nLDp = (int) Math.floor(mzWindow / 2d);
@@ -88,7 +89,8 @@ public class SavitzkyGolaySmoothing extends CallableTask {
         SavitzkyGolayFilter sgFilter = new SavitzkyGolayFilter(nLDp, nRDp);
 
         String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer = new FileProfileContainer(id, profileContainer.getWorkingDirectory());
+        ProfileContainer outProfileContainer = profileContainer.getBuilder().newInstance(ProfileContainer.class, id,
+                profileContainer.getWorkingDirectory());
 
         double[] y;
         double[] smoothedY;

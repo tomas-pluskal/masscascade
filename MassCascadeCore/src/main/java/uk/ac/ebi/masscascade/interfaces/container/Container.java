@@ -19,7 +19,10 @@
 
 package uk.ac.ebi.masscascade.interfaces.container;
 
+import uk.ac.ebi.masscascade.interfaces.Profile;
+
 import java.io.File;
+import java.util.List;
 
 /**
  * This is a container holding data.

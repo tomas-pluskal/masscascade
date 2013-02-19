@@ -73,7 +73,7 @@ public class ProfileFilter extends CallableTask {
         timeRange = params.get(Parameter.TIME_RANGE, ExtendableRange.class);
         profileWidthRange = params.get(Parameter.PROFILE_RANGE, ExtendableRange.class);
         minIntensity = params.get(Parameter.MIN_PROFILE_INTENSITY, Double.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
     }
 
     /**
@@ -81,18 +81,19 @@ public class ProfileFilter extends CallableTask {
      *
      * @return the filtered profile collection
      */
+    @Override
     public ProfileContainer call() {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer = new FileProfileContainer(id, profileContainer.getWorkingDirectory());
+        ProfileContainer outProfileContainer = profileContainer.getBuilder().newInstance(ProfileContainer.class, id,
+                profileContainer.getWorkingDirectory());
 
         for (Profile profile : profileContainer) {
 
             if (timeRange.contains(profile.getRetentionTime()) &&
                     mzRange.contains(profile.getMz()) &&
                     profileWidthRange.contains(profile.getData().size() - 2) &&
-                    profile.getIntensity() >= minIntensity)
-                outProfileContainer.addProfile(profile);
+                    profile.getIntensity() >= minIntensity) outProfileContainer.addProfile(profile);
         }
         outProfileContainer.finaliseFile();
 

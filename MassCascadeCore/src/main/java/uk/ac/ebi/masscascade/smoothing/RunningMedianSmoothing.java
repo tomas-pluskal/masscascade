@@ -50,7 +50,7 @@ public class RunningMedianSmoothing extends CallableTask {
     private Queue<Double> window = new LinkedList<Double>();
     private int mzWindow;
     private Constants.MSN msn;
-    private FileRawContainer rawContainer;
+    private RawContainer rawContainer;
 
     /**
      * Constructs a running median smoother task.
@@ -76,7 +76,7 @@ public class RunningMedianSmoothing extends CallableTask {
 
         mzWindow = params.get(Parameter.DATA_WINDOW, Integer.class);
         msn = params.get(Parameter.MS_LEVEL, Constants.MSN.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
     }
 
     /**
@@ -117,20 +117,18 @@ public class RunningMedianSmoothing extends CallableTask {
      *
      * @return the mass spec container
      */
+    @Override
     public RawContainer call() {
 
         String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer smoothedRawContainer = new FileRawContainer(id, rawContainer);
+        RawContainer smoothedRawContainer = rawContainer.getBuilder().newInstance(RawContainer.class, id, rawContainer);
 
-        Scan scan;
         XYList smoothedData;
 
         for (RawLevel level : rawContainer.getRawLevels()) {
 
             if (level.getMsn() == Constants.MSN.MS1) {
-                for (int number : rawContainer.getScanNumbers(msn).keySet()) {
-
-                    scan = rawContainer.getScan(number);
+                for (Scan scan : rawContainer) {
                     smoothedData = new XYList();
                     for (XYPoint xyPoint : scan.getData()) {
                         double y = xyPoint.y;

@@ -58,7 +58,7 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
     private double intensity;
     private int profileIndex;
 
-    private FileProfileContainer profileContainer;
+    private ProfileContainer profileContainer;
 
     /**
      * Constructor for a profile deconvolution task.
@@ -85,7 +85,7 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
         width = params.get(Parameter.SCAN_WINDOW, Double.class);
         intensity = params.get(Parameter.MIN_PROFILE_INTENSITY, Double.class);
         intensityThreshold = params.get(Parameter.DERIVATIVE_THRESHOLD, Double.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
 
         profileIndex = 1;
     }
@@ -95,16 +95,16 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
      *
      * @return the deconvoluted profile collection
      */
+    @Override
     public ProfileContainer call() {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer = new FileProfileContainer(id, profileContainer.getWorkingDirectory());
+        ProfileContainer outProfileContainer = profileContainer.getBuilder().newInstance(ProfileContainer.class, id,
+                profileContainer.getWorkingDirectory());
 
-        Profile profile;
         XYList profileData;
-        for (int profileId : profileContainer.getProfileNumbers().keySet()) {
+        for (Profile profile : profileContainer) {
 
-            profile = profileContainer.getProfile(profileId);
             profileData = profile.getTrace().getData();
 
             // Calculate intensity statistics.

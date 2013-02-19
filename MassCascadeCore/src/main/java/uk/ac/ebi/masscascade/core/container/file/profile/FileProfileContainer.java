@@ -187,6 +187,7 @@ public class FileProfileContainer extends FileContainer implements ProfileContai
      *
      * @return the profile list
      */
+    @Override
     public synchronized List<Profile> getProfileList() {
 
         List<Profile> profileList = new ArrayList<Profile>();

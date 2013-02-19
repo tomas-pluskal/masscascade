@@ -100,6 +100,7 @@ public class NoiseReduction extends CallableTask {
      *
      * @return the processed sample file
      */
+    @Override
     public RawContainer call() {
 
         String id = rawContainer.getId() + IDENTIFIER;

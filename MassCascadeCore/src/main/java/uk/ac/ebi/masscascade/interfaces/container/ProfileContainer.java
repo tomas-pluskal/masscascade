@@ -73,6 +73,13 @@ public interface ProfileContainer extends Container, Iterable<Profile> {
     Profile getProfile(int i);
 
     /**
+     * Returns the complete profile list.
+     *
+     * @return the profile list
+     */
+    List<Profile> getProfileList();
+
+    /**
      * Returns an iterator over a set of elements of type T.
      *
      * @return an Iterator.

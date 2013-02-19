@@ -140,7 +140,7 @@ public class IonFinder extends CallableTask {
      */
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, FileSpectrumContainer.class);
+        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
         massTolerance = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         setIonList(params.get(Parameter.ADDUCT_LIST, (new TreeMap<Double, String>()).getClass()));
     }
@@ -150,17 +150,16 @@ public class IonFinder extends CallableTask {
      *
      * @return the annotated spectrum container
      */
+    @Override
     public SpectrumContainer call() {
 
         String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer
-                outSpectrumContainer = new FileSpectrumContainer(id, spectrumContainer.getWorkingDirectory());
+        SpectrumContainer outSpectrumContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
+                spectrumContainer.getWorkingDirectory());
 
         double result;
         for (Spectrum spectrum : spectrumContainer) {
-
             for (Profile profile : spectrum) {
-
                 double mz = profile.getMzIntDp().x;
 
                 result = DataUtils.getNearestIndexRel(mz, massTolerance, ionMzs.keySet());

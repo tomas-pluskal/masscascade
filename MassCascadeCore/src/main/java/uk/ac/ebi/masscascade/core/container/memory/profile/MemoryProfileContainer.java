@@ -151,6 +151,7 @@ public class MemoryProfileContainer extends MemoryContainer implements ProfileCo
      *
      * @return the profile list
      */
+    @Override
     public List<Profile> getProfileList() {
         return new ArrayList<Profile>(profileMap.values());
     }

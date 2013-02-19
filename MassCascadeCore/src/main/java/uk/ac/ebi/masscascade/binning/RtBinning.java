@@ -20,6 +20,7 @@
 package uk.ac.ebi.masscascade.binning;
 
 import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
+import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.core.raw.ScanImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
@@ -45,7 +46,7 @@ import java.util.Map;
  */
 public class RtBinning extends CallableTask {
 
-    private FileRawContainer rawContainer;
+    private RawContainer rawContainer;
 
     private double timeWindow;
     private Scan tmpScan;
@@ -74,7 +75,7 @@ public class RtBinning extends CallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         timeWindow = params.get(Parameter.SCAN_WINDOW, Double.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
 
         scanIndex = 1;
     }
@@ -84,34 +85,33 @@ public class RtBinning extends CallableTask {
      *
      * @return the binned scan list
      */
+    @Override
     public RawContainer call() {
 
         String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer outRawContainer =
-                new FileRawContainer(id, rawContainer);
+        RawContainer outRawContainer = rawContainer.getBuilder().newInstance(RawContainer.class, id, rawContainer);
 
-        for (int i = Constants.MSN.MS1.getLvl(); i <= rawContainer.getRawLevels().size(); i++) {
+        for (RawLevel level : rawContainer.getRawLevels()) {
 
-            Map<Integer, Long> scanNumbers = rawContainer.getScanNumbers(Constants.MSN.get(i));
-            Iterator<Integer> scanIndexIt = scanNumbers.keySet().iterator();
+            Iterator<Scan> scanIter = rawContainer.iterator(level.getMsn()).iterator();
 
-            Scan pScan = rawContainer.getScan(scanIndexIt.next());
+            Scan pScan = scanIter.next();
             Scan cScan;
             double pRetentionTime = pScan.getRetentionTime();
 
-            while (scanIndexIt.hasNext()) {
+            while (scanIter.hasNext()) {
 
-                cScan = rawContainer.getScan(scanIndexIt.next());
+                cScan = scanIter.next();
                 if ((cScan.getRetentionTime() - pRetentionTime) < timeWindow) {
                     pScan = combineScans(cScan, pScan);
-                    if (!scanIndexIt.hasNext()) {
+                    if (!scanIter.hasNext()) {
                         outRawContainer.addScan(getScanCopy(pScan));
                     }
                 } else {
                     outRawContainer.addScan(getScanCopy(pScan));
                     pRetentionTime = cScan.getRetentionTime();
                     pScan = cScan;
-                    if (!scanIndexIt.hasNext()) {
+                    if (!scanIter.hasNext()) {
                         outRawContainer.addScan(getScanCopy(cScan));
                     }
                 }

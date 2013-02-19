@@ -48,8 +48,8 @@ import java.util.List;
  */
 public class FastDtwAlignment extends CallableTask {
 
-    private FileRawContainer rawContainer;
-    private FileRawContainer refRawContainer;
+    private RawContainer rawContainer;
+    private RawContainer refRawContainer;
     private int scanRadius;
 
     /**
@@ -76,8 +76,8 @@ public class FastDtwAlignment extends CallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         scanRadius = params.get(Parameter.TIME_WINDOW, Integer.class);
-        refRawContainer = params.get(Parameter.REFERENCE_FILE, FileRawContainer.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
+        refRawContainer = params.get(Parameter.REFERENCE_FILE, RawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
     }
 
     /**
@@ -86,6 +86,7 @@ public class FastDtwAlignment extends CallableTask {
      * @return the aligned sample
      * @throws Exception unexpected behaviour
      */
+    @Override
     public RawContainer call() {
 
         double[] targetTic = rawContainer.getBasePeakChromatogram().getData().getYs();
@@ -96,7 +97,7 @@ public class FastDtwAlignment extends CallableTask {
         final TimeWarpInfo info = FastDTW.getWarpInfoBetween(tsI, tsJ, scanRadius);
 
         String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer alignedRawContainer = new FileRawContainer(id, rawContainer);
+        RawContainer alignedRawContainer = rawContainer.getBuilder().newInstance(RawContainer.class, id, rawContainer);
 
         Scan tarScan = null;
         Scan refScan;

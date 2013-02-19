@@ -389,6 +389,7 @@ public class FileRawContainer extends FileContainer implements RawContainer {
      * @param i the array index
      * @return the scan at the index
      */
+    @Override
     public Scan getScanByIndex(int i) {
 
         Scan scanAtIndex = null;

@@ -77,7 +77,7 @@ public class ProfileJoiner extends CallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, FileProfileContainer.class);
+        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
     }
 
     /**
@@ -85,6 +85,7 @@ public class ProfileJoiner extends CallableTask {
      *
      * @return the mass spec trace container
      */
+    @Override
     public ProfileContainer call() {
 
         // map a list of profile ids to the m/z of the profile.
@@ -120,7 +121,8 @@ public class ProfileJoiner extends CallableTask {
     private ProfileContainer buildJoinedProfiles(TreeMultimap<Double, Integer> mzIdMap) {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer = new FileProfileContainer(id, profileContainer.getWorkingDirectory());
+        ProfileContainer outProfileContainer = profileContainer.getBuilder().newInstance(ProfileContainer.class, id,
+                profileContainer.getWorkingDirectory());
 
         for (double mz : mzIdMap.keySet()) {
             Range mzRange = new ToleranceRange(mz, ppm);

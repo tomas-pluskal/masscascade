@@ -48,13 +48,11 @@ import java.util.regex.Pattern;
  * <ul>
  * <li>Parameter <code> DATA FILE </code>- The data file to be read.</li>
  * <li>Parameter <code> RAW FILE </code>- The target raw container.</li>
- * <li>Parameter <code> WORKING DIRECTORY </code>- The working directory.</li>
  * </ul>
  */
 public class XCaliburReader extends CallableTask {
 
     private File file;
-    private String workingDirectory;
     private RawContainer rawContainer;
 
     // scan information
@@ -95,8 +93,7 @@ public class XCaliburReader extends CallableTask {
     private void setParameters(ParameterMap params) throws MassCascadeException {
 
         file = params.get(Parameter.DATA_FILE, File.class);
-        workingDirectory = params.get(Parameter.WORKING_DIRECTORY, String.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, FileRawContainer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
 
         if (file == null || !file.isFile()) throw new MassCascadeException("File not found.");
     }
@@ -106,6 +103,7 @@ public class XCaliburReader extends CallableTask {
      *
      * @return the compiled mass spec sample
      */
+    @Override
     public RawContainer call() {
 
         Process dumper = null;
