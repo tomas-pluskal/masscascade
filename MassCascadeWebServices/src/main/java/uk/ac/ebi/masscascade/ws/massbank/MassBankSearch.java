@@ -26,6 +26,7 @@ import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
@@ -103,19 +104,18 @@ public class MassBankSearch extends CallableTask {
         SpectrumContainer outContainer = new FileSpectrumContainer(id, spectrumContainer.getWorkingDirectory());
 
         try {
-
             stub = new MassBankAPIStub();
 
             ExecutorService executor = Executors.newFixedThreadPool(Constants.NTHREADS);
-            List<Future<PseudoSpectrum>> futureList = new ArrayList<Future<PseudoSpectrum>>();
+            List<Future<Spectrum>> futureList = new ArrayList<Future<Spectrum>>();
 
-            for (PseudoSpectrum ps : spectrumContainer) {
+            for (Spectrum ps : spectrumContainer) {
 
-                Callable<PseudoSpectrum> mbS = new MbSearch(ps);
+                Callable<Spectrum> mbS = new MbSearch(ps);
                 futureList.add(executor.submit(mbS));
             }
 
-            for (Future<PseudoSpectrum> mbS : futureList) {
+            for (Future<Spectrum> mbS : futureList) {
 
                 try {
                     outContainer.addSpectrum(mbS.get());
@@ -135,11 +135,11 @@ public class MassBankSearch extends CallableTask {
         return outContainer;
     }
 
-    class MbSearch implements Callable<PseudoSpectrum> {
+    class MbSearch implements Callable<Spectrum> {
 
-        private PseudoSpectrum mbSpectrum;
+        private Spectrum mbSpectrum;
 
-        public MbSearch(PseudoSpectrum mbSpectrum) {
+        public MbSearch(Spectrum mbSpectrum) {
 
             this.mbSpectrum = mbSpectrum;
         }
@@ -151,7 +151,7 @@ public class MassBankSearch extends CallableTask {
          * @throws Exception if unable to compute a result
          */
         @Override
-        public PseudoSpectrum call() throws Exception {
+        public Spectrum call() throws Exception {
 
             String[] mzs = new String[mbSpectrum.getProfileMap().size()];
             String[] ints = new String[mbSpectrum.getProfileMap().size()];

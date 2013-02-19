@@ -125,6 +125,7 @@ public class BackgroundSubtraction extends CallableTask {
      * @return the background corrected sample
      * @throws Exception unexptected behaviour
      */
+    @Override
     public RawContainer call() {
 
         if (reference == null) buildReferenceMap();
