@@ -119,6 +119,7 @@ public enum Parameter implements Option {
     VALUE_COLUMN("Value column", ""),
     SPECTRUM_COLUMN("Spectrum column", ""),
     REFERENCE_COLUMN("Reference column", ""),
+    REFERENCE_PROFILE_COLUMN("Reference column", ""),
 
     /*
      * List parameters.
