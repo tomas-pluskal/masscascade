@@ -20,6 +20,7 @@
 package uk.ac.ebi.masscascade.parameters;
 
 import uk.ac.ebi.masscascade.alignment.FastDtwAlignment;
+import uk.ac.ebi.masscascade.alignment.Obiwarp;
 import uk.ac.ebi.masscascade.background.BackgroundSubtraction;
 import uk.ac.ebi.masscascade.background.CodaFilter;
 import uk.ac.ebi.masscascade.background.DurbinWatsonFilter;
@@ -78,6 +79,7 @@ public enum CoreTasks implements Index {
 
     // utilities
     FAST_DTW(FastDtwAlignment.class, "DTW"),
+    OBIWARP(Obiwarp.class, "OB"),
     RETENTION_TIME(RtBinning.class, "RT"),
     MASS_DOMAIN(MzFileBinning.class, "MZ"),
     GAP_FILLING(SplineFilling.class, "GF"),

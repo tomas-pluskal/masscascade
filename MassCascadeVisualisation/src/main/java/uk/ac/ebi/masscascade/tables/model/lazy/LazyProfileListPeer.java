@@ -42,10 +42,11 @@ public class LazyProfileListPeer implements LazyListService<Object[]> {
     private ProfileContainer profileContainer;
     private List<Integer> profileNumbers;
 
-    public LazyProfileListPeer(int rows, FileProfileContainer profileContainer) {
+    public LazyProfileListPeer(int rows, ProfileContainer profileContainer) {
 
         this.profileContainer = profileContainer;
-        this.profileNumbers = new LinkedList<Integer>(profileContainer.getProfileNumbers().keySet());
+        this.profileNumbers =
+                new LinkedList<Integer>(((FileProfileContainer) profileContainer).getProfileNumbers().keySet());
     }
 
     public Object[][] getData(int startElement, int endElement) {

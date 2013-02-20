@@ -154,6 +154,29 @@ public class DataUtils {
     }
 
     /**
+     * Returns the most proximate key in the value map for the given value.
+     *
+     * @param value    the query value
+     * @param traceMap the value map
+     * @param <T>      an object
+     * @return the most proximate key
+     */
+    public static <T> Double getClosestKey(Double value, TreeMap<Double, T> traceMap) {
+
+        if (traceMap == null || traceMap.isEmpty()) return null;
+
+        Double floorKey = traceMap.floorKey(value);
+        Double ceilingKey = traceMap.higherKey(value);
+
+        double deltaFloor = (floorKey != null) ? (value - floorKey) : Double.MAX_VALUE;
+        double deltaCeiling = (ceilingKey != null) ? (ceilingKey - value) : Double.MAX_VALUE;
+
+        if (floorKey == null && ceilingKey == null) return null;
+
+        return (deltaFloor <= deltaCeiling) ? floorKey : ceilingKey;
+    }
+
+    /**
      * Returns the most proximate trace in the trace set for the given query trace.
      *
      * @param trace    the query trace

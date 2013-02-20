@@ -243,6 +243,16 @@ public class FileRawContainer extends FileContainer implements RawContainer {
     }
 
     /**
+     * Returns the number of scans of a particular level.
+     * @param msn a MSN level
+     * @return the number of scans
+     */
+    @Override
+    public int size(Constants.MSN msn) {
+        return scanNumbers.get(msn.getLvl() - 1).size();
+    }
+
+    /**
      * Returns the scan index - file pointer map for the given MSn level.
      *
      * @param msn the MSn level

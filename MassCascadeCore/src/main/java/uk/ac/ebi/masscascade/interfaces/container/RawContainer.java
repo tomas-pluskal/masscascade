@@ -72,6 +72,13 @@ public interface RawContainer extends Container, Iterable<Scan> {
     RawInfo getRawInfo();
 
     /**
+     * Returns the number of scans of a particular level.
+     * @param msn a MSN level
+     * @return the number of scans
+     */
+    int size(Constants.MSN msn);
+
+    /**
      * Returns the base profile chromatogram.
      *
      * @return the base profile chromatogram

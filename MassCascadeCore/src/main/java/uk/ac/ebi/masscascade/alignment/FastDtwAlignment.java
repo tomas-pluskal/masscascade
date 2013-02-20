@@ -62,7 +62,6 @@ public class FastDtwAlignment extends CallableTask {
     public FastDtwAlignment(ParameterMap params) throws MassCascadeException {
 
         super(FastDtwAlignment.class);
-
         setParameters(params);
     }
 
@@ -75,8 +74,8 @@ public class FastDtwAlignment extends CallableTask {
      */
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        scanRadius = params.get(Parameter.TIME_WINDOW, Integer.class);
-        refRawContainer = params.get(Parameter.REFERENCE_FILE, RawContainer.class);
+        scanRadius = params.get(Parameter.SCAN_WINDOW, Integer.class);
+        refRawContainer = params.get(Parameter.REFERENCE_RAW_CONTAINER, RawContainer.class);
         rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
     }
 
@@ -111,7 +110,6 @@ public class FastDtwAlignment extends CallableTask {
             List<Integer> tarPosList = info.getPath().getMatchingIndexesForJ(i);
 
             for (int tarPos : tarPosList) {
-
                 tarScan = rawContainer.getScanByIndex(tarPos);
                 mergedData.addAll(tarScan.getData());
             }

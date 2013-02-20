@@ -227,6 +227,16 @@ public class MemoryRawContainer extends MemoryContainer implements RawContainer 
     }
 
     /**
+     * Returns the number of scans of a particular level.
+     * @param msn a MSN level
+     * @return the number of scans
+     */
+    @Override
+    public int size(Constants.MSN msn) {
+        return scans.get(msn.getLvl() - 1).size();
+    }
+
+    /**
      * Returns the base profile chromatogram.
      *
      * @return the base profile chromatogram

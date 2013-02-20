@@ -61,7 +61,6 @@ public class ProfileImpl implements Profile {
      * Constructor for serialization purposes.
      */
     public ProfileImpl() {
-
         id = -1;
     }
 

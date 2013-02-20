@@ -76,8 +76,8 @@ public class CodaFilter extends CallableTask {
     public ProfileContainer call() {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer =
-                profileContainer.getBuilder().newInstance(ProfileContainer.class, id, profileContainer);
+        ProfileContainer outProfileContainer = profileContainer.getBuilder().newInstance(ProfileContainer.class, id,
+                profileContainer.getWorkingDirectory());
 
         for (Profile profile : profileContainer) {
             double mcq = getMCQ(profile.getData());

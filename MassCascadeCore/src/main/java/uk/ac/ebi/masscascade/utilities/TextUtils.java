@@ -25,8 +25,10 @@ import org.apache.log4j.Logger;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import java.io.Closeable;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 /**
@@ -56,6 +58,28 @@ public class TextUtils {
         if (pos == 0) return null;
 
         return new String(Arrays.copyOf(buf, pos), "UTF-8");
+    }
+
+    /**
+     * Reads a byte input stream line by line.
+     *
+     * @param in an input stream
+     * @return the read line
+     * @throws IOException unexpected behaviour
+     */
+    public Double readNumberFromStream(InputStream in) throws IOException {
+
+        byte buf[] = new byte[1024];
+        int pos = 0;
+        while (true) {
+            int ch = in.read();
+            if (Character.isWhitespace(ch) || ch == '\n' || ch < 0) break;
+            buf[pos++] = (byte) ch;
+            if (pos == buf.length) buf = Arrays.copyOf(buf, pos * 2);
+        }
+        if (pos == 0) return null;
+
+        return Double.parseDouble(new String(buf, 0, pos, "UTF-8"));
     }
 
     /**

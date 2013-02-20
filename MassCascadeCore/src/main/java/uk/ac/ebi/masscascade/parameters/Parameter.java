@@ -33,6 +33,7 @@ import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
@@ -147,6 +148,15 @@ public enum Parameter implements Option {
     POLYNOMIAL_ORDER("Polynomial order", 3),
     CORRELATION_THRESHOLD("Correlation threshold", 0.75),
     DERIVATIVE_THRESHOLD("Derivative threshold", 0.2),
+
+    /*
+     * Obiwarp parameters.
+     */
+    MZ_BINS("Mz bins", new TreeMap<Double, Integer>()),
+    GAP_INIT("Gap initiation", 0.3),
+    GAP_EXTEND("Gap extension", 2.4),
+    RESPONSE("Responsivness", 90d),
+    EXECUTABLE("Executable", ""),
 
     /*
      * Parameters for binning.
