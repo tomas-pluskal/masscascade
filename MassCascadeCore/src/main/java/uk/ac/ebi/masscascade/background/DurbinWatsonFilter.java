@@ -19,7 +19,6 @@
 
 package uk.ac.ebi.masscascade.background;
 
-import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
@@ -44,6 +43,12 @@ public class DurbinWatsonFilter extends CallableTask {
     private double dwThreshold;
     private ProfileContainer profileContainer;
 
+    /**
+     * Constructs a Durbin-Watson filter task.
+     *
+     * @param params a parameter map
+     * @throws MassCascadeException
+     */
     public DurbinWatsonFilter(ParameterMap params) throws MassCascadeException {
 
         super(DurbinWatsonFilter.class);
@@ -53,7 +58,7 @@ public class DurbinWatsonFilter extends CallableTask {
     /**
      * Sets the parameters for the Durbin-Watson task.
      *
-     * @param params the parameter values
+     * @param params the parameter map
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
      *
      */

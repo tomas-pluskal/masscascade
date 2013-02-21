@@ -43,6 +43,21 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+/**
+ * Class for profile aligning using Obiwarp. The class executes the Obiwarp binary with the given parameters and
+ * converts its output back into a list of aligned profiles. Input is provided in "lmata" format, which is generated on
+ * the fly from the profile container. The reference file, the converted reference profile container, is provided via
+ * the parameter map. The <link> ObiwarpHelper </link> class can be used to create the file and generate the mz bins.
+ * <p/>
+ * <ul>
+ * <li>Parameter <code> REFERENCE_FILE </code>- The lmata reference file.</li>
+ * <li>Parameter <code> PROFILE CONTAINER </code>- The input profile container.</li>
+ * <li>Parameter <code> GAP_INIT </code>- The gap penalty for initiating a gap.</li>
+ * <li>Parameter <code> GAP_EXTEND </code>- The gap penaly for extending a gap.</li>
+ * <li>Parameter <code> RESPONSE </code>- The responsiveness of warping [0 - 100].</li>
+ * <li>Parameter <code> EXECUTABLE </code>- The path to the Obiwarp executable.</li>
+ * </ul>
+ */
 public class Obiwarp extends CallableTask {
 
     private File referenceFile;
@@ -55,19 +70,31 @@ public class Obiwarp extends CallableTask {
     private double response;
     private String executable;
 
+    /**
+     * Constructs an Obiwarp task.
+     *
+     * @param params a parameter map
+     */
     public Obiwarp(ParameterMap params) {
 
         super(Obiwarp.class);
         setParameters(params);
     }
 
+    /**
+     * Sets the parameters for the Obiwarp task.
+     *
+     * @param params the parameter values
+     * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
+     *
+     */
     private void setParameters(ParameterMap params) {
 
         referenceFile = params.get(Parameter.REFERENCE_FILE, File.class);
         profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
 
         gapInit = params.get(Parameter.GAP_INIT, Double.class);
-        gapExt = params.get(Parameter.GAP_INIT, Double.class);
+        gapExt = params.get(Parameter.GAP_EXTEND, Double.class);
         response = params.get(Parameter.RESPONSE, Double.class);
         executable = params.get(Parameter.EXECUTABLE, String.class);
 
@@ -78,7 +105,7 @@ public class Obiwarp extends CallableTask {
     /**
      * Executes the task and processes the data.
      *
-     * @return the processed mass spectrometry run
+     * @return the processed profiles
      */
     @Override
     public Container call() {
@@ -88,20 +115,33 @@ public class Obiwarp extends CallableTask {
                 profileContainer.getWorkingDirectory());
 
         File profFile = obiwarpHelper.buildLmataFile(profileContainer);
-        Map<Double, Double> times = execute(profFile, profileContainer.getTimes().keySet());
+        Map<Double, Double> times = execute(profFile, obiwarpHelper.getTimes());
 
         for (Profile profile : profileContainer) {
             Iterator<XYZPoint> dpIter = profile.getData().iterator();
             XYZPoint dp = dpIter.next();
-            Profile alignedProfile = new ProfileImpl(profile.getId(), dp, new ExtendableRange(dp.y, dp.y));
-            while (dpIter.hasNext()) alignedProfile.addProfilePoint(dpIter.next());
+            Profile alignedProfile = new ProfileImpl(profile.getId(), new XYZPoint(times.get(dp.x), dp.y, dp.z),
+                    new ExtendableRange(dp.y, dp.y));
+            while (dpIter.hasNext()) {
+                dp = dpIter.next();
+                alignedProfile.addProfilePoint(new XYZPoint(times.get(dp.x), dp.y, dp.z));
+            }
+            alignedProfile.closeProfile();
             outProfileContainer.addProfile(alignedProfile);
         }
 
+        profFile.delete();
         outProfileContainer.finaliseFile();
         return outProfileContainer;
     }
 
+    /**
+     * Executes the Obiwarp binary using the parameters defined by the parameter map.
+     *
+     * @param file     the Obiwarp binary
+     * @param oldTimes the time data points of the profiles to be aligned
+     * @return the old to aligned times data map
+     */
     private Map<Double, Double> execute(File file, Set<Double> oldTimes) {
 
         Map<Double, Double> times = new LinkedHashMap<Double, Double>();
@@ -126,7 +166,6 @@ public class Obiwarp extends CallableTask {
             while ((number = tx.readNumberFromStream(bufStream)) != null) {
                 times.put(oldTimesIter.next(), number);
             }
-
         } catch (IOException exception) {
             LOGGER.log(Level.ERROR, "Obiwarp process error: " + exception.getMessage());
         } finally {

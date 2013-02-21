@@ -132,7 +132,6 @@ public class ProfileImpl implements Profile {
     public void addProfilePoint(double mz, XYPoint rtIntDp) {
 
         if (rtIntDp.y > centerPoint.z) centerPoint = new XYZPoint(rtIntDp.x, mz, rtIntDp.y);
-
         data.add(new XYZPoint(rtIntDp.x, mz, rtIntDp.y));
         mzRange.extendRange(mz);
     }
