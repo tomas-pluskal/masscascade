@@ -42,7 +42,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * Class to execute a simple mz query against ChemSpider.
+ * Web task to query ChemSpider for compounds that match the major isotopic mass of a given ion. ChemSpider requires
+ * users to provide a token for certain web services which must be provided for the web task to work.
  */
 public class ChemSpiderSearch extends CallableTask {
 
@@ -54,11 +55,11 @@ public class ChemSpiderSearch extends CallableTask {
     private FileProfileContainer profileContainer;
 
     /**
-     * Constructor for a ChemSpider search task.
+     * Constructs a web task for the ChemSpider web service.
      *
-     * @param params the parameter map
+     * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the web task fails
      */
     public ChemSpiderSearch(ParameterMap params) throws MassCascadeException {
 
@@ -67,11 +68,11 @@ public class ChemSpiderSearch extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the ChemSpider search task.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the parameter objects
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
@@ -82,14 +83,16 @@ public class ChemSpiderSearch extends CallableTask {
     }
 
     /**
-     * Executes the task.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .ProfileContainer} with the processed data.
      *
-     * @return the annotated profile data
+     * @return the profile container with the processed data
      */
     public ProfileContainer call() {
 
         String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outContainer = new FileProfileContainer(id, profileContainer.getWorkingDirectory());
+        ProfileContainer outContainer = profileContainer.getBuilder().newInstance(ProfileContainer.class, id,
+                profileContainer.getWorkingDirectory());
 
         wrapper = new ChemSpiderWrapper();
         databases = wrapper.getMassSpecAPIGetDatabasesResults();
@@ -99,7 +102,7 @@ public class ChemSpiderSearch extends CallableTask {
 
         for (int profileId : profileContainer.getProfileNumbers().keySet()) {
 
-            Callable<Profile> css = new CsSearch(profileContainer.getProfile(profileId));
+            Callable<Profile> css = new Searcher(profileContainer.getProfile(profileId));
             futureList.add(executor.submit(css));
         }
 
@@ -122,30 +125,37 @@ public class ChemSpiderSearch extends CallableTask {
         return outContainer;
     }
 
-    class CsSearch implements Callable<Profile> {
+    /**
+     * Runs ChemSpider's <code> SearchByMass </code> web service on the query profile. The returned profile is
+     * annotated with the retrieved results.
+     */
+    class Searcher implements Callable<Profile> {
 
-        private Profile csProfile;
+        private Profile profile;
 
-        public CsSearch(Profile csProfile) {
-
-            this.csProfile = csProfile;
+        /**
+         * Constructs a ChemSpider search helper.
+         *
+         * @param profile the profile for the query.
+         */
+        public Searcher(Profile profile) {
+            this.profile = profile;
         }
 
         /**
-         * Computes a result, or throws an exception if unable to do so.
+         * Converts the profile into a ChemSpider compatible format and queries ChemSpider for compounds matching the
+         * mass.
          *
-         * @return computed result
-         * @throws Exception if unable to compute a result
+         * @return the annotated profile
+         * @throws Exception if unable to run the web service
          */
         @Override
         public Profile call() throws Exception {
 
-            double mass = csProfile.getMz();
-            if (ionMode == Constants.ION_MODE.POSITIVE) {
-                mass = mass - Constants.PARTICLES.PROTON.getMass();
-            } else if (ionMode == Constants.ION_MODE.NEGATIVE) {
-                mass = mass + Constants.PARTICLES.PROTON.getMass();
-            }
+            double mass = profile.getMz();
+            if (ionMode == Constants.ION_MODE.POSITIVE) mass = mass - Constants.PARTICLES.PROTON.getMass();
+            else if (ionMode == Constants.ION_MODE.NEGATIVE) mass = mass + Constants.PARTICLES.PROTON.getMass();
+
             double tolerance = mass * massTolerance / Constants.PPM;
             String result = wrapper.getMassSpecAPISearchByMassAsyncResults(mass, tolerance, databases, token);
             int[] csids = wrapper.getSearchGetAsyncSearchResultResults(result, token);
@@ -167,11 +177,11 @@ public class ChemSpiderSearch extends CallableTask {
 
                 if (inchis.contains(notation)) continue;
 
-                csProfile.setProperty(identity);
+                profile.setProperty(identity);
                 inchis.add(notation);
             }
 
-            return csProfile;
+            return profile;
         }
     }
 }

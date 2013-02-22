@@ -16,27 +16,43 @@
  * You should have received a copy of the GNU General Public License
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package uk.ac.ebi.masscascade.ws.chemspider;
 
 import org.junit.Test;
 
 import java.util.Map;
 
+/**
+ * Tests the ChemSpider web service. ChemSpider requires users to provide a token for certain web services which must
+ * be
+ * provided for the test to work.
+ */
 public class ChemSpiderTest {
 
-    private static final String token = "myChemSpiderToken";
+    /**
+     * The ChemSpider token.
+     */
+    private static final String TOKEN = "myChemSpiderToken";
 
+    /**
+     * Tests the asynchronous ChemSpider web service. The <code> SearchByMass </code> service is used to retrieve
+     * results for a molecular mass. The methods requires also a set of database names to be used for the query and an
+     * absolute mass tolerance.
+     */
     @Test
     public void testMassAsync() {
 
         ChemSpiderWrapper wrapper = new ChemSpiderWrapper();
         String[] databases = wrapper.getMassSpecAPIGetDatabasesResults();
 
-        String result = wrapper.getMassSpecAPISearchByMassAsyncResults(100.0, 0.01, databases, token);
-        String status = wrapper.getSearchGetAsyncSearchStatusResults(result, token);
-        int[] csids = wrapper.getSearchGetAsyncSearchResultResults(result, token);
+        String result = wrapper.getMassSpecAPISearchByMassAsyncResults(100.0, 0.01, databases, TOKEN);
+
+        String status = wrapper.getSearchGetAsyncSearchStatusResults(result, TOKEN);
+
+        int[] csids = wrapper.getSearchGetAsyncSearchResultResults(result, TOKEN);
         Map<Integer, Map<String, String>> csidMap =
-                wrapper.getMassSpecAPIGetExtendedCompoundInfoArrayResults(csids, token);
+                wrapper.getMassSpecAPIGetExtendedCompoundInfoArrayResults(csids, TOKEN);
         for (int csid : csidMap.keySet()) System.out.println(csid + " " + csidMap.get(csid).get("CommonName"));
     }
 }

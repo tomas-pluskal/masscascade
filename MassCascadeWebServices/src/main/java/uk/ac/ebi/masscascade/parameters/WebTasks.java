@@ -24,9 +24,11 @@ import uk.ac.ebi.masscascade.interfaces.Index;
 import uk.ac.ebi.masscascade.ws.chemspider.ChemSpiderSearch;
 import uk.ac.ebi.masscascade.ws.massbank.MassBankSearch;
 
+/**
+ * An index for web tasks. Callable tasks that implement web services are registered here and assigned an identifier.
+ */
 public enum WebTasks implements Index {
 
-    // webservices
     CHEMSPIDER(ChemSpiderSearch.class, "DCS"),
     MASSBANK(MassBankSearch.class, "DMB");
 
@@ -34,7 +36,7 @@ public enum WebTasks implements Index {
     private final String identifier;
 
     /**
-     * Constructs a processing task.
+     * Constructs an index for a web task. The class for the web task is assigned an identifier unique to the task.
      *
      * @param className  the task class
      * @param identifier the abbreviated identifier
@@ -46,67 +48,20 @@ public enum WebTasks implements Index {
     }
 
     /**
-     * Returns the callable class.
+     * Returns the callable task class assigned to this index.
      *
-     * @return the callable class
+     * @return the callable task class
      */
     public synchronized Class<? extends CallableTask> getCallableClass() {
-
         return className;
     }
 
     /**
-     * Returns the abbreviated identifier.
+     * Returns the abbreviated identifier for the task class assigned to this index.
      *
-     * @return the identifier
+     * @return the unique identifier of the task class
      */
     public synchronized String getIdentifier() {
-
         return identifier;
-    }
-
-    /**
-     * Simple placeholder for 'empty' default values.
-     *
-     * @return the placeholder
-     */
-    private static String PLACEHOLDER() {
-
-        return "";
-    }
-
-    /**
-     * For task classes outside the core module, the static importer returns the class as required by the enum.
-     *
-     * @param className the full class name
-     * @return the class
-     */
-    @SuppressWarnings("unchecked")
-    private static Class<? extends CallableTask> getClassFor(String className) {
-
-        Class<? extends CallableTask> theClass = null;
-
-        try {
-            theClass = (Class<? extends CallableTask>) Class.forName(className);
-        } catch (ClassNotFoundException e) {
-            // should never happen
-            e.printStackTrace();
-        }
-
-        return theClass;
-    }
-
-    /**
-     * Returns the corresponding enum for a task class.
-     *
-     * @param callableClass the task class
-     * @return the enum
-     */
-    public static CoreTasks getEnumFor(Class<? extends CallableTask> callableClass) {
-
-        for (CoreTasks x : CoreTasks.values())
-            if (x.getCallableClass() == callableClass) return x;
-
-        return null;
     }
 }

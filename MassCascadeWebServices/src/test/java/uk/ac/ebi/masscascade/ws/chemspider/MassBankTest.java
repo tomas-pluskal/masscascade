@@ -16,23 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package uk.ac.ebi.masscascade.ws.chemspider;
 
 import org.junit.Test;
 import uk.ac.ebi.masscascade.ws.massbank.MassBankAPIStub;
 
+/**
+ * Tests the MassBank web service.
+ */
 public class MassBankTest {
 
+    /**
+     * Tests the synchronous MassBank web service. The MassBank database is queried for the instrument types available.
+     *
+     * @throws Exception if the web service cannot retrieve the result
+     */
     @Test
-    public void testMassBatch() {
+    public void testAvailableInstruments() throws Exception {
 
-        try {
-            MassBankAPIStub mbStub = new MassBankAPIStub();
-            MassBankAPIStub.GetInstrumentTypesResponse instrumentTypesResponse = mbStub.getInstrumentTypes();
-            String[] insts = instrumentTypesResponse.get_return();
-            for (String inst : insts) System.out.println(inst);
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
+        MassBankAPIStub mbStub = new MassBankAPIStub();
+        MassBankAPIStub.GetInstrumentTypesResponse instrumentTypesResponse = mbStub.getInstrumentTypes();
+        String[] insts = instrumentTypesResponse.get_return();
+        for (String inst : insts) System.out.println(inst);
     }
 }

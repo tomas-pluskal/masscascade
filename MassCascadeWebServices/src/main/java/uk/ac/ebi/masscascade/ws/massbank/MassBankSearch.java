@@ -22,7 +22,6 @@ package uk.ac.ebi.masscascade.ws.massbank;
 import org.apache.axis2.AxisFault;
 import org.apache.log4j.Level;
 import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
-import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
@@ -46,13 +45,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * Class to execute a spectrum query against MassBank.
+ * Web task to run a spectrum search against MassBank using the MassBank web service.
  */
 public class MassBankSearch extends CallableTask {
 
+    private double ppm;
     private int cutoff;
     private int maxNumOfResults;
-    private double tolerance;
     private List<String> instruments;
     private Constants.ION_MODE ionMode;
 
@@ -63,11 +62,11 @@ public class MassBankSearch extends CallableTask {
     private SpectrumContainer spectrumContainer;
 
     /**
-     * Constructor for a MassBankSearch search task.
+     * Constructs a web task for the MassBank web service.
      *
-     * @param params the parameter map
+     * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the web task fails
      */
     public MassBankSearch(ParameterMap params) throws MassCascadeException {
 
@@ -76,27 +75,28 @@ public class MassBankSearch extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the MassBankSearch search.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the parameter objects
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *          description of the Exception
+     *          if the parameter map does not contain all variables required by this class
      */
-    @SuppressWarnings("unchecked")
-    private void setParameters(ParameterMap params) throws MassCascadeException {
+    @Override
+    public void setParameters(ParameterMap params) throws MassCascadeException {
 
         cutoff = params.get(Parameter.MIN_PROFILE_INTENSITY, Integer.class);
         ionMode = params.get(Parameter.ION_MODE, Constants.ION_MODE.class);
         instruments = params.get(Parameter.INSTRUMENTS, (new ArrayList<String>()).getClass());
-        tolerance = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
+        ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         maxNumOfResults = params.get(Parameter.RESULTS, Integer.class);
         spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, FileSpectrumContainer.class);
     }
 
     /**
-     * Executes the task.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .SpectrumContainer} with the processed data.
      *
-     * @return the annotated spectrum data
+     * @return the spectrum container with the processed data
      */
     public SpectrumContainer call() {
 
@@ -110,15 +110,13 @@ public class MassBankSearch extends CallableTask {
             List<Future<Spectrum>> futureList = new ArrayList<Future<Spectrum>>();
 
             for (Spectrum ps : spectrumContainer) {
-
-                Callable<Spectrum> mbS = new MbSearch(ps);
-                futureList.add(executor.submit(mbS));
+                Callable<Spectrum> searcher = new SpectrumSearcher(ps);
+                futureList.add(executor.submit(searcher));
             }
 
-            for (Future<Spectrum> mbS : futureList) {
-
+            for (Future<Spectrum> search : futureList) {
                 try {
-                    outContainer.addSpectrum(mbS.get());
+                    outContainer.addSpectrum(search.get());
                 } catch (InterruptedException e) {
                     LOGGER.log(Level.ERROR, e.getMessage());
                 } catch (ExecutionException e) {
@@ -135,35 +133,43 @@ public class MassBankSearch extends CallableTask {
         return outContainer;
     }
 
-    class MbSearch implements Callable<Spectrum> {
+    /**
+     * Runs MassBank's <code> SearchSpectrum </code> web service on the query spectrum. The returned profiles in the
+     * spectrum are annotated with the retrieved results.
+     */
+    class SpectrumSearcher implements Callable<Spectrum> {
 
-        private Spectrum mbSpectrum;
+        private Spectrum spectrum;
 
-        public MbSearch(Spectrum mbSpectrum) {
-
-            this.mbSpectrum = mbSpectrum;
+        /**
+         * Constructs a MassBank search helper.
+         *
+         * @param spectrum the spectrum containing the profiles for the query.
+         */
+        public SpectrumSearcher(Spectrum spectrum) {
+            this.spectrum = spectrum;
         }
 
         /**
-         * Computes a result, or throws an exception if unable to do so.
+         * Converts the spectrum into a MassBank compatible format and queries MassBank for compounds matching the
+         * spectrum.
          *
-         * @return computed result
-         * @throws Exception if unable to compute a result
+         * @return the annotated spectrum
+         * @throws Exception if unable to run the web service
          */
         @Override
         public Spectrum call() throws Exception {
 
-            String[] mzs = new String[mbSpectrum.getProfileMap().size()];
-            String[] ints = new String[mbSpectrum.getProfileMap().size()];
+            String[] mzs = new String[spectrum.getProfileMap().size()];
+            String[] ints = new String[spectrum.getProfileMap().size()];
 
-            double[] intsVal = new double[mbSpectrum.getProfileMap().size()];
+            double[] intsVal = new double[spectrum.getProfileMap().size()];
             TreeSet<Double> mzsOrder = new TreeSet<Double>();
 
             double max = Double.MIN_VALUE;
 
             int i = 0;
-            for (Profile profile : mbSpectrum) {
-
+            for (Profile profile : spectrum) {
                 double mz = profile.getMz();
                 double intensity = profile.getIntensity();
 
@@ -179,18 +185,15 @@ public class MassBankSearch extends CallableTask {
 
             i = 0;
             LinearEquation lq = new LinearEquation(new XYPoint(0, 0), new XYPoint(max, 1000));
-            for (double inten : intsVal) {
-                ints[i] = "" + lq.getY(inten);
-                i++;
-            }
+            for (double inten : intsVal) ints[++i] = "" + lq.getY(inten);
 
             MassBankAPIStub.SearchSpectrum sp = new MassBankAPIStub.SearchSpectrum();
             sp.setCutoff("" + cutoff);
-            sp.setInstrumentTypes(instruments.toArray(new String[]{}));
+            sp.setInstrumentTypes(instruments.toArray(new String[instruments.size()]));
             sp.setIntensities(ints);
             sp.setMzs(mzs);
             sp.setIonMode(ionMode.name().toLowerCase());
-            sp.setTolerance("" + tolerance);
+            sp.setTolerance("" + ppm);
             sp.setMaxNumResults(maxNumOfResults);
             sp.setUnit("ppm");
 
@@ -210,14 +213,12 @@ public class MassBankSearch extends CallableTask {
                         mass = mass - Constants.PARTICLES.PROTON.getMass();
                     }
 
-                    double res = DataUtils.getNearestIndexRel(mass, tolerance, mzsOrder);
+                    double res = DataUtils.getNearestIndexRel(mass, ppm, mzsOrder);
                     if (res != -1d) {
 
                         String iupacString = getIUPACNotation(id);
-
                         Identity identity = new Identity(id, title, iupacString, score);
-
-                        for (Profile profile : mbSpectrum) {
+                        for (Profile profile : spectrum) {
                             if (profile.getMz() == res) {
                                 profile.setProperty(identity);
                             }
@@ -226,7 +227,7 @@ public class MassBankSearch extends CallableTask {
                 }
             }
 
-            return mbSpectrum;
+            return spectrum;
         }
     }
 
@@ -235,7 +236,7 @@ public class MassBankSearch extends CallableTask {
      *
      * @param id the record id
      * @return the inchi string
-     * @throws Exception SOAP retrieval exception
+     * @throws Exception if SOAP retrieval fails
      */
     private String getIUPACNotation(String id) throws Exception {
 
