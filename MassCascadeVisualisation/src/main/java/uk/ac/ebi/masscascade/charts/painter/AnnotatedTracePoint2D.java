@@ -16,15 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package uk.ac.ebi.masscascade.charts.painter;
 
 import info.monitorenter.gui.chart.TracePoint2D;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
 /**
- * Class implementing an annotated xy data point for the JChart2D library
+ * Class implementing an annotated xy data point for the JChart2D library.
  */
 public class AnnotatedTracePoint2D extends TracePoint2D {
+
+    private static final long serialVersionUID = 5836384902703695458L;
 
     private String annotation;
 
@@ -57,7 +60,6 @@ public class AnnotatedTracePoint2D extends TracePoint2D {
      * @param annotation the annotation
      */
     public void setAnnotation(String annotation) {
-
         this.annotation = annotation;
     }
 
@@ -67,7 +69,6 @@ public class AnnotatedTracePoint2D extends TracePoint2D {
      * @return the string annotation
      */
     public String getAnnotation() {
-
         return annotation;
     }
 
@@ -77,7 +78,6 @@ public class AnnotatedTracePoint2D extends TracePoint2D {
      * @return boolean whether data point is annotated
      */
     public boolean isAnnotated() {
-
         return (annotation != null && !annotation.isEmpty());
     }
 }

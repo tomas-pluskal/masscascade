@@ -29,6 +29,8 @@ import java.awt.*;
  */
 public class TracePainterAnnotation extends ATracePainter {
 
+    private static final long serialVersionUID = -7207482283184018391L;
+
     /**
      * The implementation for rendering the point as a disc.
      */
@@ -74,23 +76,15 @@ public class TracePainterAnnotation extends ATracePainter {
     @Override
     public boolean equals(final Object obj) {
 
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (this.getClass() != obj.getClass()) {
-            return false;
-        }
+        if (this == obj) return true;
+        if (!super.equals(obj)) return false;
+        if (this.getClass() != obj.getClass()) return false;
         final TracePainterAnnotation other = (TracePainterAnnotation) obj;
         if (this.pointPainter == null) {
             if (other.pointPainter != null) {
                 return false;
             }
-        } else if (!this.pointPainter.equals(other.pointPainter)) {
-            return false;
-        }
+        } else if (!this.pointPainter.equals(other.pointPainter)) return false;
         return true;
     }
 

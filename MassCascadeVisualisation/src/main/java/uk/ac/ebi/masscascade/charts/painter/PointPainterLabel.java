@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package uk.ac.ebi.masscascade.charts.painter;
 
 import info.monitorenter.gui.chart.ITracePoint2D;
@@ -25,12 +26,14 @@ import uk.ac.ebi.masscascade.utilities.math.MathUtils;
 import java.awt.*;
 
 /**
- * Class implementing an annotated xy data point painter for the JChart2D library
+ * Class implementing an annotated xy data point painter for the JChart2D library.
  */
 public class PointPainterLabel extends APointPainter<PointPainterLabel> {
 
     private final static int OFFSET_Y = 3;
     private final static int FONT_SIZE = 10;
+
+    private static final long serialVersionUID = -2243935385165018795L;
 
     /**
      * The font size of the annotation
@@ -40,10 +43,8 @@ public class PointPainterLabel extends APointPainter<PointPainterLabel> {
 
     /**
      * Creates an instance with a default font size of 10
-     * <p/>
      */
     public PointPainterLabel() {
-
         this.setFontSize(FONT_SIZE);
     }
 
@@ -53,7 +54,6 @@ public class PointPainterLabel extends APointPainter<PointPainterLabel> {
      * @param size the font size to use.
      */
     public PointPainterLabel(final int size) {
-
         this.setFontSize(size);
     }
 
@@ -63,19 +63,11 @@ public class PointPainterLabel extends APointPainter<PointPainterLabel> {
     @Override
     public boolean equals(final Object obj) {
 
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (this.getClass() != obj.getClass()) {
-            return false;
-        }
+        if (this == obj) return true;
+        if (!super.equals(obj)) return false;
+        if (this.getClass() != obj.getClass()) return false;
         final PointPainterLabel other = (PointPainterLabel) obj;
-        if (this.fontSize != other.fontSize) {
-            return false;
-        }
+        if (this.fontSize != other.fontSize) return false;
 
         return true;
     }
@@ -86,7 +78,6 @@ public class PointPainterLabel extends APointPainter<PointPainterLabel> {
      * @return the font size of the annotations
      */
     public int getFontSize() {
-
         return this.fontSize;
     }
 
@@ -110,7 +101,7 @@ public class PointPainterLabel extends APointPainter<PointPainterLabel> {
      *      int, java.awt.Graphics, info.monitorenter.gui.chart.ITracePoint2D)
      */
     public void paintPoint(final int absoluteX, final int absoluteY, final int nextX, final int nextY, final Graphics g,
-                           final ITracePoint2D original) {
+            final ITracePoint2D original) {
 
         if (nextY < absoluteY) {
             lowestOriginal = original;
@@ -120,7 +111,6 @@ public class PointPainterLabel extends APointPainter<PointPainterLabel> {
                 String value = MathUtils.roundToThreeDecimals(lowestOriginal.getX()) + "";
                 int stringWidth = g.getFontMetrics(font).stringWidth(value);
                 g.drawString(value, absoluteX - (stringWidth / 2), absoluteY - OFFSET_Y);
-
             }
             lowestOriginal = null;
         }

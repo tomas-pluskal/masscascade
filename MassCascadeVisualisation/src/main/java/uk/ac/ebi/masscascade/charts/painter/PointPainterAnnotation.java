@@ -26,12 +26,14 @@ import uk.ac.ebi.masscascade.parameters.Constants;
 import java.awt.*;
 
 /**
- * Class implementing an annotated xy data point painter for the JChart2D library
+ * Class implementing an annotated xy data point painter for the JChart2D library.
  */
 public class PointPainterAnnotation extends APointPainter<PointPainterAnnotation> {
 
     private final static int OFFSET_Y = 15;
     private final static int FONT_SIZE = 10;
+
+    private static final long serialVersionUID = -4746517368924243324L;
 
     /**
      * The font size of the annotation
@@ -41,10 +43,8 @@ public class PointPainterAnnotation extends APointPainter<PointPainterAnnotation
 
     /**
      * Creates an instance with a default font size of 10
-     * <p/>
      */
     public PointPainterAnnotation() {
-
         this.setFontSize(FONT_SIZE);
     }
 
@@ -54,7 +54,6 @@ public class PointPainterAnnotation extends APointPainter<PointPainterAnnotation
      * @param size the font size to use.
      */
     public PointPainterAnnotation(final int size) {
-
         this.setFontSize(size);
     }
 
@@ -87,7 +86,6 @@ public class PointPainterAnnotation extends APointPainter<PointPainterAnnotation
      * @return the font size of the annotations
      */
     public int getFontSize() {
-
         return this.fontSize;
     }
 
