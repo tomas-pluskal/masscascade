@@ -16,10 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
-package uk.ac.ebi.masscascade.tables.renderer;
 
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.utilities.math.MathUtils;
+package uk.ac.ebi.masscascade.alignment.renderer;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -27,33 +25,28 @@ import java.awt.*;
 import java.text.DecimalFormat;
 
 /**
- * Custom number cell renderer for profile objects.
- *
- * @author Stephan Beisken
+ * Renders a cell in a <code> JTable </code> based on its boolean value. Green if <code> true </code>, red if <code>
+ * false </code>.
  */
-public class ScientificCellRenderer extends DefaultTableCellRenderer {
+public class PrettyFileRenderer extends DefaultTableCellRenderer {
 
-    private static final long serialVersionUID = 8886502928302693092L;
+    private static final long serialVersionUID = -3037535081597806282L;
+
+    private Color red = new Color(255, 0, 0, 128);
+    private Color green = new Color(0, 255, 0, 128);
 
     public Component getTableCellRendererComponent(JTable jTable, Object value, boolean isSelected, boolean hasFocus,
-                                                   int row, int column) {
+            int row, int column) {
 
         Component c = super.getTableCellRendererComponent(jTable, value, isSelected, hasFocus, row, column);
 
-        if (c instanceof JLabel && value instanceof Profile) {
+        if (c instanceof JLabel && value instanceof Boolean) {
             JLabel label = (JLabel) c;
-            label.setHorizontalAlignment(JLabel.RIGHT);
-            label.setText("" + (MathUtils.SCIENTIFIC_FORMAT.format(((Profile) value).getArea())));
+            Boolean bool = (Boolean) value;
+            if (bool) label.setBackground(green);
+            else label.setBackground(red);
+            label.setText("");
         }
-
-        if (c instanceof JLabel && value instanceof Number) {
-            JLabel label = (JLabel) c;
-            label.setHorizontalAlignment(JLabel.RIGHT);
-            Number num = (Number) value;
-            String text = MathUtils.SCIENTIFIC_FORMAT.format(num);
-            label.setText(text);
-        }
-
         return c;
     }
 }

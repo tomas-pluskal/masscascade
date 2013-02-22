@@ -16,10 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
  */
-package uk.ac.ebi.masscascade.tables.renderer;
 
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.utilities.math.MathUtils;
+package uk.ac.ebi.masscascade.alignment.renderer;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -27,30 +25,37 @@ import java.awt.*;
 import java.text.DecimalFormat;
 
 /**
- * Custom number cell renderer for profile objects.
- *
- * @author Stephan Beisken
+ * Renders a cell in a <code> JTable </code>. <code> Double </code> values are formatted to three decimal points and
+ * decorated with a "ppm" suffix indicating the range of the value.
  */
-public class ScientificCellRenderer extends DefaultTableCellRenderer {
+public class PrettyPpmRenderer extends DefaultTableCellRenderer {
 
-    private static final long serialVersionUID = 8886502928302693092L;
+    private static final long serialVersionUID = 6209228142986532913L;
+
+    private double ppm;
+    private DecimalFormat numberFormat;
+
+    public PrettyPpmRenderer(double ppm) {
+        this.ppm = ppm;
+        numberFormat = new DecimalFormat("#,###0.000;(#,###0.000)");
+    }
+
+    public PrettyPpmRenderer(double ppm, DecimalFormat numberFormat) {
+        this.ppm = ppm;
+        this.numberFormat = numberFormat;
+    }
 
     public Component getTableCellRendererComponent(JTable jTable, Object value, boolean isSelected, boolean hasFocus,
-                                                   int row, int column) {
+            int row, int column) {
 
         Component c = super.getTableCellRendererComponent(jTable, value, isSelected, hasFocus, row, column);
-
-        if (c instanceof JLabel && value instanceof Profile) {
-            JLabel label = (JLabel) c;
-            label.setHorizontalAlignment(JLabel.RIGHT);
-            label.setText("" + (MathUtils.SCIENTIFIC_FORMAT.format(((Profile) value).getArea())));
-        }
 
         if (c instanceof JLabel && value instanceof Number) {
             JLabel label = (JLabel) c;
             label.setHorizontalAlignment(JLabel.RIGHT);
             Number num = (Number) value;
-            String text = MathUtils.SCIENTIFIC_FORMAT.format(num);
+            String text = numberFormat.format(num);
+            text += (" \u00B1 " + ppm + "ppm");
             label.setText(text);
         }
 
