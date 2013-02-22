@@ -44,6 +44,12 @@ import java.util.concurrent.Future;
 /**
  * Web task to query ChemSpider for compounds that match the major isotopic mass of a given ion. ChemSpider requires
  * users to provide a token for certain web services which must be provided for the web task to work.
+ * <ul>
+ * <li>Parameter <code> MZ WINDOW PPM </code>- The m/z tolerance value in ppm.</li>
+ * <li>Parameter <code> ION MODE </code>- The ion mode.</li>
+ * <li>Parameter <code> SECURITY TOKEN </code>- The ChemSpider security token.</li>
+ * <li>Parameter <code> PROFILE CONTAINER </code>- The input profile container.</li>
+ * </ul>
  */
 public class ChemSpiderSearch extends CallableTask {
 

@@ -46,6 +46,14 @@ import java.util.concurrent.Future;
 
 /**
  * Web task to run a spectrum search against MassBank using the MassBank web service.
+ * <ul>
+ * <li>Parameter <code> MZ WINDOW PPM </code>- The m/z tolerance value in ppm.</li>
+ * <li>Parameter <code> ION MODE </code>- The ion mode.</li>
+ * <li>Parameter <code> RESULTS </code>- The max. number of retrieved results.</li>
+ * <li>Parameter <code> INSTRUMENTS </code>- The instruments to be included in the query.</li>
+ * <li>Parameter <code> MIN PROFILE INTENSITY </code>- The min. valid profile intensity.</li>
+ * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input spectrum container.</li>
+ * </ul>
  */
 public class MassBankSearch extends CallableTask {
 
