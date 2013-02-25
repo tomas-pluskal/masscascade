@@ -20,22 +20,25 @@
 package uk.ac.ebi.masscascade.alignment;
 
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Trace;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.utilities.DataUtils;
+import uk.ac.ebi.masscascade.utilities.comparator.ProfileMassComparator;
 import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
+import uk.ac.ebi.masscascade.utilities.xyz.XYTrace;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 
 /**
  * Table model for arranging multiple profile containers in a <code> JTable </code>. The profiles in the containers are
  * grouped by their m/z and retention time values based on the given tolerance values.
  */
-public class AlignedProfileModel extends AbstractTableModel {
+public class ProfileBinTableModel extends AbstractTableModel {
 
     private static final long serialVersionUID = 1526497097606220131L;
 
@@ -43,7 +46,7 @@ public class AlignedProfileModel extends AbstractTableModel {
     private double ppm;
     private double sec;
 
-    private List<AlignedRow> alignedRows;
+    private List<ProfileBin> profileBins;
     private String[] headers = new String[]{"m/z", "rt", "area", "label", "m/z dev", "shape"};
 
     /**
@@ -53,11 +56,11 @@ public class AlignedProfileModel extends AbstractTableModel {
      * @param ppm               the m/z tolerance value in ppm
      * @param sec               the time tolerance value in seconds
      */
-    public AlignedProfileModel(List<ProfileContainer> profileContainers, double ppm, double sec) {
+    public ProfileBinTableModel(List<ProfileContainer> profileContainers, double ppm, double sec) {
 
         this.profileContainers = profileContainers;
         this.ppm = ppm;
-        this.sec = sec;
+        this.sec = sec / 2d;
 
         init();
     }
@@ -72,7 +75,7 @@ public class AlignedProfileModel extends AbstractTableModel {
     public Map<String, Profile> getProfilesForRow(int rowIndex) {
 
         Map<String, Profile> idToProfile = new HashMap<String, Profile>();
-        for (Map.Entry<Integer, Integer> entry : alignedRows.get(rowIndex).getContainerIndexToProfileId().entrySet()) {
+        for (Map.Entry<Integer, Integer> entry : profileBins.get(rowIndex).getContainerIndexToProfileId().entrySet()) {
             Profile profile = profileContainers.get(entry.getKey()).getProfile(entry.getValue());
             String id = "(" + entry.getKey() + "-" + profile.getId() + ")";
             idToProfile.put(id, profile);
@@ -105,7 +108,7 @@ public class AlignedProfileModel extends AbstractTableModel {
      */
     @Override
     public int getRowCount() {
-        return alignedRows.size();
+        return profileBins.size();
     }
 
     /**
@@ -115,7 +118,7 @@ public class AlignedProfileModel extends AbstractTableModel {
      */
     @Override
     public int getColumnCount() {
-        return AlignedRow.COLUMNS + profileContainers.size();
+        return ProfileBin.COLUMNS + profileContainers.size();
     }
 
     /**
@@ -126,8 +129,8 @@ public class AlignedProfileModel extends AbstractTableModel {
      */
     public String getColumnName(int col) {
 
-        if (col < AlignedRow.COLUMNS) return headers[col];
-        else return "(" + (col - AlignedRow.COLUMNS) + ") " + profileContainers.get(col - AlignedRow.COLUMNS).getId();
+        if (col < ProfileBin.COLUMNS) return headers[col];
+        else return "(" + (col - ProfileBin.COLUMNS) + ") " + profileContainers.get(col - ProfileBin.COLUMNS).getId();
     }
 
     /**
@@ -143,25 +146,25 @@ public class AlignedProfileModel extends AbstractTableModel {
         Object value;
         switch (columnIndex) {
             case 0:
-                value = alignedRows.get(rowIndex).getMz();
+                value = profileBins.get(rowIndex).getMz();
                 break;
             case 1:
-                value = alignedRows.get(rowIndex).getRt();
+                value = profileBins.get(rowIndex).getRt();
                 break;
             case 2:
-                value = alignedRows.get(rowIndex).getArea();
+                value = profileBins.get(rowIndex).getArea();
                 break;
             case 3:
-                value = alignedRows.get(rowIndex).getLabel();
+                value = profileBins.get(rowIndex).getLabel();
                 break;
             case 4:
-                value = alignedRows.get(rowIndex).getMzDev();
+                value = profileBins.get(rowIndex).getMzDev();
                 break;
             case 5:
-                value = alignedRows.get(rowIndex).getChromatogram();
+                value = profileBins.get(rowIndex).getChromatogram();
                 break;
             default:
-                value = alignedRows.get(rowIndex).isPresent(columnIndex - AlignedRow.COLUMNS);
+                value = profileBins.get(rowIndex).isPresent(columnIndex - ProfileBin.COLUMNS);
                 break;
         }
         return value;
@@ -184,33 +187,49 @@ public class AlignedProfileModel extends AbstractTableModel {
      */
     private void init() {
 
-        int index = 0;
-        TreeSet<AlignedRow> alignedRows = new TreeSet<AlignedRow>(new AlignedRowComparator(sec));
+        int index = -1;
+        ProfileMap timeBins = new ProfileMap();
         for (ProfileContainer container : profileContainers) {
-            for (Profile profile : container) {
-                AlignedRow row = new AlignedRow(index, profile, container.size());
-                AlignedRow closestAlignedRow = DataUtils.getClosestValue(row, alignedRows);
-
-                if (closestAlignedRow == null) alignedRows.add(row);
-                else if (isWithinMz(closestAlignedRow, row)) {
-                    closestAlignedRow.add(index, profile);
-                    alignedRows.add(closestAlignedRow);
-                } else alignedRows.add(row);
-            }
+            List<Profile> profiles = container.getProfileList();
+            Collections.sort(profiles, new ProfileMassComparator());
             index++;
+            for (Profile profile : profiles) {
+                double rt = profile.getRetentionTime();
+                XYTrace mzTrace = new XYTrace(profile.getMzIntDp());
+                Trace closestMzTrace = DataUtils.getClosestKey(mzTrace, timeBins);
+
+                if ((profile.getMz() + "").startsWith("107.049") || (profile.getMz() + "").startsWith("107.050")){
+                    System.out.println("A");
+                }
+
+                ProfileBin timeBin = new ProfileBin(index, profile, profileContainers.size());
+                if (closestMzTrace != null && timeBins.containsKey(closestMzTrace)) {
+
+                    if (new ToleranceRange(closestMzTrace.getAvg(), ppm).contains(profile.getMz())) {
+
+                        int cIndex = 0;
+                        List<ProfileBin> mzTimeBins = timeBins.get(closestMzTrace);
+                        ProfileBin cTimeBin = mzTimeBins.get(cIndex);
+                        for (int i = 1; i < mzTimeBins.size(); i++) {
+                            ProfileBin nTimeBin = mzTimeBins.get(i);
+                            if (Math.abs(nTimeBin.getRt() - rt) < Math.abs(cTimeBin.getRt() - rt)) {
+                                cTimeBin = nTimeBin;
+                                cIndex = i;
+                            }
+                        }
+                        if (cTimeBin.getRt() - sec <= rt && cTimeBin.getRt() + sec > rt) {
+                            cTimeBin.add(index, profile);
+                            timeBins.add(closestMzTrace, cTimeBin, cIndex);
+                        } else timeBins.put(closestMzTrace, cTimeBin);
+
+                        continue;
+                    }
+                }
+                timeBins.put(mzTrace, timeBin);
+            }
         }
 
-        this.alignedRows = new ArrayList<AlignedRow>(alignedRows);
-    }
-
-    /**
-     * Tests if m/z values of two rows are within the defined m/z tolerance range of each other.
-     *
-     * @param alignedRow the target row to be compared to
-     * @param row        the query row to be used for comparison
-     * @return if the row is in range of the aligned row
-     */
-    private boolean isWithinMz(AlignedRow alignedRow, AlignedRow row) {
-        return new ToleranceRange(alignedRow.getMz(), ppm).contains(row.getMz());
+        profileBins = new ArrayList<ProfileBin>();
+        for (List<ProfileBin> bin : timeBins.values()) profileBins.addAll(bin);
     }
 }

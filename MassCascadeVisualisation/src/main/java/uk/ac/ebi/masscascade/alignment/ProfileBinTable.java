@@ -32,17 +32,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A table tailored to the {@link AlignedProfileModel}. The table automatically sets column sorter for the m/z and
+ * A table tailored to the {@link ProfileBinTableModel}. The table automatically sets column sorter for the m/z and
  * retention time columns and renderer for all columns.
  */
-public class AlignedProfileTable extends JTable {
+public class ProfileBinTable extends JTable {
 
     private static final long serialVersionUID = 401128003027178352L;
 
     /**
-     * Constructs a table tailored to the <code> AlignedProfileModel </code>.
+     * Constructs a table tailored to the <code> ProfileBinTableModel </code>.
      */
-    public AlignedProfileTable() {
+    public ProfileBinTable() {
 
         super();
         setAutoCreateRowSorter(true);
@@ -50,26 +50,26 @@ public class AlignedProfileTable extends JTable {
     }
 
     /**
-     * Sets the table model which should be of type <code> AlignedProfileModel </code>. The methods layouts and
+     * Sets the table model which should be of type <code> ProfileBinTableModel </code>. The methods layouts and
      * decorates the table.
      *
-     * @param tableModel the <code> AlignedProfileModel </code>
+     * @param tableModel the <code> ProfileBinTableModel </code>
      */
     @Override
     public void setModel(TableModel tableModel) {
 
         super.setModel(tableModel);
 
-        if (!(tableModel instanceof AlignedProfileModel)) return;
+        if (!(tableModel instanceof ProfileBinTableModel)) return;
 
         getColumnModel().getColumn(0).setCellRenderer(
-                new PrettyPpmRenderer(((AlignedProfileModel) tableModel).getPpm()));
+                new PrettyPpmRenderer(((ProfileBinTableModel) tableModel).getPpm()));
         getColumnModel().getColumn(1).setCellRenderer(
-                new PrettySecRenderer(((AlignedProfileModel) tableModel).getSec()));
+                new PrettySecRenderer(((ProfileBinTableModel) tableModel).getSec()));
         getColumnModel().getColumn(2).setCellRenderer(new ScientificCellRenderer());
         getColumnModel().getColumn(4).setCellRenderer(new ScientificCellRenderer());
         getColumnModel().getColumn(5).setCellRenderer(new XicCellRenderer());
-        for (int i = AlignedRow.COLUMNS; i < tableModel.getColumnCount(); i++)
+        for (int i = ProfileBin.COLUMNS; i < tableModel.getColumnCount(); i++)
             getColumnModel().getColumn(i).setCellRenderer(new PrettyFileRenderer());
 
         TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>();

@@ -20,22 +20,18 @@
 package uk.ac.ebi.masscascade.alignment;
 
 import uk.ac.ebi.masscascade.core.chromatogram.MassChromatogram;
-import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.Chromatogram;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.utilities.NumberAdapter;
-import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
- * A binned row for use with the {@link AlignedProfileModel}. This row keeps track of the average value of its core
+ * A binned row for use with the {@link ProfileBinTableModel}. This row keeps track of the average value of its core
  * values and collects profile - profile container associations for profiles that fall into this bin.
  */
-public class AlignedRow extends NumberAdapter {
+public class ProfileBin extends NumberAdapter {
 
     public static final int COLUMNS = 6;
     private static final long serialVersionUID = -5372748569405945605L;
@@ -58,7 +54,7 @@ public class AlignedRow extends NumberAdapter {
      *
      * @param fileColumns the number of columns
      */
-    public AlignedRow(int fileColumns) {
+    public ProfileBin(int fileColumns) {
 
         mz = 0;
         rt = 0;
@@ -81,7 +77,7 @@ public class AlignedRow extends NumberAdapter {
      * @param profile     the first profile for the bin
      * @param fileColumns the number of columns
      */
-    public AlignedRow(int index, Profile profile, int fileColumns) {
+    public ProfileBin(int index, Profile profile, int fileColumns) {
 
         this(fileColumns);
         add(index, profile);

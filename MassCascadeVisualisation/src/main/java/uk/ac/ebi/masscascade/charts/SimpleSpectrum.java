@@ -62,7 +62,7 @@ public class SimpleSpectrum extends ZoomableChart {
     private static final int DISC_SIZE = 5;
     private static final int FONT_SIZE = 10;
     private static final int SCALE = 1000;
-    private static final int PRECISION = 5;
+    private static final int PRECISION = 4;
 
     private IRangePolicy rangePolicyY;
     private IRangePolicy rangePolicyX;
