@@ -19,12 +19,11 @@
 
 package uk.ac.ebi.masscascade.filter;
 
-import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.interfaces.Range;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.DataUtils;
@@ -51,11 +50,11 @@ public class MzFilter extends CallableTask {
     private ProfileContainer sampleContainer;
 
     /**
-     * Constructor for a mass filter task.
+     * Constructs a mass filter task.
      *
-     * @param params the parameter map
+     * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the task fails
      */
     public MzFilter(ParameterMap params) throws MassCascadeException {
 
@@ -64,12 +63,13 @@ public class MzFilter extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the mass filter task.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the new parameter values
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
+    @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
@@ -82,9 +82,10 @@ public class MzFilter extends CallableTask {
     }
 
     /**
-     * Executes the mass filter task.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .RawContainer} with the processed data.
      *
-     * @return the filtered profile collection
+     * @return the profile container with the processed data
      */
     @Override
     public ProfileContainer call() {

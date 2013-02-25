@@ -19,8 +19,6 @@
 
 package uk.ac.ebi.masscascade.identification;
 
-import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
-import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
@@ -56,11 +54,11 @@ public class IsotopeFinder extends CallableTask {
     }
 
     /**
-     * Constructor for a isotope finder taks.
+     * Constructs an isotope finder task.
      *
-     * @param params the parameter map
+     * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the task fails
      */
     public IsotopeFinder(ParameterMap params) throws MassCascadeException {
 
@@ -69,12 +67,13 @@ public class IsotopeFinder extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the isotope finder task.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the new parameter values
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
+    @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         massTolerance = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
@@ -82,9 +81,10 @@ public class IsotopeFinder extends CallableTask {
     }
 
     /**
-     * Executes the isotope detection task.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .RawContainer} with the processed data.
      *
-     * @return the isotope-detected peaks
+     * @return the spectrum container with the processed data
      */
     @Override
     public SpectrumContainer call() {

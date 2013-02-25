@@ -51,11 +51,11 @@ public class IsotopeKeeper extends CallableTask {
     private SpectrumContainer spectrumContainer;
 
     /**
-     * Constructor for an isotope keeper task.
+     * Constructs an isotope keeper task.
      *
-     * @param params the parameter map
+     * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the task fails
      */
     public IsotopeKeeper(ParameterMap params) throws MassCascadeException {
 
@@ -64,21 +64,23 @@ public class IsotopeKeeper extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the isotope keeper task.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the new parameter values
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
+    @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
     }
 
     /**
-     * Executes the isotope keeper task.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .RawContainer} with the processed data.
      *
-     * @return the isotope profile collection
+     * @return the spectrum container with the processed data
      */
     @Override
     public SpectrumContainer call() {

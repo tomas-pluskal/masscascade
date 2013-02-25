@@ -19,7 +19,6 @@
 
 package uk.ac.ebi.masscascade.smoothing;
 
-import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
@@ -49,9 +48,9 @@ public class SavitzkyGolaySmoothing extends CallableTask {
     /**
      * Constructs a Savitzky Golay smoothing task.
      *
-     * @param params the new parameter values
+     * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the task fails
      */
     public SavitzkyGolaySmoothing(ParameterMap params) throws MassCascadeException {
 
@@ -60,13 +59,14 @@ public class SavitzkyGolaySmoothing extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the smoothing task.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the new parameter values
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
-    private void setParameters(ParameterMap params) throws MassCascadeException {
+    @Override
+    public void setParameters(ParameterMap params) throws MassCascadeException {
 
         order = params.get(Parameter.POLYNOMIAL_ORDER, Integer.class);
         mzWindow = params.get(Parameter.DATA_WINDOW, Integer.class);
@@ -75,9 +75,10 @@ public class SavitzkyGolaySmoothing extends CallableTask {
     }
 
     /**
-     * Smoothes the profiles in the profile container.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .RawContainer} with the processed data.
      *
-     * @return the smoothed mass spec profile
+     * @return the profile container with the processed data
      */
     @Override
     public ProfileContainer call() {

@@ -19,12 +19,11 @@
 
 package uk.ac.ebi.masscascade.smoothing;
 
-import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Scan;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -53,11 +52,11 @@ public class RunningMedianSmoothing extends CallableTask {
     private RawContainer rawContainer;
 
     /**
-     * Constructs a running median smoother task.
+     * Constructs a median smoother task.
      *
-     * @param params the parameter map
+     * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the task fails
      */
     public RunningMedianSmoothing(ParameterMap params) throws MassCascadeException {
 
@@ -66,13 +65,14 @@ public class RunningMedianSmoothing extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the median smoother.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the new parameter values
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
-    private void setParameters(ParameterMap params) throws MassCascadeException {
+    @Override
+    public void setParameters(ParameterMap params) throws MassCascadeException {
 
         mzWindow = params.get(Parameter.DATA_WINDOW, Integer.class);
         msn = params.get(Parameter.MS_LEVEL, Constants.MSN.class);
@@ -113,9 +113,10 @@ public class RunningMedianSmoothing extends CallableTask {
     }
 
     /**
-     * Smoothes the scan list in the mz domain.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .RawContainer} with the processed data.
      *
-     * @return the mass spec container
+     * @return the raw container with the processed data
      */
     @Override
     public RawContainer call() {

@@ -46,8 +46,9 @@ public class DurbinWatsonFilter extends CallableTask {
     /**
      * Constructs a Durbin-Watson filter task.
      *
-     * @param params a parameter map
-     * @throws MassCascadeException
+     * @param params the parameter map holding all required task parameters
+     * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
+     *          if the task fails
      */
     public DurbinWatsonFilter(ParameterMap params) throws MassCascadeException {
 
@@ -56,12 +57,13 @@ public class DurbinWatsonFilter extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the Durbin-Watson task.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the parameter map
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
+    @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         dwThreshold = params.get(Parameter.DURBIN, Double.class);
@@ -69,10 +71,10 @@ public class DurbinWatsonFilter extends CallableTask {
     }
 
     /**
-     * Applies the Durbin-Watson criterion to the profiles.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .ProfileContainer} with the processed data.
      *
-     * @return the profile container
-     * @throws Exception unexptected behaviour
+     * @return the profile container with the processed data
      */
     @Override
     public ProfileContainer call() {

@@ -73,11 +73,24 @@ public class BackgroundSubtraction extends CallableTask {
     private final TreeSet<Trace> traces = new TreeSet<Trace>();
     private final TreeSet<Trace> tracesExtended = new TreeSet<Trace>();
 
+    /**
+     * Constructs an empty background subtraction task. This constructor should only be used to retrieve the <code>
+     * Parameter.REFERENCE_RAW_MAP </code> via the <code> getReference() </code> method.
+     *
+     * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
+     *          if the task fails
+     */
     public BackgroundSubtraction() throws MassCascadeException {
 
         super(BackgroundSubtraction.class);
     }
 
+    /**
+     * Returns the reference map: m/z range to m/z trace along the time axis.
+     *
+     * @param bgRawContainer the background raw container
+     * @return the reference map
+     */
     public TreeMultimap<Range, Trace> getReference(RawContainer bgRawContainer) {
 
         this.bgRawContainer = bgRawContainer;
@@ -87,11 +100,11 @@ public class BackgroundSubtraction extends CallableTask {
     }
 
     /**
-     * Constructs the background subtraction task.
+     * Constructs a background subtraction task.
      *
-     * @param params the parameter map
+     * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *          description of the exception
+     *          if the task fails
      */
     public BackgroundSubtraction(ParameterMap params) throws MassCascadeException {
 
@@ -100,12 +113,13 @@ public class BackgroundSubtraction extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the background subtraction task.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the new parameter values
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
+    @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         timeWindow = params.get(Parameter.TIME_WINDOW, Double.class);
@@ -120,10 +134,10 @@ public class BackgroundSubtraction extends CallableTask {
     }
 
     /**
-     * Subtracts the background from the sample.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .RawContainer} with the processed data.
      *
-     * @return the background corrected sample
-     * @throws Exception unexptected behaviour
+     * @return the raw container with the processed data
      */
     @Override
     public RawContainer call() {
@@ -144,6 +158,11 @@ public class BackgroundSubtraction extends CallableTask {
         return outRawContainer;
     }
 
+    /**
+     * Subtracts the background from the raw container using the <code> Parameter.REFERENCE_RAW_MAP </code>.
+     *
+     * @param outRawContainer the output raw container
+     */
     private void subtractBackground(final RawContainer outRawContainer) {
 
         for (Scan scan : rawContainer) {
@@ -209,11 +228,21 @@ public class BackgroundSubtraction extends CallableTask {
         }
     }
 
+    /**
+     * Tests if two ranges overlap.
+     *
+     * @param range1 the first range
+     * @param range2 the second range
+     * @return if the two ranges overlap
+     */
     private boolean isOverlap(Range range1, Range range2) {
         return (range1.getLowerBounds() <= range2.getUpperBounds() && range1.getUpperBounds() >= range2
                 .getLowerBounds());
     }
 
+    /**
+     * Builds the reference map to be used for background subtraction.
+     */
     private void buildReferenceMap() {
 
         reference = TreeMultimap.create();
@@ -233,6 +262,11 @@ public class BackgroundSubtraction extends CallableTask {
         for (Trace trace : traces) reference.put(getTimeRange((XYZTrace) trace), trace);
     }
 
+    /**
+     * Takes the scan data and searches the existing traces for bins for every data point in the scan.
+     *
+     * @param scan the scan to be binned
+     */
     private void searchExistingTraces(Scan scan) {
 
         XYList dataPoints = scan.getData();
@@ -262,6 +296,9 @@ public class BackgroundSubtraction extends CallableTask {
         }
     }
 
+    /**
+     * After every iteration, i.e., scan, the trace map are updated to eliminate non-extended profiles.
+     */
     private void updateTraceMaps() {
 
         Iterator<Trace> iterator = traces.iterator();
@@ -278,16 +315,33 @@ public class BackgroundSubtraction extends CallableTask {
         tracesExtended.clear();
     }
 
+    /**
+     * Adds a trace to the trace map.
+     *
+     * @param trace the trace
+     */
     private void addTrace(XYZTrace trace) {
         tracesExtended.add(trace);
     }
 
+    /**
+     * Appends a trace to an existing trace.
+     *
+     * @param signalTrace  the new trace
+     * @param closestTrace the trace to be appended to
+     */
     private void appendTrace(XYZTrace signalTrace, XYZTrace closestTrace) {
 
         closestTrace.add(signalTrace.get(0));
         tracesExtended.add(closestTrace);
     }
 
+    /**
+     * Returns a time range for a trace based on the trace's retention time.
+     *
+     * @param trace the trace
+     * @return the time range
+     */
     private Range getTimeRange(XYZTrace trace) {
         return new SimpleRange(trace.get(0).x, trace.get(trace.size() - 1).x);
     }

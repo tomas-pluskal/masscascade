@@ -5,32 +5,30 @@ Tags: mass spectrometry, tandem mass spectrometry, analytical data processing
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-The MassCascade library provides diverse functionality for tandem mass spectrometry data processing.
-Currently, the library is integrated in in the workflow tool KNIME as community feature.
-The library has primarily been tested with metabolomics LC-MS data.
+The MassCascade library provides functionality for tandem mass spectrometry data processing and visualisation.
+It provides a plug-in for the workflow platform KNIME and has been tested with metabolomics LC-MS data.
 
 Description
 -------
 The following input formats are supported:
 * Thermo RAW file format
 * PSI mzML file format
-* CML file format ('MSnMetabolomics' convention)
 
 Functionality includes:
-* input (mzML, cml, raw) / output (cml)
-* scan-based sample to reference alignment using fast dynamic time warping
+* input (mzML, raw)
+* raw data- or profile-based sample alignment
 * background subtraction and noise reduction
-* data binning in the m/z and time domain
-* sample / profile filters in the m/z and time domain
-* profile-based gap filling using natural cubic splines
-* charge-based isotope and list-based adduct detection
-* mass-trace extraction and manipulation
+* data binning for the m/z and time domain
+* data and profile filters for the m/z and time domain
+* gap filling for chromatographic profiles using natural cubic splines
+* isotope and list-based adduct detection
+* ion chromatogram extraction and manipulation
 * data smoothing in the m/z and time domain
 * visualisation of spectra and chromatograms
 
-The two core categories are 'raw-' and 'profile-files'. The 'raw-files' contain raw data and the 'profile-files'
-extracted mass traces and annotated peaks. Both core categories are always serialized to the set working directory to
-reduce memory load and ensure persistence.
+The core classes are representations of essential mass spectrometry objects. These core objects are manipulated by task
+classes, each carrying out a single task on the core object. To reduce memory load and ensure persistence within a
+workflow environment, every task can serialize the core object to a specified directory if required.
 
 Installation
 -------

@@ -19,13 +19,12 @@
 
 package uk.ac.ebi.masscascade.centroiding;
 
-import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.core.raw.ScanImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Scan;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -60,11 +59,11 @@ public class WaveletPeakPicking extends CallableTask {
     private static final int WAVELET_ESR = 5;
 
     /**
-     * Constructor for the wavelet mass detection task.
+     * Constructs a wavelet centroiding task.
      *
-     * @param params the parameter map
+     * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the task fails
      */
     public WaveletPeakPicking(ParameterMap params) throws MassCascadeException {
 
@@ -73,11 +72,11 @@ public class WaveletPeakPicking extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the wavelet task.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the new parameters value
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
@@ -88,9 +87,10 @@ public class WaveletPeakPicking extends CallableTask {
     }
 
     /**
-     * Executes the task.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .RawContainer} with the processed data.
      *
-     * @return the mass detected mass spec sample
+     * @return the raw container with the processed data
      */
     @Override
     public RawContainer call() {

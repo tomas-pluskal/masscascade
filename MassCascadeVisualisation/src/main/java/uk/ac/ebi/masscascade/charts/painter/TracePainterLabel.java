@@ -29,6 +29,7 @@ import java.awt.*;
  */
 public class TracePainterLabel extends ATracePainter {
 
+    private static final long serialVersionUID = 4024016581806590579L;
     /**
      * The implementation for rendering the point as a disc.
      */
@@ -38,7 +39,6 @@ public class TracePainterLabel extends ATracePainter {
      * Creates an instance with a default font size of 10
      */
     public TracePainterLabel() {
-
         this.pointPainter = new PointPainterLabel(10);
     }
 
@@ -48,7 +48,6 @@ public class TracePainterLabel extends ATracePainter {
      * @param fontSize the font size
      */
     public TracePainterLabel(final int fontSize) {
-
         this.pointPainter = new PointPainterLabel(fontSize);
     }
 
@@ -100,7 +99,6 @@ public class TracePainterLabel extends ATracePainter {
      * @return font size
      */
     public int getFontSize() {
-
         return this.pointPainter.getFontSize();
     }
 
@@ -135,7 +133,6 @@ public class TracePainterLabel extends ATracePainter {
      * @param fontSize the font size
      */
     public void setFontSize(final int fontSize) {
-
         this.pointPainter.setFontSize(fontSize);
     }
 

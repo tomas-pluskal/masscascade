@@ -30,7 +30,6 @@ public class MassCascadeException extends RuntimeException {
      * @param message for the constructed exception
      */
     public MassCascadeException(String message) {
-
         super(message);
     }
 
@@ -41,7 +40,6 @@ public class MassCascadeException extends RuntimeException {
      * @param cause   the throwable that triggered this MassCascadeException
      */
     public MassCascadeException(String message, Throwable cause) {
-
         super(message, cause);
     }
 }

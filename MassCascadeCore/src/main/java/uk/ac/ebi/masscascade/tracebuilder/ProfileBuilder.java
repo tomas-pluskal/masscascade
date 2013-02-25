@@ -20,16 +20,15 @@
 package uk.ac.ebi.masscascade.tracebuilder;
 
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
-import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.interfaces.Trace;
+import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -76,11 +75,11 @@ public class ProfileBuilder extends CallableTask {
     private final TreeSet<Trace> tracesExtended = new TreeSet<Trace>();
 
     /**
-     * Constructor for a profile builder task.
+     * Constructs a profile builder task.
      *
-     * @param params the parameter map
+     * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the task fails
      */
     public ProfileBuilder(ParameterMap params) throws MassCascadeException {
 
@@ -94,13 +93,14 @@ public class ProfileBuilder extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the profile builder task.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the new parameter values
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
-    private void setParameters(ParameterMap params) throws MassCascadeException {
+    @Override
+    public void setParameters(ParameterMap params) throws MassCascadeException {
 
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         minIntensity = params.get(Parameter.MIN_PROFILE_INTENSITY, Double.class);
@@ -109,9 +109,10 @@ public class ProfileBuilder extends CallableTask {
     }
 
     /**
-     * Executes the mass builder task.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .RawContainer} with the processed data.
      *
-     * @return the profile container
+     * @return the raw container with the processed data
      */
     @Override
     public ProfileContainer call() {

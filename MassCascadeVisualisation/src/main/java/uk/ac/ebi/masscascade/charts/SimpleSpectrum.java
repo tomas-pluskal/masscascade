@@ -35,6 +35,7 @@ import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.charts.painter.AnnotatedTracePoint2D;
 import uk.ac.ebi.masscascade.charts.painter.TracePainterAnnotation;
 import uk.ac.ebi.masscascade.charts.painter.TracePainterLabel;
+import uk.ac.ebi.masscascade.charts.painter.TracePainterSpline;
 import uk.ac.ebi.masscascade.utilities.DataSet;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
@@ -61,13 +62,14 @@ public class SimpleSpectrum extends ZoomableChart {
     private static final int DISC_SIZE = 5;
     private static final int FONT_SIZE = 10;
     private static final int SCALE = 1000;
+    private static final int PRECISION = 5;
 
     private IRangePolicy rangePolicyY;
     private IRangePolicy rangePolicyX;
 
     private Map<String, ITrace2D> traces;
 
-    public static enum PAINTERS {LABEL, DISC, ANNO, POLY, BAR, DISC_ONLY}
+    public static enum PAINTERS {LABEL, DISC, ANNO, POLY, SPLINE, BAR, DISC_ONLY}
 
     private Map<PAINTERS, Boolean> painterMap = new HashMap<PAINTERS, Boolean>() {{
         this.put(PAINTERS.POLY, true);
@@ -303,6 +305,27 @@ public class SimpleSpectrum extends ZoomableChart {
     }
 
     /**
+     * Shows data points as spline-connected trace.
+     *
+     * @param dataSetTitle the data set identifier
+     */
+    public void toogleSplines(String dataSetTitle) {
+
+        toogleSplines(new String[]{dataSetTitle});
+    }
+
+    /**
+     * Shows data points as spline-connected trace.
+     *
+     * @param dataSetTitles the data set identifiers
+     */
+    public void toogleSplines(String[] dataSetTitles) {
+
+        switchPainter(PAINTERS.SPLINE);
+        updatePainters(dataSetTitles);
+    }
+
+    /**
      * Shows data points as polyline.
      *
      * @param dataSetTitle the data set identifier
@@ -382,6 +405,8 @@ public class SimpleSpectrum extends ZoomableChart {
                 force = true;
             } else if (painterMap.containsKey(PAINTERS.DISC_ONLY)) {
                 traces.get(dataSetTitle).setTracePainter(new TracePainterDisc(DISC_SIZE));
+            } else if (painterMap.containsKey(PAINTERS.SPLINE)) {
+                traces.get(dataSetTitle).setTracePainter(new TracePainterSpline(PRECISION));
             }
 
             if (painterMap.containsKey(PAINTERS.ANNO) && force) {

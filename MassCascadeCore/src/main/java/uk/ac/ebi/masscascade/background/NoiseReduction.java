@@ -70,9 +70,9 @@ public class NoiseReduction extends CallableTask {
     /**
      * Constructs a noise reduction task.
      *
-     * @param params the parameter map
+     * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the task fails
      */
     public NoiseReduction(ParameterMap params) throws MassCascadeException {
 
@@ -82,12 +82,13 @@ public class NoiseReduction extends CallableTask {
     }
 
     /**
-     * Sets the parameters attribute for the noise reduction task.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the parameter values
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
+    @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         minTraceWidth = params.get(Parameter.SCAN_WINDOW, Integer.class);
@@ -96,9 +97,10 @@ public class NoiseReduction extends CallableTask {
     }
 
     /**
-     * Reduces random noise in the mass spec sample.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .RawContainer} with the processed data.
      *
-     * @return the processed sample file
+     * @return the raw container with the processed data
      */
     @Override
     public RawContainer call() {

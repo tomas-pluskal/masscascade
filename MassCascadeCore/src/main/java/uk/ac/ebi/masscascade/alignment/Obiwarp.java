@@ -71,9 +71,11 @@ public class Obiwarp extends CallableTask {
     private String executable;
 
     /**
-     * Constructs an Obiwarp task.
+     * Constructs an Obiwarp alignment task.
      *
-     * @param params a parameter map
+     * @param params the parameter map holding all required task parameters
+     * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
+     *          if the task fails
      */
     public Obiwarp(ParameterMap params) {
 
@@ -82,13 +84,14 @@ public class Obiwarp extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the Obiwarp task.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the parameter values
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
-    private void setParameters(ParameterMap params) {
+    @Override
+    public void setParameters(ParameterMap params) {
 
         referenceFile = params.get(Parameter.REFERENCE_FILE, File.class);
         profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
@@ -103,9 +106,10 @@ public class Obiwarp extends CallableTask {
     }
 
     /**
-     * Executes the task and processes the data.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .RawContainer} with the processed data.
      *
-     * @return the processed profiles
+     * @return the profile container with the processed data
      */
     @Override
     public Container call() {

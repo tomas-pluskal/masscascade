@@ -53,11 +53,11 @@ public class RtBinning extends CallableTask {
     private int scanIndex;
 
     /**
-     * Constructs a custom rt binner task.
+     * Constructs a rt binner task.
      *
-     * @param params the parameter map
+     * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the task fails
      */
     public RtBinning(ParameterMap params) throws MassCascadeException {
 
@@ -66,12 +66,13 @@ public class RtBinning extends CallableTask {
     }
 
     /**
-     * Sets the parameters attribute of the rt binner task.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the new parameter values
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
+    @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         timeWindow = params.get(Parameter.SCAN_WINDOW, Double.class);
@@ -81,9 +82,10 @@ public class RtBinning extends CallableTask {
     }
 
     /**
-     * Bins a scan list along the retention time domain.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .RawContainer} with the processed data.
      *
-     * @return the binned scan list
+     * @return the raw container with the processed data
      */
     @Override
     public RawContainer call() {

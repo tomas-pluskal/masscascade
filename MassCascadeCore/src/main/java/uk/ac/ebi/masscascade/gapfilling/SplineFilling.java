@@ -22,7 +22,6 @@ package uk.ac.ebi.masscascade.gapfilling;
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import uk.ac.ebi.masscascade.core.chromatogram.MassChromatogram;
-import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
@@ -71,11 +70,11 @@ public class SplineFilling extends CallableTask {
     }
 
     /**
-     * Constructor for a gap filling task.
+     * Constructs a gap filling task.
      *
-     * @param params the parameter map
+     * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the task fails
      */
     public SplineFilling(ParameterMap params) throws MassCascadeException {
 
@@ -85,12 +84,13 @@ public class SplineFilling extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the spline gap filling task.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the parameter objects
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
+    @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         profileFile = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
@@ -98,9 +98,10 @@ public class SplineFilling extends CallableTask {
     }
 
     /**
-     * Executes the task.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .RawContainer} with the processed data.
      *
-     * @return the gap-filled mass spec profile list
+     * @return the raw container with the processed data
      */
     @Override
     public ProfileContainer call() {

@@ -20,18 +20,27 @@
 package uk.ac.ebi.masscascade.interfaces;
 
 import uk.ac.ebi.masscascade.interfaces.container.Container;
+import uk.ac.ebi.masscascade.parameters.ParameterMap;
 
 import java.util.concurrent.Callable;
 
 /**
- * Interface for all mass spectrometry tasks.
+ * Top-most interface that is implemented by all task classes that are callable. Task classes that implement this
+ * interface can run concurrently and accept parameters via a {@link ParameterMap}.
  */
 public interface Task extends Callable<Container> {
 
     /**
-     * Executes the task and processes the data.
+     * Sets the task class variables using the parameter map.
      *
-     * @return the processed mass spectrometry run
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
+     */
+    void setParameters(ParameterMap params);
+
+    /**
+     * Executes the task. The <code> Callable </code> returns a {@link Container} with the processed data.
+     *
+     * @return the container with the processed data
      */
     Container call();
 }

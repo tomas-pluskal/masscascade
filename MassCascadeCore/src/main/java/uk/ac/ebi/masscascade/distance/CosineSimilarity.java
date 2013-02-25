@@ -44,8 +44,8 @@ public class CosineSimilarity {
     /**
      * Calculates the cosine angle between the two profiles using the binned intensity values.
      *
-     * @param traceA first profile
-     * @param traceB second profile
+     * @param traceA the first profile
+     * @param traceB the second profile
      * @return the cosine similarity
      */
     public double getDistance(XYList traceA, XYList traceB) {

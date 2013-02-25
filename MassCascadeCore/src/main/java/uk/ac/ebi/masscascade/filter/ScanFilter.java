@@ -19,19 +19,18 @@
 
 package uk.ac.ebi.masscascade.filter;
 
-import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.container.Container;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Scan;
+import uk.ac.ebi.masscascade.interfaces.container.Container;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
-import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.ScanUtils;
+import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
@@ -51,11 +50,11 @@ public class ScanFilter extends CallableTask {
     private RawContainer rawContainer;
 
     /**
-     * Constructor for a scan filter task.
+     * Constructs a scan filter task.
      *
-     * @param params the parameter map
+     * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *          description of the exception
+     *          if the task fails
      */
     public ScanFilter(ParameterMap params) throws MassCascadeException {
 
@@ -64,12 +63,13 @@ public class ScanFilter extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the scan filter task.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the new parameter values
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *          description of the Exception
+     *          if the parameter map does not contain all variables required by this class
      */
+    @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         massRange = params.get(Parameter.MZ_RANGE, ExtendableRange.class);
@@ -78,9 +78,10 @@ public class ScanFilter extends CallableTask {
     }
 
     /**
-     * Executes the task.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .RawContainer} with the processed data.
      *
-     * @return the filtered scan collection
+     * @return the raw container with the processed data
      */
     @Override
     public Container call() {

@@ -145,35 +145,7 @@ public class DataUtils {
         Trace floorKey = traceMap.floorKey(trace);
         Trace ceilingKey = traceMap.higherKey(trace);
 
-        double deltaFloor = (floorKey != null) ? (trace.getAnchor() - floorKey.getAvg()) : Double.MAX_VALUE;
-        double deltaCeiling = (ceilingKey != null) ? (ceilingKey.getAvg() - trace.getAnchor()) : Double.MAX_VALUE;
-
-        if (floorKey == null && ceilingKey == null) return null;
-
-        return (deltaFloor <= deltaCeiling) ? floorKey : ceilingKey;
-    }
-
-    /**
-     * Returns the most proximate key in the value map for the given value.
-     *
-     * @param value    the query value
-     * @param traceMap the value map
-     * @param <T>      an object
-     * @return the most proximate key
-     */
-    public static <T> Double getClosestKey(Double value, TreeMap<Double, T> traceMap) {
-
-        if (traceMap == null || traceMap.isEmpty()) return null;
-
-        Double floorKey = traceMap.floorKey(value);
-        Double ceilingKey = traceMap.higherKey(value);
-
-        double deltaFloor = (floorKey != null) ? (value - floorKey) : Double.MAX_VALUE;
-        double deltaCeiling = (ceilingKey != null) ? (ceilingKey - value) : Double.MAX_VALUE;
-
-        if (floorKey == null && ceilingKey == null) return null;
-
-        return (deltaFloor <= deltaCeiling) ? floorKey : ceilingKey;
+        return getClosest(floorKey, ceilingKey, trace);
     }
 
     /**
@@ -190,12 +162,35 @@ public class DataUtils {
         Trace floorValue = valueSet.floor(trace);
         Trace ceilingValue = valueSet.higher(trace);
 
-        double deltaFloor = (floorValue != null) ? (trace.getAnchor() - floorValue.getAvg()) : Double.MAX_VALUE;
-        double deltaCeiling = (ceilingValue != null) ? (ceilingValue.getAvg() - trace.getAnchor()) : Double.MAX_VALUE;
+        return getClosest(floorValue, ceilingValue, trace);
+    }
 
-        if (floorValue == null && ceilingValue == null) return null;
+    private static Trace getClosest(Trace floor, Trace ceiling, Trace value) {
 
-        return (deltaFloor <= deltaCeiling) ? floorValue : ceilingValue;
+        double deltaFloor = (floor != null) ? (value.getAnchor() - floor.getAvg()) : Double.MAX_VALUE;
+        double deltaCeiling = (ceiling != null) ? (ceiling.getAvg() - value.getAnchor()) : Double.MAX_VALUE;
+
+        if (floor == null && ceiling == null) return null;
+
+        return (deltaFloor <= deltaCeiling) ? floor : ceiling;
+    }
+
+    /**
+     * Returns the most proximate key in the value map for the given value.
+     *
+     * @param value    the query value
+     * @param traceMap the value map
+     * @param <T>      an object
+     * @return the most proximate key
+     */
+    public static <T extends Number, K> T getClosestKey(T value, TreeMap<T, K> traceMap) {
+
+        if (traceMap == null || traceMap.isEmpty()) return null;
+
+        T floorKey = traceMap.floorKey(value);
+        T ceilingKey = traceMap.higherKey(value);
+
+        return getClosest(floorKey, ceilingKey, value);
     }
 
     /**
@@ -205,20 +200,25 @@ public class DataUtils {
      * @param valueSet the set of values
      * @return the most proximate value
      */
-    public static Double getClosestValue(double value, TreeSet<Double> valueSet) {
+    public static <T extends Number> T getClosestValue(T value, TreeSet<T> valueSet) {
 
         if (valueSet == null || valueSet.isEmpty()) return null;
 
         if (valueSet.contains(value)) return valueSet.floor(value);
 
-        Double floorValue = valueSet.floor(value);
-        Double ceilingValue = valueSet.higher(value);
+        T floorValue = valueSet.floor(value);
+        T ceilingValue = valueSet.higher(value);
 
-        double deltaFloor = (floorValue != null) ? (value - floorValue) : Double.MAX_VALUE;
-        double deltaCeiling = (ceilingValue != null) ? (ceilingValue - value) : Double.MAX_VALUE;
+        return getClosest(floorValue, ceilingValue, value);
+    }
 
-        if (floorValue == null && ceilingValue == null) return null;
+    private static <T extends Number> T getClosest(T floor, T ceiling, T value) {
 
-        return (deltaFloor <= deltaCeiling) ? floorValue : ceilingValue;
+        double deltaFloor = (floor != null) ? (value.doubleValue() - floor.doubleValue()) : Double.MAX_VALUE;
+        double deltaCeiling = (ceiling != null) ? (ceiling.doubleValue() - value.doubleValue()) : Double.MAX_VALUE;
+
+        if (floor == null && ceiling == null) return null;
+
+        return (deltaFloor <= deltaCeiling) ? floor : ceiling;
     }
 }

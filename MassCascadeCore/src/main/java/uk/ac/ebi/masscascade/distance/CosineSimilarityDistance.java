@@ -19,12 +19,11 @@
 
 package uk.ac.ebi.masscascade.distance;
 
-import org.jgrapht.*;
+import org.jgrapht.GraphHelper;
+import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
-import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
-import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
@@ -52,7 +51,6 @@ import java.util.Set;
  * <li>Parameter <code> PROFILE FILE </code>- The input profile container.</li>
  * </ul>
  */
-@SuppressWarnings("deprecation")
 public class CosineSimilarityDistance extends CallableTask {
 
     private ProfileContainer profileContainer;
@@ -65,9 +63,9 @@ public class CosineSimilarityDistance extends CallableTask {
     /**
      * Constructs a cosine similarity task.
      *
-     * @param params the parameter map
+     * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the task fails
      */
     public CosineSimilarityDistance(ParameterMap params) throws MassCascadeException {
 
@@ -77,12 +75,13 @@ public class CosineSimilarityDistance extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the cosine similarity task.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the new parameter values
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
+    @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
@@ -93,9 +92,10 @@ public class CosineSimilarityDistance extends CallableTask {
     }
 
     /**
-     * Executes mass builder task.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .RawContainer} with the processed data.
      *
-     * @return the trace container
+     * @return the spectrum container with the processed data
      */
     @Override
     public SpectrumContainer call() {

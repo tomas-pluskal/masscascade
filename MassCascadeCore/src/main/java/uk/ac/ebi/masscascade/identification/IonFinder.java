@@ -118,11 +118,11 @@ public class IonFinder extends CallableTask {
     }
 
     /**
-     * Constructor for a ion finder task.
+     * Constructs an ion finder task.
      *
-     * @param params the parameter map
+     * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the task fails
      */
     public IonFinder(ParameterMap params) throws MassCascadeException {
 
@@ -132,12 +132,13 @@ public class IonFinder extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the ion finder task.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the new parameter values
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
+    @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
@@ -146,9 +147,10 @@ public class IonFinder extends CallableTask {
     }
 
     /**
-     * Executes the ion finder task.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .RawContainer} with the processed data.
      *
-     * @return the annotated spectrum container
+     * @return the spectrum container with the processed data
      */
     @Override
     public SpectrumContainer call() {

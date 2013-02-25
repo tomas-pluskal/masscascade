@@ -60,8 +60,10 @@ public class ParameterMap {
 
         if (parameter == null) throw new MassCascadeException("Parameter is null");
 
-        if (instance.getClass().isInstance(parameter.getType()))
-            throw new MassCascadeException("Parameter value is not of type " + parameter.getType());
+        if (instance.getClass().isInstance(parameter.getType())) {
+            if (!(parameter.getType().equals(Double.class) && instance.getClass().equals(Integer.class)))
+                throw new MassCascadeException("Parameter value is not of type " + parameter.getType());
+        }
 
         parameters.put(parameter, instance);
     }
@@ -76,7 +78,10 @@ public class ParameterMap {
      */
     public <T> T get(Parameter parameter, Class<T> type) {
 
-        if (parameter.getType() != type) throw new MassCascadeException("Parameter value is not of type " + type);
+        if (parameter.getType() != type) {
+            if (!(type.equals(Double.class) && parameter.getType().equals(Integer.class)))
+                throw new MassCascadeException("Parameter value is not of type " + type);
+        }
 
         if (!parameters.containsKey(parameter)) throw new MassCascadeException(parameter.name() + " is not in the map");
 

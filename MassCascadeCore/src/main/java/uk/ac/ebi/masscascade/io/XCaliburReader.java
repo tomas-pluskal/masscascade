@@ -71,11 +71,11 @@ public class XCaliburReader extends CallableTask {
     private double parentMz = 0;
 
     /**
-     * Constructs a XCalibur reader.
+     * Constructs a XCalibur reader task.
      *
-     * @param params the parameter map: Data
+     * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the task fails
      */
     public XCaliburReader(ParameterMap params) throws MassCascadeException {
 
@@ -84,13 +84,14 @@ public class XCaliburReader extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the XCalibur reader.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the new parameter values
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
-    private void setParameters(ParameterMap params) throws MassCascadeException {
+    @Override
+    public void setParameters(ParameterMap params) throws MassCascadeException {
 
         file = params.get(Parameter.DATA_FILE, File.class);
         rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
@@ -99,9 +100,10 @@ public class XCaliburReader extends CallableTask {
     }
 
     /**
-     * Parses a XCalibur '.raw' file.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .RawContainer} with the processed data.
      *
-     * @return the compiled mass spec sample
+     * @return the raw container with the processed data
      */
     @Override
     public RawContainer call() {

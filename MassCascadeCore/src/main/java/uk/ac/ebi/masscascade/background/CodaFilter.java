@@ -19,7 +19,6 @@
 
 package uk.ac.ebi.masscascade.background;
 
-import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
@@ -46,6 +45,13 @@ public class CodaFilter extends CallableTask {
     private int windowSize;
     private ProfileContainer profileContainer;
 
+    /**
+     * Constructs a coda filter task.
+     *
+     * @param params the parameter map holding all required task parameters
+     * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
+     *          if the task fails
+     */
     public CodaFilter(ParameterMap params) throws MassCascadeException {
 
         super(CodaFilter.class);
@@ -53,12 +59,13 @@ public class CodaFilter extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the MCQ task.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the parameter values
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
+    @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         mcqThreshold = params.get(Parameter.CODA, Double.class);
@@ -67,10 +74,10 @@ public class CodaFilter extends CallableTask {
     }
 
     /**
-     * Applies the MCQ method to the profiles.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .ProfileContainer} with the processed data.
      *
-     * @return the profile container
-     * @throws Exception unexptected behaviour
+     * @return the profile container with the processed data
      */
     @Override
     public ProfileContainer call() {

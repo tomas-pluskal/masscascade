@@ -32,8 +32,8 @@ import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.properties.Isotope;
-import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.comparator.ProfileMassComparator;
+import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -80,6 +80,7 @@ public class ChemSpiderSearch extends CallableTask {
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
      *          if the parameter map does not contain all variables required by this class
      */
+    @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         massTolerance = params.get(Parameter.MZ_WINDOW_PPM, Double.class);

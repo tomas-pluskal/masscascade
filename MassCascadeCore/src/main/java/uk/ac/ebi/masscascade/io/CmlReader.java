@@ -54,6 +54,7 @@ import java.util.Iterator;
  * <li>Parameter <code> WORKING DIRECTORY </code>- The working directory.</li>
  * </ul>
  */
+@Deprecated
 public class CmlReader extends CallableTask {
 
     // CML element definitions
@@ -153,7 +154,7 @@ public class CmlReader extends CallableTask {
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
      *
      */
-    private void setParameters(ParameterMap params) throws MassCascadeException {
+    public void setParameters(ParameterMap params) throws MassCascadeException {
 
         File cmlFile = params.get(Parameter.DATA_FILE, File.class);
         workingDirectory = params.get(Parameter.WORKING_DIRECTORY, String.class);

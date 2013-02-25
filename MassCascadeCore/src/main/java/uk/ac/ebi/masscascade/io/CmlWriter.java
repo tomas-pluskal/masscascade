@@ -58,6 +58,7 @@ import java.util.List;
  * <li>Parameter <code> PROFILE FILE </code>- The profile container to be saved.</li>
  * </ul>
  */
+@Deprecated
 public class CmlWriter extends CallableTask {
 
     private FileRawContainer rawContainer;
@@ -85,7 +86,7 @@ public class CmlWriter extends CallableTask {
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
      *
      */
-    private void setParameters(ParameterMap params) throws MassCascadeException {
+    public void setParameters(ParameterMap params) throws MassCascadeException {
 
         path = params.get(Parameter.OUTPUT_DIRECTORY, String.class);
 

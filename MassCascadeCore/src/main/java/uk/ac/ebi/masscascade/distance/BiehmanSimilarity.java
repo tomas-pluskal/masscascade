@@ -19,8 +19,6 @@
 
 package uk.ac.ebi.masscascade.distance;
 
-import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
-import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
@@ -61,11 +59,11 @@ public class BiehmanSimilarity extends CallableTask {
     private static final int N_MAX = 3;
 
     /**
-     * Constructs a Biehman similarity task.
+     * Constructs a Biemann similarity task.
      *
-     * @param params the parameter map
+     * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the task fails
      */
     public BiehmanSimilarity(ParameterMap params) throws MassCascadeException {
 
@@ -74,12 +72,13 @@ public class BiehmanSimilarity extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the Biehman similarity task.
+     * Sets the task class variables using the parameter map.
      *
-     * @param params the new parameter values
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     *          if the parameter map does not contain all variables required by this class
      */
+    @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
@@ -88,9 +87,10 @@ public class BiehmanSimilarity extends CallableTask {
     }
 
     /**
-     * Executes the Biehman similarity task.
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .RawContainer} with the processed data.
      *
-     * @return the trace container
+     * @return the spectrum container with the processed data
      */
     @Override
     public SpectrumContainer call() {

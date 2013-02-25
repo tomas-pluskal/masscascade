@@ -22,15 +22,23 @@ package uk.ac.ebi.masscascade.interfaces;
 import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.parameters.CoreTasks;
+import uk.ac.ebi.masscascade.parameters.ParameterMap;
 
 /**
- * This is a callable task stub that instantiates the logging facility and retrieves the task identifier.
+ * An abstract implementation of a callable task class. The stub instantiates the logging facility and retrieves the
+ * task identifier.
  */
 public abstract class CallableTask implements Task {
 
     protected final Logger LOGGER;
     protected final String IDENTIFIER;
 
+    /**
+     * Constructs a callable task class with an assigned identifier. The task class to be constructed must be registered
+     * via its corresponding {@link Index}.
+     *
+     * @param taskClass the class of the task to be constructed
+     */
     public CallableTask(Class<? extends CallableTask> taskClass) {
 
         LOGGER = Logger.getLogger(taskClass);
@@ -38,9 +46,17 @@ public abstract class CallableTask implements Task {
     }
 
     /**
-     * Executes the task and processes the data.
+     * Sets the task class variables using the parameter map.
      *
-     * @return the processed mass spectrometry run
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
+     */
+    @Override
+    public abstract void setParameters(ParameterMap params);
+
+    /**
+     * Executes the task. The <code> Callable </code> returns a {@link Container} with the processed data.
+     *
+     * @return the container with the processed data
      */
     @Override
     public abstract Container call();
