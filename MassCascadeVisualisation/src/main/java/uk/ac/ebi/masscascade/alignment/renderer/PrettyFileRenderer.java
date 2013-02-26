@@ -40,10 +40,10 @@ public class PrettyFileRenderer extends DefaultTableCellRenderer {
 
         Component c = super.getTableCellRendererComponent(jTable, value, isSelected, hasFocus, row, column);
 
-        if (c instanceof JLabel && value instanceof Boolean) {
+        if (c instanceof JLabel && value instanceof Double) {
             JLabel label = (JLabel) c;
-            Boolean bool = (Boolean) value;
-            if (bool) label.setBackground(green);
+            double intensity = (Double) value;
+            if (intensity > 0) label.setBackground(green);
             else label.setBackground(red);
             label.setText("");
         }

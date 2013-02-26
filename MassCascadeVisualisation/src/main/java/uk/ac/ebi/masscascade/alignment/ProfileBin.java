@@ -42,7 +42,7 @@ public class ProfileBin extends NumberAdapter {
     private double area;
     private double mzDev;
     private Chromatogram chromatogram;
-    private boolean[] present;
+    private double[] present;
 
     private Map<Integer, Integer> containerIndexToProfileId;
     private int nProfiles;
@@ -62,7 +62,7 @@ public class ProfileBin extends NumberAdapter {
         area = 0;
         mzDev = 0;
         chromatogram = new MassChromatogram();
-        present = new boolean[fileColumns];
+        present = new double[fileColumns];
 
         containerIndexToProfileId = new HashMap<Integer, Integer>();
         nProfiles = 1;
@@ -100,7 +100,7 @@ public class ProfileBin extends NumberAdapter {
 
         if (nProfiles == 1) chromatogram = profile.getTrace();
 
-        present[index] = true;
+        present[index] = profile.getIntensity();
         containerIndexToProfileId.put(index, profile.getId());
 
         nProfiles++;
@@ -173,9 +173,9 @@ public class ProfileBin extends NumberAdapter {
      * Tests if a profile is present in the bin that belongs to the profile container at the specified index.
      *
      * @param index the profile container index
-     * @return if a profile of the profile container is in this bin
+     * @return the intensity of the profile if present, otherwise 0
      */
-    public boolean isPresent(int index) {
+    public double isPresent(int index) {
         return present[index];
     }
 

@@ -31,6 +31,7 @@ import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +39,7 @@ import java.util.Map;
  * Table model for arranging multiple profile containers in a <code> JTable </code>. The profiles in the containers are
  * grouped by their m/z and retention time values based on the given tolerance values.
  */
-public class ProfileBinTableModel extends AbstractTableModel {
+public class ProfileBinTableModel extends AbstractTableModel implements Iterable<ProfileBin> {
 
     private static final long serialVersionUID = 1526497097606220131L;
 
@@ -99,6 +100,15 @@ public class ProfileBinTableModel extends AbstractTableModel {
      */
     public double getSec() {
         return sec;
+    }
+
+    /**
+     * Returns the list of rows.
+     *
+     * @return te list of rows
+     */
+    public List<ProfileBin> getRows() {
+        return profileBins;
     }
 
     /**
@@ -198,10 +208,6 @@ public class ProfileBinTableModel extends AbstractTableModel {
                 XYTrace mzTrace = new XYTrace(profile.getMzIntDp());
                 Trace closestMzTrace = DataUtils.getClosestKey(mzTrace, timeBins);
 
-                if ((profile.getMz() + "").startsWith("107.049") || (profile.getMz() + "").startsWith("107.050")){
-                    System.out.println("A");
-                }
-
                 ProfileBin timeBin = new ProfileBin(index, profile, profileContainers.size());
                 if (closestMzTrace != null && timeBins.containsKey(closestMzTrace)) {
 
@@ -220,7 +226,7 @@ public class ProfileBinTableModel extends AbstractTableModel {
                         if (cTimeBin.getRt() - sec <= rt && cTimeBin.getRt() + sec > rt) {
                             cTimeBin.add(index, profile);
                             timeBins.add(closestMzTrace, cTimeBin, cIndex);
-                        } else timeBins.put(closestMzTrace, cTimeBin);
+                        } else timeBins.put(closestMzTrace, timeBin);
 
                         continue;
                     }
@@ -231,5 +237,15 @@ public class ProfileBinTableModel extends AbstractTableModel {
 
         profileBins = new ArrayList<ProfileBin>();
         for (List<ProfileBin> bin : timeBins.values()) profileBins.addAll(bin);
+    }
+
+    /**
+     * Returns an iterator over a set of elements of type <code> ProfileBin </code>.
+     *
+     * @return an iterator
+     */
+    @Override
+    public Iterator<ProfileBin> iterator() {
+        return profileBins.iterator();
     }
 }
