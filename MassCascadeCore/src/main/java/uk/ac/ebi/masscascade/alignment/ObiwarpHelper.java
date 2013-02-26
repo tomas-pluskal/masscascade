@@ -26,11 +26,14 @@ import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Trace;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.utilities.DataUtils;
+import uk.ac.ebi.masscascade.utilities.TextUtils;
 import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYTrace;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -133,36 +136,32 @@ public class ObiwarpHelper {
             }
         }
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(times.size());
-        sb.append("\n");
-        for (double time : times) {
-            sb.append(time);
-            sb.append(" ");
-        }
-        sb.append("\n");
-        sb.append(mzBins.size());
-        sb.append("\n");
-        for (double mz : mzBins.keySet()) {
-            sb.append(mz);
-            sb.append(" ");
-        }
-        sb.append("\n");
-        for (int row = 0; row < times.size(); row++) {
-            for (int column = 0; column < lmataArray[row].length; column++) {
-                sb.append(lmataArray[row][column]);
-                sb.append(" ");
-            }
-            sb.append("\n");
-        }
-
         String path;
         if (container.getWorkingDirectory().isEmpty()) path = System.getProperty("java.io.tmpdir");
         else path = container.getWorkingDirectory();
-
         File file = new File(path + File.separator + container.getId() + ".lmata");
+
         try {
-            FileUtils.writeStringToFile(file, sb.toString());
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+            writer.write(times.size() + "");
+            writer.newLine();
+            for (double time : times) writer.write(time + " ");
+            writer.newLine();
+            writer.write(mzBins.size() + "");
+            writer.newLine();
+            for (double mz : mzBins.keySet()) writer.write(mz + " ");
+
+            writer.newLine();
+            for (int row = 0; row < times.size(); row++) {
+                for (int column = 0; column < lmataArray[row].length; column++) {
+                    writer.write(lmataArray[row][column] + " ");
+                }
+                writer.newLine();
+            }
+
+            writer.flush();
+            TextUtils.close(writer);
         } catch (IOException e) {
             LOGGER.log(Level.ERROR, "Error while writing to tmp file: " + e.getMessage());
         }

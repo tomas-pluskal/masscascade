@@ -82,23 +82,108 @@ public class XicCellRenderer extends DefaultTableCellRenderer {
         double my = getHeight() / (yMax - yMin);
         double by = getHeight() - (my * yMax);
 
-        int y1 = getHeight();
-        int y2 = y1;
+        if (xyList.size() < 3) {
 
-        int x1 = (int) (mx * xyList.get(0).x + bx);
-        int x2 = x1;
+            int y1 = getHeight();
+            int y2 = y1;
 
-        for (int i = 0; i < xyList.size(); i++) {
+            int x1 = (int) (mx * xyList.get(0).x + bx);
+            int x2 = x1;
 
-            x2 = (int) (mx * xyList.get(i).x + bx);
-            y2 = (int) (getHeight() - (my * xyList.get(i).y + by));
+            for (int i = 0; i < xyList.size(); i++) {
 
-            g.drawLine(x1, y1, x2, y2);
+                x2 = (int) (mx * xyList.get(i).x + bx);
+                y2 = (int) (getHeight() - (my * xyList.get(i).y + by));
 
-            x1 = x2;
-            y1 = y2;
+                g.drawLine(x1, y1, x2, y2);
+
+                x1 = x2;
+                y1 = y2;
+            }
+
+            g.drawLine(x1, y1, x1, getHeight());
+
+        } else {
+
+            int np = xyList.size();
+            float[] d = new float[np]; // Newton form coefficients
+            float[] x = new float[np]; // x-coordinates of nodes
+            float y;
+            float t;
+
+            float[] a = new float[np];
+            float t1;
+            float t2;
+            float[] h = new float[np];
+
+            for (int i = 0; i < np; i++) {
+                x[i] = (float) (mx * xyList.get(i).x + bx);
+                d[i] = (float) (getHeight() - my * xyList.get(i).y + by);
+            }
+
+            for (int i = 1; i <= np - 1; i++) {
+                h[i] = x[i] - x[i - 1];
+            }
+            float[] sub = new float[np - 1];
+            float[] diag = new float[np - 1];
+            float[] sup = new float[np - 1];
+
+            for (int i = 1; i <= np - 2; i++) {
+                diag[i] = (h[i] + h[i + 1]) / 3;
+                sup[i] = h[i + 1] / 6;
+                sub[i] = h[i] / 6;
+                a[i] = (d[i + 1] - d[i]) / h[i + 1] - (d[i] - d[i - 1]) / h[i];
+            }
+            solveTridiag(sub, diag, sup, a, np - 2);
+
+            // note that a[0]=a[np-1]=0, draw
+            int[] g2dXPoints = new int[(np * 3) - 3 + 1];
+            int[] g2dYPoints = new int[(np * 3) - 3 + 1];
+            int g2dI = 1;
+            g2dXPoints[0] = Math.round(x[0]);
+            g2dYPoints[0] = Math.round(d[0]);
+            for (int i = 1; i < np; i++) {
+                // loop over intervals between nodes
+                for (int j = 1; j <= 3; j++) {
+                    t1 = (h[i] * j) / 3;
+                    t2 = h[i] - t1;
+                    y =
+                            ((-a[i - 1] / 6 * (t2 + h[i]) * t1 + d[i - 1]) * t2 + (-a[i] / 6 * (t1 + h[i]) * t2 +
+                                    d[i]) * t1) / h[i];
+                    t = x[i - 1] + t1;
+
+                    g2dXPoints[g2dI] = Math.round(t);
+                    g2dYPoints[g2dI] = (int) ((Math.round(y) > yMax) ? yMax : Math.round(y));
+                    g2dI++;
+                }
+            }
+
+            g.drawPolyline(g2dXPoints, g2dYPoints, g2dXPoints.length);
         }
+    }
 
-        g.drawLine(x1, y1, x1, getHeight());
+    private void solveTridiag(float[] sub, float[] diag, float[] sup, float[] b, int n) {
+
+        /**
+         * solve linear system with tridiagonal n by n matrix a
+         * using Gaussian elimination *without* pivoting
+         * where   a(i,i-1) = sub[i]  for 2<=i<=n
+         * a(i,i)   = diag[i] for 1<=i<=n
+         * a(i,i+1) = sup[i]  for 1<=i<=n-1
+         * (the values sub[1], sup[n] are ignored)
+         * right hand side vector b[1:n] is overwritten with solution
+         * NOTE: 1...n is used in all arrays, 0 is unused
+         */
+        int i;
+        // factorization and forward substitution
+        for (i = 2; i <= n; i++) {
+            sub[i] = sub[i] / diag[i - 1];
+            diag[i] = diag[i] - sub[i] * sup[i - 1];
+            b[i] = b[i] - sub[i] * b[i - 1];
+        }
+        b[n] = b[n] / diag[n];
+        for (i = n - 1; i >= 1; i--) {
+            b[i] = (b[i] - sup[i] * b[i + 1]) / diag[i];
+        }
     }
 }
