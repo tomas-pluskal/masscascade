@@ -67,7 +67,7 @@ public class TextUtils {
      * @return the read line
      * @throws IOException unexpected behaviour
      */
-    public Double readNumberFromStream(InputStream in) throws IOException {
+    public Float readNumberFromStream(InputStream in) throws IOException {
 
         byte buf[] = new byte[1024];
         int pos = 0;
@@ -79,7 +79,7 @@ public class TextUtils {
         }
         if (pos == 0) return null;
 
-        return Double.parseDouble(new String(buf, 0, pos, "UTF-8"));
+        return Float.parseFloat(new String(buf, 0, pos, "UTF-8"));
     }
 
     /**

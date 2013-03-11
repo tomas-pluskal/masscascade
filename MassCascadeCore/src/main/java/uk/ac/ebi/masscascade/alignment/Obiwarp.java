@@ -19,6 +19,7 @@
 
 package uk.ac.ebi.masscascade.alignment;
 
+import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Level;
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
@@ -37,11 +38,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Class for profile aligning using Obiwarp. The class executes the Obiwarp binary with the given parameters and
@@ -65,6 +65,7 @@ public class Obiwarp extends CallableTask {
 
     private ObiwarpHelper obiwarpHelper;
 
+    private double timeWindow;
     private double gapInit;
     private double gapExt;
     private double response;
@@ -100,6 +101,7 @@ public class Obiwarp extends CallableTask {
         gapExt = params.get(Parameter.GAP_EXTEND, Double.class);
         response = params.get(Parameter.RESPONSE, Double.class);
         executable = params.get(Parameter.EXECUTABLE, String.class);
+        timeWindow = params.get(Parameter.TIME_WINDOW, Double.class);
 
         TreeMap<Double, Integer> mzBins = params.get(Parameter.MZ_BINS, TreeMap.class);
         obiwarpHelper = new ObiwarpHelper(mzBins);
@@ -118,23 +120,26 @@ public class Obiwarp extends CallableTask {
         ProfileContainer outProfileContainer = profileContainer.getBuilder().newInstance(ProfileContainer.class, id,
                 profileContainer.getWorkingDirectory());
 
-        File profFile = obiwarpHelper.buildLmataFile(profileContainer);
-        Map<Double, Double> times = execute(profFile, obiwarpHelper.getTimes());
+        File profFile = obiwarpHelper.buildLmataFile(profileContainer, timeWindow);
+        TreeSet<Float> times = (TreeSet<Float>) obiwarpHelper.getTimes();
+        double[] corrections = align(profFile, times);
 
         for (Profile profile : profileContainer) {
             Iterator<XYZPoint> dpIter = profile.getData().iterator();
             XYZPoint dp = dpIter.next();
-            Profile alignedProfile = new ProfileImpl(profile.getId(), new XYZPoint(times.get(dp.x), dp.y, dp.z),
-                    new ExtendableRange(dp.y, dp.y));
+            int timeBin = (int) FastMath.floor(((float) dp.x - times.first()) / timeWindow);
+            Profile alignedProfile =
+                    new ProfileImpl(profile.getId(), new XYZPoint(dp.x + corrections[timeBin], dp.y, dp.z),
+                            new ExtendableRange(dp.y, dp.y));
             while (dpIter.hasNext()) {
                 dp = dpIter.next();
-                alignedProfile.addProfilePoint(new XYZPoint(times.get(dp.x), dp.y, dp.z));
+                timeBin = (int) FastMath.floor(((float) dp.x - times.first()) / timeWindow);
+                alignedProfile.addProfilePoint(new XYZPoint(dp.x + corrections[timeBin], dp.y, dp.z));
             }
             alignedProfile.closeProfile();
             outProfileContainer.addProfile(alignedProfile);
         }
 
-        profFile.delete();
         outProfileContainer.finaliseFile();
         return outProfileContainer;
     }
@@ -142,14 +147,15 @@ public class Obiwarp extends CallableTask {
     /**
      * Executes the Obiwarp binary using the parameters defined by the parameter map.
      *
-     * @param file     the Obiwarp binary
-     * @param oldTimes the time data points of the profiles to be aligned
+     * @param file the Obiwarp binary
      * @return the old to aligned times data map
      */
-    private Map<Double, Double> execute(File file, Set<Double> oldTimes) {
+    private double[] align(File file, TreeSet<Float> times) {
 
-        Map<Double, Double> times = new LinkedHashMap<Double, Double>();
         BufferedInputStream bufStream = null;
+        int nTimeBins = (int) FastMath.ceil((times.last() - times.first()) / timeWindow);
+
+        double[] corrections = new double[nTimeBins];
 
         try {
             List<String> commands = new ArrayList<String>();
@@ -164,11 +170,13 @@ public class Obiwarp extends CallableTask {
             InputStream inputStream = process.getInputStream();
             bufStream = new BufferedInputStream(inputStream);
 
-            Double number;
-            Iterator<Double> oldTimesIter = oldTimes.iterator();
+            Float number;
+            int index = 0;
+            Iterator<Integer> popRowsIter = obiwarpHelper.getPopRows().iterator();
             TextUtils tx = new TextUtils();
             while ((number = tx.readNumberFromStream(bufStream)) != null) {
-                times.put(oldTimesIter.next(), number);
+                corrections[index] = number - popRowsIter.next() * timeWindow;
+                index++;
             }
         } catch (IOException exception) {
             LOGGER.log(Level.ERROR, "Obiwarp process error: " + exception.getMessage());
@@ -177,6 +185,6 @@ public class Obiwarp extends CallableTask {
             file.delete();
         }
 
-        return times;
+        return corrections;
     }
 }

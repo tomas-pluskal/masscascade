@@ -114,15 +114,16 @@ public class ObiwarpTest {
 
         ObiwarpHelper obiHelper = new ObiwarpHelper(containerList, 10);
         TreeMap<Double, Integer> mzBins = obiHelper.getMzBins();
-        File refFile = obiHelper.buildLmataFile(outContainer31);
+        File refFile = obiHelper.buildLmataFile(outContainer31, 1);
 
         params = new ParameterMap();
         params.put(Parameter.REFERENCE_FILE, refFile);
         params.put(Parameter.MZ_BINS, mzBins);
+        params.put(Parameter.TIME_WINDOW, 1d);
         params.put(Parameter.PROFILE_CONTAINER, outContainer32);
-        params.put(Parameter.EXECUTABLE, "C:/Users/stephan/Downloads/obiwarp.exe");
+        params.put(Parameter.EXECUTABLE, "C:/Users/stephan/Mass Spectrometry/Obiwarp/obiwarp.exe");
         params.put(Parameter.GAP_INIT, 0.1);
-        params.put(Parameter.GAP_INIT, 0.5);
+        params.put(Parameter.GAP_EXTEND, 0.5);
         params.put(Parameter.RESPONSE, 100d);
 
         CallableTask obiwarpTask = new Obiwarp(params);

@@ -19,14 +19,16 @@
 
 package uk.ac.ebi.masscascade.alignment;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Trace;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.utilities.DataUtils;
 import uk.ac.ebi.masscascade.utilities.TextUtils;
+import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYTrace;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
@@ -35,6 +37,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
@@ -48,7 +52,8 @@ public class ObiwarpHelper {
 
     private static Logger LOGGER = Logger.getLogger(ObiwarpHelper.class);
 
-    private Set<Double> times;
+    private Set<Integer> popRows;
+    private TreeSet<Float> times;
     private TreeMap<Double, Integer> mzBins;
 
     /**
@@ -64,7 +69,7 @@ public class ObiwarpHelper {
     /**
      * Constructs an Obiwarp helper with a provided map of mz bins.
      *
-     * @param mzBins a map of mz bins: old times to bin indices
+     * @param mzBins a map of mz bins: m/z bins to bin indices
      */
     public ObiwarpHelper(TreeMap<Double, Integer> mzBins) {
         this.mzBins = mzBins;
@@ -73,27 +78,24 @@ public class ObiwarpHelper {
     /**
      * Returns the map of mz bins
      *
-     * @return the map of mz bins: old times to bin indices
+     * @return the map of mz bins: m/z bins to bin indices
      */
     public TreeMap<Double, Integer> getMzBins() {
         return mzBins;
     }
 
     /**
-     * Takes a list of profile containers and returns a map of bin times to bin indices.
+     * Takes a list of profile containers and returns a map of m/z bins to bin indices.
      *
      * @param containerList a list of profile containers to be aligned
      * @param ppm           a m/z tolerance value in ppm
-     * @return the map of bin times to bin indices
+     * @return the map of m/z bins to bin indices
      */
     private TreeMap<Double, Integer> instantiate(List<ProfileContainer> containerList, double ppm) {
 
         TreeSet<Trace> mzs = new TreeSet<Trace>();
         for (ProfileContainer container : containerList) {
-            int index = -1;
-            TreeMap<Double, Integer> times = new TreeMap<Double, Integer>();
             for (Profile profile : container) {
-                if (!times.containsKey(profile.getRetentionTime())) times.put(profile.getRetentionTime(), ++index);
                 Trace trace = new XYTrace(profile.getMzIntDp());
                 XYTrace closestTrace = (XYTrace) DataUtils.getClosestValue(trace, mzs);
                 if (closestTrace == null) mzs.add(trace);
@@ -114,25 +116,30 @@ public class ObiwarpHelper {
     /**
      * Builds a lmata file from the profile container.
      *
-     * @param container a profile container
+     * @param container     the profile container
+     * @param timeWindow the time tolerance in seconds
      * @return the lmata file
      */
-    public File buildLmataFile(ProfileContainer container) {
+    public File buildLmataFile(ProfileContainer container, double timeWindow) {
 
-        int index = 0;
-        TreeMap<Double, Integer> timeToIndex = new TreeMap<Double, Integer>();
+        times = new TreeSet<Float>();
         for (Profile profile : container) {
             for (XYZPoint dp : profile.getData()) {
-                if (!timeToIndex.containsKey(dp.x)) timeToIndex.put(dp.x, index++);
+                if (!times.contains((float) dp.x)) times.add((float) dp.x);
             }
         }
-        times = timeToIndex.keySet();
 
-        double[][] lmataArray = new double[times.size()][mzBins.size()];
+        // calculate the number of bins
+        int nTimeBins = (int) FastMath.ceil((times.last() - times.first()) / timeWindow);
+
+        popRows = new LinkedHashSet<Integer>();
+        double[][] lmataArray = new double[nTimeBins][mzBins.size()];
         for (Profile profile : container) {
             Double closestMz = DataUtils.getClosestKey(profile.getMz(), mzBins);
             for (XYZPoint dp : profile.getData()) {
-                lmataArray[timeToIndex.get(dp.x)][mzBins.get(closestMz)] = dp.z;
+                int timeBin = (int) FastMath.floor(((float) dp.x - times.first()) / timeWindow);
+                lmataArray[timeBin][mzBins.get(closestMz)] = dp.z;
+                if (dp.z > 0) popRows.add(timeBin);
             }
         }
 
@@ -144,20 +151,27 @@ public class ObiwarpHelper {
         try {
 
             BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-            writer.write(times.size() + "");
+            writer.write(popRows.size() + "");
             writer.newLine();
-            for (double time : times) writer.write(time + " ");
+            for (int binIndex = 0; binIndex < nTimeBins; binIndex++) {
+                if (popRows.contains(binIndex)) writer.write(times.first() + (binIndex * timeWindow) + " ");
+            }
             writer.newLine();
             writer.write(mzBins.size() + "");
             writer.newLine();
             for (double mz : mzBins.keySet()) writer.write(mz + " ");
 
             writer.newLine();
-            for (int row = 0; row < times.size(); row++) {
-                for (int column = 0; column < lmataArray[row].length; column++) {
-                    writer.write(lmataArray[row][column] + " ");
+            int row = 0;
+            for (int binIndex = 0; binIndex < nTimeBins; binIndex++) {
+                if (popRows.contains(binIndex)) {
+                    for (int column = 0; column < lmataArray[row].length; column++) {
+                        double intensity = lmataArray[row][column];
+                        writer.write((intensity == 0) ? "0 " : (intensity + " "));
+                    }
+                    writer.newLine();
                 }
-                writer.newLine();
+                row++;
             }
 
             writer.flush();
@@ -174,7 +188,11 @@ public class ObiwarpHelper {
      *
      * @return the list of times
      */
-    public Set<Double> getTimes() {
+    public Set<Float> getTimes() {
         return times;
+    }
+
+    public Set<Integer> getPopRows() {
+        return popRows;
     }
 }
