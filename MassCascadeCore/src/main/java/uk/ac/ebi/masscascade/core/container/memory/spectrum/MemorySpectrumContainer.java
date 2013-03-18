@@ -23,11 +23,14 @@ import uk.ac.ebi.masscascade.core.container.memory.MemoryContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * Class containing a collection of spectra.
@@ -35,6 +38,7 @@ import java.util.LinkedHashMap;
 public class MemorySpectrumContainer extends MemoryContainer implements SpectrumContainer {
 
     private final String id;
+    private final List<XYPoint> basePeaks;
     private final LinkedHashMap<Integer, Spectrum> spectraMap;
 
     /**
@@ -45,6 +49,7 @@ public class MemorySpectrumContainer extends MemoryContainer implements Spectrum
     public MemorySpectrumContainer(String id) {
 
         this.id = id;
+        basePeaks = new ArrayList<XYPoint>();
         spectraMap = new LinkedHashMap<Integer, Spectrum>();
     }
 
@@ -57,6 +62,7 @@ public class MemorySpectrumContainer extends MemoryContainer implements Spectrum
     public MemorySpectrumContainer(String id, Collection<Spectrum> spectrumSet) {
 
         this.id = id;
+        basePeaks = new ArrayList<XYPoint>();
         spectraMap = new LinkedHashMap<Integer, Spectrum>();
 
         for (Spectrum spectrum : spectrumSet)
@@ -72,8 +78,8 @@ public class MemorySpectrumContainer extends MemoryContainer implements Spectrum
     public MemorySpectrumContainer(String id, LinkedHashMap<Integer, Spectrum> spectraMap) {
 
         this.id = id;
-
         this.spectraMap = spectraMap;
+        basePeaks = new ArrayList<XYPoint>();
     }
 
     /**
@@ -102,6 +108,7 @@ public class MemorySpectrumContainer extends MemoryContainer implements Spectrum
      */
     public void addSpectrum(Spectrum spectrum) {
         spectraMap.put(spectrum.getIndex(), spectrum);
+        basePeaks.add(new XYPoint(spectrum.getRetentionTime(), spectrum.getBasePeak().get(0).x));
     }
 
     public int size() {
@@ -115,6 +122,7 @@ public class MemorySpectrumContainer extends MemoryContainer implements Spectrum
      */
     public boolean removeAll() {
         spectraMap.clear();
+        basePeaks.clear();;
         return (spectraMap.size() == 0);
     }
 
@@ -154,5 +162,15 @@ public class MemorySpectrumContainer extends MemoryContainer implements Spectrum
     @Override
     public Iterator<Spectrum> iterator() {
         return spectraMap.values().iterator();
+    }
+
+    /**
+     * Returns a list of rt-m/z value pairs.
+     *
+     * @return the rt-m/z value pairs
+     */
+    @Override
+    public List<XYPoint> getBasePeaks() {
+        return basePeaks;
     }
 }

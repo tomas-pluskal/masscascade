@@ -243,7 +243,6 @@ public class ScanImpl implements Scan, Comparable<Scan> {
      * @return the xy data
      */
     public final XYList getData() {
-
         return xyList;
     }
 
@@ -253,7 +252,6 @@ public class ScanImpl implements Scan, Comparable<Scan> {
      * @return the base profile
      */
     public final XYList getBasePeak() {
-
         return basePeak;
     }
 

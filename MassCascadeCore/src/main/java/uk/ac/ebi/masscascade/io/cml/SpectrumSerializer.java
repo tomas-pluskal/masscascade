@@ -19,12 +19,14 @@
 
 package uk.ac.ebi.masscascade.io.cml;
 
+import com.sun.org.apache.regexp.internal.RE;
 import org.apache.log4j.Logger;
 import org.xmlcml.cml.element.CMLCml;
 import org.xmlcml.cml.element.CMLMetadataList;
 import org.xmlcml.cml.element.CMLSpectrum;
 import org.xmlcml.cml.element.CMLSpectrumList;
 import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
+import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
 import java.util.Map;
 
@@ -43,7 +45,6 @@ public class SpectrumSerializer extends ACmlSerializer {
      * @param spectrumContainer a mass spectrometry data container
      */
     public SpectrumSerializer(FileSpectrumContainer spectrumContainer) {
-
         this.spectrumContainer = spectrumContainer;
     }
 
@@ -90,11 +91,15 @@ public class SpectrumSerializer extends ACmlSerializer {
 
         CMLSpectrumList cmlSpectrumList = new CMLSpectrumList();
 
+        int i = 0;
         for (int id : spectraNumbers.keySet()) {
 
             CMLSpectrum cmlSpectrum = new CMLSpectrum();
             cmlSpectrum.setId("" + id);
             cmlSpectrum.setAttribute(POINTER, spectraNumbers.get(id) + "");
+            XYPoint basePeak = spectrumContainer.getBasePeaks().get(i++);
+            cmlSpectrum.setAttribute("x", basePeak.x + "");
+            cmlSpectrum.setAttribute("y", basePeak.y + "");
 
             cmlSpectrumList.appendChild(cmlSpectrum);
         }

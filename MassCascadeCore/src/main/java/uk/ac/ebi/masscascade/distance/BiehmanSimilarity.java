@@ -41,11 +41,11 @@ import java.util.Set;
 
 /**
  * Groups all profiles into pseudospectra based on their retention time and profile using a modified Biehman approach
- * to component perception. The method is still experimental.
+ * to component perception.
  * <ul>
  * <li>Parameter <code> PROFILE_CONTAINER </code>- The input raw container.</li>
  * <li>Parameter <code> BINS </code>- The number of bins.</li>
- * <li>Parameter <code> SCAN WINDOW </code>- The approximate distance between two scans in seconds.</li>
+ * <li>Parameter <code> TIME WINDOW </code>- The approximate distance between two scans in seconds.</li>
  * </ul>
  */
 public class BiehmanSimilarity extends CallableTask {
@@ -83,7 +83,7 @@ public class BiehmanSimilarity extends CallableTask {
 
         profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
         binNumber = params.get(Parameter.BINS, Integer.class);
-        scanDistance = params.get(Parameter.SCAN_WINDOW, Double.class);
+        scanDistance = params.get(Parameter.TIME_WINDOW, Double.class);
     }
 
     /**
@@ -275,12 +275,10 @@ public class BiehmanSimilarity extends CallableTask {
         }
 
         public double getValue() {
-
             return value;
         }
 
         public List<Integer> getProfileIds() {
-
             return profileIds;
         }
     }

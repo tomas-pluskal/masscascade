@@ -66,7 +66,6 @@ public class Isotope implements Property {
      * @return the name
      */
     public String getName() {
-
         return name;
     }
 
@@ -86,7 +85,6 @@ public class Isotope implements Property {
      * @return the profile id
      */
     public Integer getChildId() {
-
         return childId;
     }
 
@@ -96,7 +94,6 @@ public class Isotope implements Property {
      * @return the label
      */
     public String toString() {
-
         return parentId + ": " + name;
     }
 
@@ -106,7 +103,6 @@ public class Isotope implements Property {
      * @return the profile id
      */
     public Integer getParentId() {
-
         return parentId;
     }
 
@@ -116,7 +112,6 @@ public class Isotope implements Property {
      * @return the property type
      */
     public PropertyManager.TYPE getType() {
-
         return PropertyManager.TYPE.Isotope;
     }
 
@@ -130,7 +125,7 @@ public class Isotope implements Property {
         Isotope isotope = (Isotope) obj;
         return ((isotope.getParentId().intValue() == this.parentId.intValue()) &&
                 (isotope.getChildId().intValue() == this.childId.intValue()) &&
-                (isotope.getValue(Double.class).intValue() == this.mzDifference.intValue()));
+                (isotope.getValue(Integer.class).intValue() == this.mzDifference.intValue()));
     }
 
     @Override

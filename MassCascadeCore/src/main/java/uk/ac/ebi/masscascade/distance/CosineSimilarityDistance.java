@@ -157,8 +157,7 @@ public class CosineSimilarityDistance extends CallableTask {
             rt /= profileSet.size();
 
             Collections.sort(spectrumData);
-            Spectrum pseudoSpectrum = new PseudoSpectrum(index, spectrumData, range, rt, profileSet);
-            index++;
+            Spectrum pseudoSpectrum = new PseudoSpectrum(index++, spectrumData, range, rt, profileSet);
 
             spectrumContainer.addSpectrum(pseudoSpectrum);
         }
@@ -168,8 +167,7 @@ public class CosineSimilarityDistance extends CallableTask {
             XYList spectrumData = new XYList();
             spectrumData.add(profile.getMzIntDp());
             Range range = new ExtendableRange(profile.getRetentionTime(), profile.getRetentionTime());
-            Spectrum pseudoSpectrum = new PseudoSpectrum(index, spectrumData, profile.getRetentionTime(), range);
-            index++;
+            Spectrum pseudoSpectrum = new PseudoSpectrum(index++, spectrumData, profile.getRetentionTime(), range);
             pseudoSpectrum.addProfile(profile);
             spectrumContainer.addSpectrum(pseudoSpectrum);
         }

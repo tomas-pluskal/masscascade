@@ -25,12 +25,14 @@ import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.core.spectrum.SpectrumIterator;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,8 +41,8 @@ import java.util.Map;
 public class FileSpectrumContainer extends FileContainer implements SpectrumContainer {
 
     private final String id;
+    private final List<XYPoint> basePeaks;
     private final LinkedHashMap<Integer, Long> spectraMap;
-
     private final FileManager fileManager;
 
     /**
@@ -62,6 +64,7 @@ public class FileSpectrumContainer extends FileContainer implements SpectrumCont
 
         this.id = id;
         spectraMap = new LinkedHashMap<Integer, Long>();
+        basePeaks = new ArrayList<XYPoint>();
 
         fileManager = new FileManager(workingDirectory);
         fileManager.openFile();
@@ -78,6 +81,7 @@ public class FileSpectrumContainer extends FileContainer implements SpectrumCont
 
         this.id = id;
         spectraMap = new LinkedHashMap<Integer, Long>();
+        basePeaks = new ArrayList<XYPoint>();
 
         fileManager = new FileManager(new File(dataFile));
         fileManager.openFile();
@@ -95,11 +99,13 @@ public class FileSpectrumContainer extends FileContainer implements SpectrumCont
      * @param dataFile   the data file
      * @param spectraMap the map of profile id - file pointer associations
      */
-    public FileSpectrumContainer(String id, String dataFile, LinkedHashMap<Integer, Long> spectraMap) {
+    public FileSpectrumContainer(String id, String dataFile, LinkedHashMap<Integer, Long> spectraMap,
+            List<XYPoint> basePeaks) {
 
         this.id = id;
 
         this.spectraMap = spectraMap;
+        this.basePeaks = basePeaks;
         fileManager = new FileManager(new File(dataFile));
     }
 
@@ -122,6 +128,7 @@ public class FileSpectrumContainer extends FileContainer implements SpectrumCont
 
         long spectrumIndex = fileManager.write(spectrum);
         spectraMap.put(spectrum.getIndex(), spectrumIndex);
+        basePeaks.add(new XYPoint(spectrum.getRetentionTime(), spectrum.getBasePeak().get(0).x));
     }
 
     /**
@@ -144,9 +151,7 @@ public class FileSpectrumContainer extends FileContainer implements SpectrumCont
     public synchronized Spectrum getSpectrum(int spectrumId) {
 
         long spectrumIndex = -1;
-        if (spectraMap.containsKey(spectrumId)) {
-            spectrumIndex = spectraMap.get(spectrumId);
-        }
+        if (spectraMap.containsKey(spectrumId)) spectrumIndex = spectraMap.get(spectrumId);
         if (spectrumIndex == -1) return null;
         Spectrum spectrum = fileManager.read(spectrumIndex, PseudoSpectrum.class);
 
@@ -209,5 +214,15 @@ public class FileSpectrumContainer extends FileContainer implements SpectrumCont
     @Override
     public Iterator<Spectrum> iterator() {
         return new SpectrumIterator(new ArrayList<Long>(spectraMap.values()), fileManager);
+    }
+
+    /**
+     * Returns a list of rt-m/z value pairs.
+     *
+     * @return the rt-m/z value pairs
+     */
+    @Override
+    public List<XYPoint> getBasePeaks() {
+        return basePeaks;
     }
 }

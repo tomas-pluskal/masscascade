@@ -22,6 +22,7 @@ package uk.ac.ebi.masscascade.io.cml;
 import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -32,8 +33,10 @@ import javax.xml.stream.events.XMLEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * Class for CML-based spectra deserialization.
@@ -47,6 +50,7 @@ public class SpectrumDeserializer extends ACmlDeserializer {
     private Long pointer;
     private String dataFile;
     private LinkedHashMap<Integer, Long> spectraNumbers;
+    private List<XYPoint> basePeaks;
 
     /**
      * Constructs a spectrum file read task.
@@ -55,7 +59,6 @@ public class SpectrumDeserializer extends ACmlDeserializer {
      * @param cmlFile a cml file to read
      */
     public SpectrumDeserializer(String id, File cmlFile, String workingDirectory) throws IOException {
-
         super(id, cmlFile, workingDirectory);
     }
 
@@ -66,7 +69,6 @@ public class SpectrumDeserializer extends ACmlDeserializer {
      * @throws IOException unexpected behaviour
      */
     public SpectrumDeserializer(String cmlString, String workingDirectory) throws IOException {
-
         super(cmlString, workingDirectory);
     }
 
@@ -77,7 +79,6 @@ public class SpectrumDeserializer extends ACmlDeserializer {
      * @throws IOException unexpected behaviour
      */
     public SpectrumDeserializer(InputStream stream, String workingDirectory) throws IOException {
-
         super(stream, workingDirectory);
     }
 
@@ -97,6 +98,10 @@ public class SpectrumDeserializer extends ACmlDeserializer {
         boolean isSpectrum = false;
 
         spectraNumbers = new LinkedHashMap<Integer, Long>();
+        basePeaks = new ArrayList<XYPoint>();
+
+        double x = -1;
+        double y = -1;
 
         while (parser.peek() != null) {
 
@@ -143,6 +148,10 @@ public class SpectrumDeserializer extends ACmlDeserializer {
                                 id = Integer.parseInt(attribute.getValue());
                             } else if (attribute.getName().getLocalPart().equals(POINTER)) {
                                 pointer = Long.parseLong(attribute.getValue());
+                            } else if (attribute.getName().getLocalPart().equals("x")) {
+                                x = Double.parseDouble(attribute.getValue());
+                            } else if (attribute.getName().getLocalPart().equals("y")) {
+                                y = Double.parseDouble(attribute.getValue());
                             }
                         }
                     }
@@ -158,9 +167,10 @@ public class SpectrumDeserializer extends ACmlDeserializer {
                     } else if (event.asEndElement().getName().getLocalPart().endsWith(SPECTRUMLIST)) {
                         // hack to avoid EOFException thrown by the loop condition
                         parser.close();
-                        return new FileSpectrumContainer(fileName, dataFile, spectraNumbers);
+                        return new FileSpectrumContainer(fileName, dataFile, spectraNumbers, basePeaks);
                     } else if (event.asEndElement().getName().getLocalPart().endsWith(SPECTRUM)) {
                         spectraNumbers.put(id, pointer);
+                        basePeaks.add(new XYPoint(x, y));
                         isSpectrum = false;
                     }
                     break;
@@ -171,6 +181,6 @@ public class SpectrumDeserializer extends ACmlDeserializer {
             }
         }
 
-        return new FileSpectrumContainer(fileName, dataFile, spectraNumbers);
+        return new FileSpectrumContainer(fileName, dataFile, spectraNumbers, basePeaks);
     }
 }

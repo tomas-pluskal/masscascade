@@ -124,7 +124,7 @@ public enum Parameter implements Option {
     /*
      * List parameters.
      */
-    ADDUCT_LIST("Adduct list", new ArrayList<AdductSingle>()),
+    ADDUCT_LIST("Adduct list", new TreeMap<Double, String>()),
     MZ_FOR_REMOVAL("Masses for removal", new TreeSet<Double>()),
 
     /*

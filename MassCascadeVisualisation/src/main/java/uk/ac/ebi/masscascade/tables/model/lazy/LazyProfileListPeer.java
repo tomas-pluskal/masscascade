@@ -21,10 +21,16 @@ package uk.ac.ebi.masscascade.tables.model.lazy;
 
 import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Spectrum;
+import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
+import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.tables.lazytable.util.LazyListService;
 import uk.ac.ebi.masscascade.utilities.ProfUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -39,14 +45,27 @@ public class LazyProfileListPeer implements LazyListService<Object[]> {
     private static final int INFO = 6;
     private static final int SHAPE = 7;
 
-    private ProfileContainer profileContainer;
-    private List<Integer> profileNumbers;
+    private Container profileContainer;
+    HashMap<Integer, Integer> profileToSpectraNumbers;
+    private List<Integer> ids;
 
-    public LazyProfileListPeer(int rows, ProfileContainer profileContainer) {
+    public LazyProfileListPeer(Container profileContainer) {
 
         this.profileContainer = profileContainer;
-        this.profileNumbers =
-                new LinkedList<Integer>(((FileProfileContainer) profileContainer).getProfileNumbers().keySet());
+        ids = new ArrayList<Integer>();
+        profileToSpectraNumbers = new LinkedHashMap<Integer, Integer>();
+
+        if (profileContainer instanceof ProfileContainer) {
+            ids = new LinkedList<Integer>(((FileProfileContainer) profileContainer).getProfileNumbers().keySet());
+        } else {
+            profileToSpectraNumbers = new LinkedHashMap<Integer, Integer>();
+            for (Spectrum spectrum : (SpectrumContainer) profileContainer) {
+                for (Profile profile : spectrum) {
+                    profileToSpectraNumbers.put(profile.getId(), spectrum.getIndex());
+                    ids.add(profile.getId());
+                }
+            }
+        }
     }
 
     public Object[][] getData(int startElement, int endElement) {
@@ -56,7 +75,14 @@ public class LazyProfileListPeer implements LazyListService<Object[]> {
         int i = 0;
         while (startElement < endElement) {
 
-            Profile profile = profileContainer.getProfile(profileNumbers.get(startElement));
+            Profile profile;
+            if (profileContainer instanceof ProfileContainer) {
+                profile = ((FileProfileContainer) profileContainer).getProfile(ids.get(startElement));
+            } else {
+                int startId = ids.get(startElement);
+                profile = ((SpectrumContainer) profileContainer).getSpectrum(
+                        profileToSpectraNumbers.get(startId)).getProfile(startId);
+            }
 
             result[i][ID] = profile.getId();
             result[i][RT] = profile.getRetentionTime();
@@ -75,27 +101,22 @@ public class LazyProfileListPeer implements LazyListService<Object[]> {
     }
 
     public int getSize() {
-
-        return profileNumbers.size();
+        return ids.size();
     }
 
     public void add(int position, Object[] element) {
-
         throw new UnsupportedOperationException();
     }
 
     public void set(int position, Object[] element) {
-
         throw new UnsupportedOperationException();
     }
 
     public void remove(int position) {
-
         throw new UnsupportedOperationException();
     }
 
     public void clear() {
-
         throw new UnsupportedOperationException();
     }
 }

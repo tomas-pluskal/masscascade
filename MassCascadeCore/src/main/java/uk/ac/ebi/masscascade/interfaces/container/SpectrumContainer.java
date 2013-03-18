@@ -20,8 +20,10 @@
 package uk.ac.ebi.masscascade.interfaces.container;
 
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
+import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * This is a spectrum container holding spectrum data.
@@ -54,4 +56,11 @@ public interface SpectrumContainer extends Container, Iterable<Spectrum> {
      * @return an Iterator.
      */
     Iterator<Spectrum> iterator();
+
+    /**
+     * Returns a list of rt-m/z value pairs.
+     *
+     * @return the rt-m/z value pairs
+     */
+    List<XYPoint> getBasePeaks();
 }

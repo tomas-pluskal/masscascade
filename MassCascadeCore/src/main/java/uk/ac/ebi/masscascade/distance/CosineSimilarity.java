@@ -21,6 +21,7 @@ package uk.ac.ebi.masscascade.distance;
 
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.util.FastMath;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
@@ -57,8 +58,8 @@ public class CosineSimilarity {
 
         if ((traceA != null) && (traceB != null)) {
 
-            double min = Math.min(traceA.get(0).x, traceB.get(0).x);
-            double max = Math.max(traceA.get(traceA.size() - 1).x, traceB.get(traceB.size() - 1).x);
+            double min = FastMath.min(traceA.get(0).x, traceB.get(0).x);
+            double max = FastMath.max(traceA.get(traceA.size() - 1).x, traceB.get(traceB.size() - 1).x);
             double width = (max - min) / numBins;
 
             for (int i = 1; i <= numBins; i++) {
@@ -67,21 +68,15 @@ public class CosineSimilarity {
                 double intensityA = 0.0;
                 for (XYPoint dp : traceA) {
                     if (dp.x >= lBound) {
-                        if (dp.x < rBound) {
-                            intensityA += dp.y;
-                        } else {
-                            break;
-                        }
+                        if (dp.x < rBound) intensityA += dp.y;
+                        else break;
                     }
                 }
                 double intensityB = 0.0;
                 for (XYPoint dp : traceB) {
                     if (dp.x >= lBound) {
-                        if (dp.x < rBound) {
-                            intensityB += dp.y;
-                        } else {
-                            break;
-                        }
+                        if (dp.x < rBound) intensityB += dp.y;
+                        else break;
                     }
                 }
                 dataA[i - 1] = intensityA;
@@ -102,7 +97,6 @@ public class CosineSimilarity {
      * @return the number of bins
      */
     public int getNumBins() {
-
         return numBins;
     }
 
@@ -112,7 +106,6 @@ public class CosineSimilarity {
      * @param numBins the number of bins
      */
     public void setNumBins(int numBins) {
-
         this.numBins = numBins;
     }
 }
