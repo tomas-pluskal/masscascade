@@ -39,9 +39,7 @@ public class Parabola {
      */
     public QuadraticEquation solveParabola(XYPoint p1, XYPoint p2, XYPoint p3) {
 
-        if (p1.x == p2.x || p1.x == p3.x || p2.x == p3.x) {
-            return new QuadraticEquation(0, 0, 0);
-        }
+        if (p1.x == p2.x || p1.x == p3.x || p2.x == p3.x) return new QuadraticEquation(0, 0, 0);
 
         matrix.set(0, 0, p1.x * p1.x);
         matrix.set(0, 1, p1.x);

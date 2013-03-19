@@ -141,7 +141,7 @@ public class IonFinder extends CallableTask {
 
         spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
-        setIonList(params.get(Parameter.ADDUCT_LIST, (new TreeMap<Double, String>()).getClass()));
+        setIonList(params.get(Parameter.ION_LIST, (new TreeMap<Double, String>()).getClass()));
     }
 
     /**

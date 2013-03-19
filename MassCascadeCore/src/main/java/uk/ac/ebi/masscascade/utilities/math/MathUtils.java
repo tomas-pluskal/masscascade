@@ -25,6 +25,7 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYZList;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
+import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 
 import java.text.DecimalFormat;
 import java.util.List;
@@ -183,7 +184,7 @@ public class MathUtils {
      * @param dpL   the left data point
      * @param maxDp the middle data point
      * @param dpR   the right data point
-     * @return the resutling vertex
+     * @return the resulting vertex
      */
     public static XYPoint getParabolaVertex(XYPoint dpL, XYPoint maxDp, XYPoint dpR) {
 
@@ -196,6 +197,29 @@ public class MathUtils {
         double cPol = (maxDp.x * dpR.x * (maxDp.x - dpR.x) * dpL.y +
                 dpR.x * dpL.x * (dpR.x - dpL.x) * maxDp.y +
                 dpL.x * maxDp.x * (dpL.x - maxDp.x) * dpR.y) / denom;
+
+        return new XYPoint(-bPol / (2 * aPol), cPol - bPol * bPol / (4 * aPol));
+    }
+
+    /**
+     * Gets the vertex from a parabola fitted through three points.
+     *
+     * @param dpL   the left data point
+     * @param maxDp the middle data point
+     * @param dpR   the right data point
+     * @return the resulting vertex
+     */
+    public static XYPoint getParabolaVertex(XYZPoint dpL, XYZPoint maxDp, XYZPoint dpR) {
+
+        double denom = (dpL.x - maxDp.x) * (dpL.x - dpR.x) * (maxDp.x - dpR.x);
+        double aPol = (dpR.x * (maxDp.z - dpL.z) + maxDp.x * (dpL.z - dpR.z) +
+                dpL.x * (dpR.z - maxDp.z)) / denom;
+        double bPol = (dpR.x * dpR.x * (dpL.z - maxDp.z) +
+                maxDp.x * maxDp.x * (dpR.z - dpL.z) +
+                dpL.x * dpL.x * (maxDp.z - dpR.z)) / denom;
+        double cPol = (maxDp.x * dpR.x * (maxDp.x - dpR.x) * dpL.z +
+                dpR.x * dpL.x * (dpR.x - dpL.x) * maxDp.z +
+                dpL.x * maxDp.x * (dpL.x - maxDp.x) * dpR.z) / denom;
 
         return new XYPoint(-bPol / (2 * aPol), cPol - bPol * bPol / (4 * aPol));
     }

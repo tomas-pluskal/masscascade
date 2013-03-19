@@ -20,6 +20,10 @@
 package uk.ac.ebi.masscascade.core.profile;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
+import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.core.PropertyManager;
 import uk.ac.ebi.masscascade.core.chromatogram.MassChromatogram;
 import uk.ac.ebi.masscascade.interfaces.Chromatogram;
@@ -44,6 +48,8 @@ import java.util.Set;
  * Class implementing a mass spectrometry profile.
  */
 public class ProfileImpl implements Profile {
+
+    private static final Logger LOGGER = Logger.getLogger(Profile.class);
 
     private final int id;
 
@@ -174,15 +180,26 @@ public class ProfileImpl implements Profile {
      */
     public void closeProfile() {
 
-        DescriptiveStatistics stats = new DescriptiveStatistics();
-        for (XYZPoint dp : data) stats.addValue(dp.y);
+        Mean cMean = new Mean();
+        StandardDeviation cDeviation = new StandardDeviation();
 
-        centerPoint = new XYZPoint(centerPoint.x, stats.getMean(), centerPoint.z);
-        deviation = stats.getStandardDeviation();
+        XYPoint rtIntCenter = null;
+        double[] mzs = new double[data.size() - 2];
+        double[] ints = new double[data.size() - 2];
+        for (int i = 1, k = 0; i < data.size() - 1; i++, k++) {
+            XYZPoint dp = data.get(i);
+            mzs[k] = dp.y;
+            ints[k] = dp.z;
+
+            if (dp == centerPoint) rtIntCenter = MathUtils.getParabolaVertex(data.get(i - 1), dp, data.get(i + 1));
+        }
+
+        double meanMz = cMean.evaluate(mzs, ints);
+        centerPoint = new XYZPoint(rtIntCenter.x, meanMz, rtIntCenter.y);
+        deviation = cDeviation.evaluate(mzs);
         area = MathUtils.getTrapezoidArea(data);
 
-        propertyManager.addProperty(
-                new Label("Label", getId() + ": " + MathUtils.roundToThreeDecimals(this.centerPoint.y)));
+        propertyManager.addProperty(new Label("Label", getId() + ": " + MathUtils.roundToThreeDecimals(meanMz)));
     }
 
     /**

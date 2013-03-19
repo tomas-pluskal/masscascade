@@ -236,13 +236,12 @@ public class AdductDetector {
         return mz;
     }
 
-    private Property[] getProperties(AdductSingle adduct, int row, int col) {
+    private Property[] getProperties(AdductSingle adduct, int parent, int child) {
 
         Property[] props = new Property[2];
-        props[0] = new Adduct(adduct.getMass(), adduct.getName(), profileList.get(row).getId(),
-                profileList.get(col).getId());
-        props[1] = new Adduct(Constants.PARTICLES.PROTON.getMass(), MH, profileList.get(row).getId(),
-                profileList.get(col).getId());
+        int parentId = profileList.get(parent).getId();
+        props[0] = new Adduct(adduct.getMass(), adduct.getName(), parentId, profileList.get(child).getId());
+        props[1] = new Adduct(Constants.PARTICLES.PROTON.getMass(), MH, parentId, parentId);
         return props;
     }
 

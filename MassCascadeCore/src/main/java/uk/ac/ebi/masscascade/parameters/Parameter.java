@@ -21,9 +21,6 @@ package uk.ac.ebi.masscascade.parameters;
 
 import com.google.common.collect.TreeMultimap;
 import uk.ac.ebi.masscascade.binning.MzBinning;
-import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
-import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
-import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.identification.AdductSingle;
 import uk.ac.ebi.masscascade.interfaces.Option;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
@@ -124,7 +121,8 @@ public enum Parameter implements Option {
     /*
      * List parameters.
      */
-    ADDUCT_LIST("Adduct list", new TreeMap<Double, String>()),
+    ION_LIST("Ion list", new TreeMap<Double, String>()),
+    ADDUCT_LIST("Adduct list", new ArrayList<AdductSingle>()),
     MZ_FOR_REMOVAL("Masses for removal", new TreeSet<Double>()),
 
     /*

@@ -19,6 +19,7 @@
 
 package uk.ac.ebi.masscascade.tracebuilder;
 
+import org.apache.log4j.Level;
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
 import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
