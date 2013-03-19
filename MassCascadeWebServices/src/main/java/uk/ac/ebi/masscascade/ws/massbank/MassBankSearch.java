@@ -32,6 +32,7 @@ import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.properties.Identity;
 import uk.ac.ebi.masscascade.utilities.DataUtils;
+import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 import uk.ac.ebi.masscascade.utilities.math.LinearEquation;
 
@@ -215,21 +216,16 @@ public class MassBankSearch extends CallableTask {
                     double mass = Double.parseDouble(result.getExactMass());
                     double score = Double.parseDouble(result.getScore());
 
-                    if (ionMode == Constants.ION_MODE.POSITIVE) {
-                        mass = mass + Constants.PARTICLES.PROTON.getMass();
-                    } else if (ionMode.equals(Constants.ION_MODE.NEGATIVE)) {
+                    if (ionMode == Constants.ION_MODE.POSITIVE) mass = mass + Constants.PARTICLES.PROTON.getMass();
+                    else if (ionMode.equals(Constants.ION_MODE.NEGATIVE))
                         mass = mass - Constants.PARTICLES.PROTON.getMass();
-                    }
 
-                    double res = DataUtils.getNearestIndexRel(mass, ppm, mzsOrder);
-                    if (res != -1d) {
-
+                    Double closestValue = DataUtils.getClosestValue(mass, mzsOrder);
+                    if (closestValue != null && new ToleranceRange(mass, ppm).contains(closestValue)) {
                         String iupacString = getIUPACNotation(id);
                         Identity identity = new Identity(id, title, iupacString, score);
                         for (Profile profile : spectrum) {
-                            if (profile.getMz() == res) {
-                                profile.setProperty(identity);
-                            }
+                            if (profile.getMz() == closestValue) profile.setProperty(identity);
                         }
                     }
                 }

@@ -19,6 +19,7 @@
 
 package uk.ac.ebi.masscascade.identification;
 
+import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.interfaces.Profile;
@@ -27,7 +28,7 @@ import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.properties.Adduct;
 import uk.ac.ebi.masscascade.utilities.comparator.ProfileMassComparator;
-import uk.ac.ebi.masscascade.utilities.math.MathUtils;
+import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -73,7 +74,7 @@ public class AdductDetector {
     private List<AdductSingle> adductList;
 
     private final Constants.ION_MODE ionMode;
-    private final double massTolerance;
+    private final double ppm;
 
     /**
      * Constructor for the adduct detector. Instantiates an empty adduct map.
@@ -81,39 +82,23 @@ public class AdductDetector {
      * @param ionMode the acquisition mode
      */
     public AdductDetector(Constants.ION_MODE ionMode) {
-
-        this.massTolerance = DEFAULT_MASS_TOLERANCE;
-        this.ionMode = ionMode;
-
-        if (ionMode.equals(Constants.ION_MODE.POSITIVE)) {
-            MH = "M+H";
-        } else if (ionMode.equals(Constants.ION_MODE.NEGATIVE)) {
-            MH = "M-H";
-        } else {
-            MH = "";
-        }
-
-        adductList = new ArrayList<AdductSingle>();
+        this(DEFAULT_MASS_TOLERANCE, ionMode);
     }
 
     /**
      * Constructor for the adduct detector. Instantiates an empty adduct map.
      *
-     * @param massTolerance the mass tolerance for the isotope and adduct search [ppm]
-     * @param ionMode       the acquisition mode
+     * @param ppm     the mass tolerance for the isotope and adduct search [ppm]
+     * @param ionMode the acquisition mode
      */
-    public AdductDetector(double massTolerance, Constants.ION_MODE ionMode) {
+    public AdductDetector(double ppm, Constants.ION_MODE ionMode) {
 
-        this.massTolerance = massTolerance;
+        this.ppm = ppm;
         this.ionMode = ionMode;
 
-        if (ionMode.equals(Constants.ION_MODE.POSITIVE)) {
-            MH = "M+H";
-        } else if (ionMode.equals(Constants.ION_MODE.NEGATIVE)) {
-            MH = "M-H";
-        } else {
-            MH = "";
-        }
+        if (ionMode.equals(Constants.ION_MODE.POSITIVE)) MH = "M+H";
+        else if (ionMode.equals(Constants.ION_MODE.NEGATIVE)) MH = "M-H";
+        else MH = "";
 
         adductList = new ArrayList<AdductSingle>();
     }
@@ -162,7 +147,6 @@ public class AdductDetector {
      * @param adductList the adduct list
      */
     public void setAdductList(List<AdductSingle> adductList) {
-
         this.adductList = adductList;
     }
 
@@ -174,10 +158,7 @@ public class AdductDetector {
         double[][] peakMassDeltas = getPeakMassDeltas(this.profileList);
 
         for (AdductSingle adduct : adductList) {
-
-            if (adduct.getMass() >= -0.5 && adduct.getMass() < 0.5) continue;
-
-            findAdductMassInDeltaArray(adduct, peakMassDeltas);
+            if (adduct.getMass() < -0.5 || adduct.getMass() >= 0.5) findAdductMassInDeltaArray(adduct, peakMassDeltas);
         }
     }
 
@@ -190,137 +171,79 @@ public class AdductDetector {
     private void findAdductMassInDeltaArray(AdductSingle adduct, double[][] peakMassDeltas) {
 
         double adductMass = adduct.getMass();
-        Range adductMassRange = MathUtils.getRangeFromPPM(Math.abs(adductMass), massTolerance);
+        Range adductMassRange = new ToleranceRange(FastMath.abs(adductMass), ppm);
 
         for (int row = 0; row < peakMassDeltas.length; row++) {
             for (int col = 0; col < peakMassDeltas.length; col++) {
 
                 double peakMassDelta = peakMassDeltas[row][col];
                 if (peakMassDelta == 0) break;
+                if (!adductMassRange.contains(peakMassDelta)) continue;
 
-                if (adductMassRange.contains(peakMassDelta)) {
-                    Property adductProperty = null;
-                    Property referenceProperty = null;
-                    if (adductMass < 0) {
-                        if (adduct.isCluster()) {
-                            double mass = profileList.get(row).getMzIntDp().x;
-                            if (ionMode.equals(Constants.ION_MODE.POSITIVE)) {
-                                mass =
-                                        (mass - adduct.getMass()) / adduct.getClusterSize() - Constants.PARTICLES
-                                                .PROTON.getMass();
-                            } else if (ionMode.equals(Constants.ION_MODE.NEGATIVE)) {
-                                mass =
-                                        (mass - adduct.getMass()) / adduct.getClusterSize() + Constants.PARTICLES
-                                                .PROTON.getMass();
-                            }
-                            Range clusterMassRange = MathUtils.getRangeFromPPM(mass, massTolerance);
-                            int i = -1;
-                            int counter = 0;
-                            for (Profile profile : profileList) {
-                                if (clusterMassRange.contains(profile.getMzIntDp().x)) {
-                                    i = counter;
-                                    break;
-                                }
-                                counter++;
-                            }
-                            if (i != -1) {
-//                                double m = profileList.get(i).getMzIntDp().x;
-//                                double c;
-//                                if (i == 0) {
-//                                    c = clusterMassRange.getClosest(m, profileList.get(i + 1).getMzIntDp().x);
-//                                    i = (c == m) ? i : i + 1;
-//                                } else if (i == profileList.size()) {
-//                                    c = clusterMassRange.getClosest(m, profileList.get(i - 1).getMzIntDp().x);
-//                                    i = (c == m) ? i : i - 1;
-//                                } else {
-//                                    c = clusterMassRange.getClosest(m, profileList.get(i - 1).getMzIntDp().x);
-//                                    if (c != m) {
-//                                        i = i - 1;
-//                                    } else {
-//                                        c = clusterMassRange.getClosest(m, profileList.get(i + 1).getMzIntDp().x);
-//                                        i = (c == m) ? i : i + 1;
-//                                    }
-//                                }
+                Property[] adductAndReferenceProperty = null;
 
-                                referenceProperty =
-                                        new Adduct(Constants.PARTICLES.PROTON.getMass(), MH, profileList.get(row).getId(),
-                                                profileList.get(col).getId());
-                                adductProperty = new Adduct(adductMass, adduct.getName(), profileList.get(row).getId(),
-                                        profileList.get(col).getId());
-                            } else {
-                                continue;
+                // adduct lost
+                if (adductMass < 0) {
+                    if (adduct.isCluster()) {
+                        double mz = correctMz(profileList.get(row).getMz(), adduct);
+                        for (Profile profile : profileList) {
+                            if (new ToleranceRange(mz, ppm).contains(profile.getMz())) {
+                                adductAndReferenceProperty = getProperties(adduct, row, col);
+                                break;
                             }
-                        } else {
-                            referenceProperty =
-                                    new Adduct(Constants.PARTICLES.PROTON.getMass(), MH, profileList.get(row).getId(),
-                                            profileList.get(col).getId());
-                            adductProperty = new Adduct(adductMass, adduct.getName(), profileList.get(row).getId(),
-                                    profileList.get(col).getId());
                         }
-                        profileList.get(row).setProperty(referenceProperty);
-                        profileList.get(col).setProperty(adductProperty);
-                    } else if (adductMass > 0) {
-                        if (adduct.isCluster()) {
-                            double mass = profileList.get(row).getMzIntDp().x;
-                            if (ionMode.equals(Constants.ION_MODE.POSITIVE)) {
-                                mass =
-                                        (mass - adduct.getMass()) / adduct.getClusterSize() - Constants.PARTICLES
-                                                .PROTON.getMass();
-                            } else if (ionMode.equals(Constants.ION_MODE.NEGATIVE)) {
-                                mass =
-                                        (mass - adduct.getMass()) / adduct.getClusterSize() + Constants.PARTICLES
-                                                .PROTON.getMass();
-                            }
-                            Range clusterMassRange = MathUtils.getRangeFromPPM(mass, massTolerance);
-                            int i = -1;
-                            int counter = 0;
-                            for (Profile profile : profileList) {
-                                if (clusterMassRange.contains(profile.getMzIntDp().x)) {
-                                    i = counter;
-                                    break;
-                                }
-                                counter++;
-                            }
-                            if (i != -1) {
-//                                double m = profileList.get(i).getMzIntDp().x;
-//                                double c;
-//                                if (i == 0) {
-//                                    c = clusterMassRange.getClosest(m, profileList.get(i + 1).getMzIntDp().x);
-//                                    i = (c == m) ? i : i + 1;
-//                                } else if (i == profileList.size()) {
-//                                    c = clusterMassRange.getClosest(m, profileList.get(i - 1).getMzIntDp().x);
-//                                    i = (c == m) ? i : i - 1;
-//                                } else {
-//                                    c = clusterMassRange.getClosest(m, profileList.get(i - 1).getMzIntDp().x);
-//                                    if (c != m) {
-//                                        i = i - 1;
-//                                    } else {
-//                                        c = clusterMassRange.getClosest(m, profileList.get(i + 1).getMzIntDp().x);
-//                                        i = (c == m) ? i : i + 1;
-//                                    }
-//                                }
+                    } else adductAndReferenceProperty = getProperties(adduct, row, col);
 
-                                referenceProperty =
-                                        new Adduct(Constants.PARTICLES.PROTON.getMass(), MH, profileList.get(col).getId(),
-                                                profileList.get(row).getId());
-                                adductProperty = new Adduct(adductMass, adduct.getName(), profileList.get(col).getId(),
-                                        profileList.get(row).getId());
-                            } else {
-                                continue;
+                    if (adductAndReferenceProperty != null) {
+                        profileList.get(col).setProperty(adductAndReferenceProperty[0]);
+                        profileList.get(row).setProperty(adductAndReferenceProperty[1]);
+                    }
+
+                    // adduct gained
+                } else if (adductMass > 0) {
+                    if (adduct.isCluster()) {
+                        double mz = correctMz(profileList.get(row).getMz(), adduct);
+                        for (Profile profile : profileList) {
+                            if (new ToleranceRange(mz, ppm).contains(profile.getMz())) {
+                                adductAndReferenceProperty = getProperties(adduct, col, row);
+                                break;
                             }
-                        } else {
-                            referenceProperty =
-                                    new Adduct(Constants.PARTICLES.PROTON.getMass(), MH, profileList.get(col).getId(),
-                                            profileList.get(row).getId());
-                            adductProperty = new Adduct(adductMass, adduct.getName(), profileList.get(col).getId(),
-                                    profileList.get(row).getId());
                         }
-                        profileList.get(col).setProperty(referenceProperty);
-                        profileList.get(row).setProperty(adductProperty);
+                    } else adductAndReferenceProperty = getProperties(adduct, col, row);
+
+                    if (adductAndReferenceProperty != null) {
+                        profileList.get(row).setProperty(adductAndReferenceProperty[0]);
+                        profileList.get(col).setProperty(adductAndReferenceProperty[1]);
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Corrects the adduct based on its cluster size to match the corresponding M+H signal.
+     *
+     * @param mz     the m/z value
+     * @param adduct the adduct belonging to the m/z value
+     * @return the corrected m/z value matching the M+H signal
+     */
+    private double correctMz(double mz, AdductSingle adduct) {
+        if (ionMode.equals(Constants.ION_MODE.POSITIVE))
+            mz = (mz - adduct.getMass()) / adduct.getClusterSize() + Constants.PARTICLES.PROTON.getMass();
+        else if (ionMode.equals(Constants.ION_MODE.NEGATIVE))
+            mz = (mz - adduct.getMass()) / adduct.getClusterSize() - Constants.PARTICLES.PROTON.getMass();
+
+        return mz;
+    }
+
+    private Property[] getProperties(AdductSingle adduct, int row, int col) {
+
+        Property[] props = new Property[2];
+        props[0] = new Adduct(adduct.getMass(), adduct.getName(), profileList.get(row).getId(),
+                profileList.get(col).getId());
+        props[1] = new Adduct(Constants.PARTICLES.PROTON.getMass(), MH, profileList.get(row).getId(),
+                profileList.get(col).getId());
+        return props;
     }
 
     /**
@@ -336,18 +259,16 @@ public class AdductDetector {
         int row = 0;
         Iterator<Profile> itRow = peakList.iterator();
         while (itRow.hasNext()) {
-            double rowMass = itRow.next().getMzIntDp().x;
+            double rowMass = itRow.next().getMz();
 
             int col = 0;
             Iterator<Profile> itCol = peakList.iterator();
             while (itCol.hasNext()) {
-                double colMass = itCol.next().getMzIntDp().x;
+                double colMass = itCol.next().getMz();
 
                 double delta = rowMass - colMass;
                 if (delta == 0) break;
-                massDeltas[row][col] = delta;
-
-                col++;
+                massDeltas[row][col++] = delta;
             }
             row++;
         }

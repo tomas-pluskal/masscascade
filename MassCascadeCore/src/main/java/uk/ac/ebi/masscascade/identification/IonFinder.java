@@ -20,8 +20,6 @@
 package uk.ac.ebi.masscascade.identification;
 
 import org.apache.log4j.Level;
-import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
-import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
@@ -32,6 +30,7 @@ import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.properties.Identity;
 import uk.ac.ebi.masscascade.utilities.DataUtils;
+import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -61,7 +60,7 @@ import java.util.TreeMap;
 public class IonFinder extends CallableTask {
 
     private SpectrumContainer spectrumContainer;
-    private double massTolerance;
+    private double ppm;
     private TreeMap<Double, String> ionMzs = new TreeMap<Double, String>();
 
     /**
@@ -93,7 +92,6 @@ public class IonFinder extends CallableTask {
      * @param ionMzs the ion list
      */
     public void setIonList(TreeMap<Double, String> ionMzs) {
-
         this.ionMzs = ionMzs;
     }
 
@@ -142,7 +140,7 @@ public class IonFinder extends CallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
-        massTolerance = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
+        ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         setIonList(params.get(Parameter.ADDUCT_LIST, (new TreeMap<Double, String>()).getClass()));
     }
 
@@ -159,17 +157,15 @@ public class IonFinder extends CallableTask {
         SpectrumContainer outSpectrumContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
                 spectrumContainer.getWorkingDirectory());
 
-        double result;
+        Double closestIon;
         for (Spectrum spectrum : spectrumContainer) {
             for (Profile profile : spectrum) {
                 double mz = profile.getMzIntDp().x;
 
-                result = DataUtils.getNearestIndexRel(mz, massTolerance, ionMzs.keySet());
-
-                if (result != -1) {
-
-                    double score = Math.abs(mz - result) * Constants.PPM / mz;
-                    Identity identity = new Identity("", ionMzs.get(result), "", score);
+                closestIon = DataUtils.getClosestKey(mz, ionMzs);
+                if (closestIon != null && new ToleranceRange(mz, ppm).contains(closestIon)) {
+                    double score = Math.abs(mz - closestIon) * Constants.PPM / mz;
+                    Identity identity = new Identity("", ionMzs.get(closestIon), "", score);
                     profile.setProperty(identity);
                 }
             }
@@ -177,7 +173,6 @@ public class IonFinder extends CallableTask {
         }
 
         outSpectrumContainer.finaliseFile();
-
         return outSpectrumContainer;
     }
 }

@@ -40,31 +40,6 @@ import java.util.TreeMap;
 public class ProfUtils {
 
     /**
-     * Groups all profiles in the container by retention time using the given tolerance.
-     *
-     * @return the map containing the retention time-profile groups.
-     */
-    public static Map<Double, List<Profile>> groupByRetentionTime(double rtTolerance,
-            ProfileContainer profileContainer) {
-
-        Map<Double, List<Profile>> rtGroupedprofiles = new TreeMap<Double, List<Profile>>();
-
-        for (Profile profile : profileContainer) {
-
-            double profileListIndex =
-                    DataUtils.getNearestIndexAbs(profile.getRetentionTime(), rtTolerance, rtGroupedprofiles.keySet());
-
-            if (profileListIndex == -1) {
-                List<Profile> profileList = new ArrayList<Profile>();
-                profileList.add(profile);
-                rtGroupedprofiles.put(profile.getRetentionTime(), profileList);
-            } else rtGroupedprofiles.get(profileListIndex).add(profile);
-        }
-
-        return rtGroupedprofiles;
-    }
-
-    /**
      * Compiles the profile information string.
      *
      * @param profile a profile

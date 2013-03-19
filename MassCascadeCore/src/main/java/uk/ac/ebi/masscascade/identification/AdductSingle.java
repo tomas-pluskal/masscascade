@@ -35,11 +35,8 @@ public class AdductSingle {
         this.charge = charge;
         this.clusterSize = 1;
 
-        if (ionMode.equals(Constants.ION_MODE.POSITIVE)) {
-            this.mass = mass - Constants.PARTICLES.PROTON.getMass();
-        } else if (ionMode.equals(Constants.ION_MODE.NEGATIVE)) {
-            this.mass = mass + Constants.PARTICLES.PROTON.getMass();
-        }
+        if (ionMode.equals(Constants.ION_MODE.POSITIVE)) this.mass = mass - Constants.PARTICLES.PROTON.getMass();
+        else if (ionMode.equals(Constants.ION_MODE.NEGATIVE)) this.mass = mass + Constants.PARTICLES.PROTON.getMass();
 
         cluster = (name.startsWith("2") || name.startsWith("3"));
         if (cluster) clusterSize = Integer.parseInt(name.substring(0, 1));

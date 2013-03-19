@@ -20,13 +20,7 @@
 package uk.ac.ebi.masscascade.utilities;
 
 import uk.ac.ebi.masscascade.interfaces.Trace;
-import uk.ac.ebi.masscascade.parameters.Constants;
-import uk.ac.ebi.masscascade.utilities.math.MathUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -34,101 +28,6 @@ import java.util.TreeSet;
  * Class providing utility methods for list and set operations.
  */
 public class DataUtils {
-
-    /**
-     * Method returning the nearest set key to a given value. The value must lie within the defined tolerance.
-     *
-     * @param value     a value for lookup
-     * @param tolerance a tolerance (ppm)
-     * @param map       a set of values to be searched
-     * @return the nearest set key in the set
-     */
-    public static double getNearestIndexRel(double value, double tolerance, Set<Double> map) {
-
-        List<Double> traceSourceList = new ArrayList<Double>(map);
-        return getNearestIndexRel(value, tolerance, traceSourceList);
-    }
-
-    /**
-     * Method returning the nearest set key to a given value. The value must lie within the defined tolerance.
-     *
-     * @param value     a value for lookup
-     * @param tolerance a tolerance (ppm)
-     * @param map       a list of values to be searched
-     * @return the nearest set key in the set
-     */
-    public static double getNearestIndexRel(double value, double tolerance, List<Double> map) {
-
-        double result = -1;
-        if (map.size() == 0) return -1;
-
-        int traceMapIndex = Collections.binarySearch(map, value);
-
-        if (traceMapIndex >= 0) return map.get(traceMapIndex);
-        // corrected insertion point: point above the position where the value would have been inserted
-        traceMapIndex = Math.abs(traceMapIndex + 1);
-
-        if (traceMapIndex == 0) { // if smaller than smallest entry
-
-            double deltaPos = map.get(traceMapIndex) - value;
-            double tolerancePos = MathUtils.getAbsTolerance(map.get(traceMapIndex), tolerance);
-            if (deltaPos < tolerancePos) result = map.get(traceMapIndex);
-        } else if (traceMapIndex == map.size()) { // if greater than greatest entry
-
-            double deltaNeg = value - map.get(traceMapIndex - 1);
-            double toleranceNeg = map.get(traceMapIndex - 1) * tolerance / Constants.PPM;
-            if (deltaNeg < toleranceNeg) result = map.get(traceMapIndex - 1);
-        } else { // find the nearest neighbour to the value in the list
-
-            double deltaPos = map.get(traceMapIndex) - value;
-            double tolerancePos = map.get(traceMapIndex) * tolerance / Constants.PPM;
-            double deltaNeg = value - map.get(traceMapIndex - 1);
-            double toleranceNeg = map.get(traceMapIndex - 1) * tolerance / Constants.PPM;
-            if (deltaPos < deltaNeg && deltaPos <= tolerancePos) result = map.get(traceMapIndex);
-            if (deltaPos >= deltaNeg && deltaNeg < toleranceNeg) result = map.get(traceMapIndex - 1);
-        }
-
-        return result;
-    }
-
-    /**
-     * Method returning the nearest set key to a given value. The value must lie within the defined tolerance.
-     *
-     * @param value     the value for lookup
-     * @param tolerance the tolerance (absolute)
-     * @param map       the set of values to be searched
-     * @return the nearest set key in the set
-     */
-    public static double getNearestIndexAbs(double value, double tolerance, Set<Double> map) {
-
-        double result = -1;
-        if (map.size() == 0) return result;
-
-        List<Double> traceSourceList = new ArrayList<Double>(map);
-        int traceMapIndex = Collections.binarySearch(traceSourceList, value);
-
-        if (traceMapIndex >= 0) return traceSourceList.get(traceMapIndex);
-
-        // corrected insertion point: point above the position where the value would have been inserted
-        traceMapIndex = Math.abs(traceMapIndex + 1);
-
-        if (traceMapIndex == traceSourceList.size()) { // if greater than greatest entry
-            double deltaNeg = value - traceSourceList.get(traceMapIndex - 1);
-            if (deltaNeg < tolerance) result = traceSourceList.get(traceMapIndex - 1);
-        } else if (traceMapIndex == 0) { // if smaller than smallest entry
-            double deltaPos = traceSourceList.get(traceMapIndex) - value;
-            if (deltaPos < tolerance) result = traceSourceList.get(traceMapIndex);
-        } else { // find the nearest neighbour to the value in the list
-            double deltaPos = traceSourceList.get(traceMapIndex) - value;
-            double deltaNeg = value - traceSourceList.get(traceMapIndex - 1);
-            if (deltaPos < deltaNeg && deltaPos < tolerance) result = traceSourceList.get(traceMapIndex);
-            if (deltaPos >= deltaNeg && deltaNeg < tolerance) result = traceSourceList.get(traceMapIndex - 1);
-        }
-
-        traceSourceList = null;
-
-        return result;
-    }
 
     /**
      * Returns the most proximate key in the trace map for the given trace.
