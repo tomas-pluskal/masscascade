@@ -55,7 +55,7 @@ public class XYZPoint implements Comparable<XYZPoint> {
         if (getClass() != obj.getClass()) return false;
 
         final XYZPoint other = (XYZPoint) obj;
-        return !(this.x != other.x || this.y != other.y || this.z != other.z);
+        return (this.x == other.x && this.y == other.y && this.z == other.z);
     }
 
     @Override

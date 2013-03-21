@@ -33,13 +33,18 @@ import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.properties.Isotope;
 import uk.ac.ebi.masscascade.utilities.comparator.ProfileMassComparator;
+import uk.ac.ebi.masscascade.utilities.math.LinearEquation;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
+import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -50,6 +55,30 @@ public class IsotopeDetector {
     private static final Logger LOGGER = Logger.getLogger(AdductDetector.class);
 
     private static final int MAX_PATH = 50;
+
+    // describe isotope intensities for masses between 0 and 900 for the major isotopes with distance 1-3
+    // x values are masses divided by 100
+    private Map<Integer, LinearEquation> isotopeToEquation = new HashMap<Integer, LinearEquation>() {
+
+        {
+            put(1, new LinearEquation(0.006359, -0.001681));
+            put(2, new LinearEquation(0.0009969, -0.0068281));
+            put(3, new LinearEquation(0.0001437, -0.0016528));
+        }
+    };
+
+    // isotope intensity tolerance values relative to 1
+    private Map<Integer, Double> isotopeToTolerance = new HashMap<Integer, Double>() {
+
+        {
+            put(1, 0.50);
+            put(2, 0.50);
+            put(3, 0.75);
+        }
+    };
+
+    // bin size used to infer the functions above
+    private static double BIN_SIZE = 10d;
 
     /**
      * Reference: "The isotopic Mass Defect", E. Thurman, et al.
@@ -83,9 +112,8 @@ public class IsotopeDetector {
 
         List<DirectedMultigraph<Profile, DefaultEdge>> graphs =
                 new ArrayList<DirectedMultigraph<Profile, DefaultEdge>>();
-        for (int i = 0; i < charge; i++) {
+        for (int i = 0; i < charge; i++)
             graphs.add(new DirectedMultigraph<Profile, DefaultEdge>(DefaultEdge.class));
-        }
 
         for (int row = 0; row < profileDeltas.length; row++) {
             for (int col = 0; col < profileDeltas.length; col++) {
@@ -96,10 +124,8 @@ public class IsotopeDetector {
                 List<Range> protonDeltas = getProtonDeltas(charge, profileList.get(row).getMzIntDp().x);
                 int chargeCount = 0;
                 for (Range protonDelta : protonDeltas) {
-
-                    if (protonDelta.contains(profileDelta)) {
+                    if (protonDelta.contains(profileDelta))
                         Graphs.addEdgeWithVertices(graphs.get(chargeCount), profileList.get(row), profileList.get(col));
-                    }
                     chargeCount++;
                 }
             }
@@ -118,7 +144,6 @@ public class IsotopeDetector {
 
         List<Range> protonDeltas = new ArrayList<Range>();
         for (int curCharge = 1; curCharge <= charge; curCharge++) {
-
             double sigma = mz * massTolerance / Constants.PPM;
             protonDeltas.add(new ExtendableRange((ISOTOPE_DIFFERENCE - sigma) / curCharge,
                     (ISOTOPE_DIFFERENCE + sigma) / curCharge));
@@ -127,8 +152,7 @@ public class IsotopeDetector {
     }
 
     /**
-     * Takes all isotope-detected profiles and sets the nominal isotope positions from the main M profile (-3, -2, -1,
-     * 0, 1,
+     * Takes all isotope-detected profiles and sets the nominal isotope positions from the main M profile (0, 1,
      * 2, ..).
      */
     private void adjustIsotopeLabels(List<DirectedMultigraph<Profile, DefaultEdge>> graphs) {
@@ -143,16 +167,11 @@ public class IsotopeDetector {
             List<Profile> leafV = new ArrayList<Profile>();
 
             Profile vertex;
-            Isotope isotope;
-
             for (Set<Profile> profileSet : connectedSets) {
 
                 for (final Profile profile : profileSet) {
-                    if (graph.inDegreeOf(profile) == 0) {
-                        rootV.add(profile);
-                    } else if (graph.outDegreeOf(profile) == 0) {
-                        leafV.add(profile);
-                    }
+                    if (graph.inDegreeOf(profile) == 0) rootV.add(profile);
+                    else if (graph.outDegreeOf(profile) == 0) leafV.add(profile);
                 }
 
                 for (final Profile root : rootV) {
@@ -169,31 +188,45 @@ public class IsotopeDetector {
                             for (int i = 0; i < pathVertices.size(); i++) {
                                 vertex = pathVertices.get(i);
 
-                                if (vertex.getMzIntDp().y > maxIntensity) {
-                                    maxIntensity = vertex.getMzIntDp().y;
+                                if (vertex.getIntensity() > maxIntensity) {
+                                    maxIntensity = vertex.getIntensity();
                                     mainId = i;
                                 }
                             }
 
                             vertex = pathVertices.get(mainId);
                             int vertexId = vertex.getId();
-                            isotope = new Isotope("M", 0, vertexId, vertexId);
-                            vertex.setProperty(isotope);
 
-                            for (int j = 0; j < mainId; j++) {
-                                isotope = new Isotope("M-" + (mainId - j), (mainId - j) * -1, vertexId,
-                                        pathVertices.get(j).getId());
-                                pathVertices.get(j).setProperty(isotope);
+                            if (pathVertices.size() <= mainId + 1) continue;
+
+                            Map<Integer, Isotope> idToIsotope = new HashMap<>();
+                            for (int j = mainId + 1, k = 1; j < pathVertices.size(); j++, k++) {
+                                Profile isoVertex = pathVertices.get(j);
+                                double isoIntensityTheory = isotopeToEquation.get(k).getY(isoVertex.getMz() / BIN_SIZE);
+
+                                if (isInRange(k, vertex.getIntensity(), isoVertex.getIntensity(), isoIntensityTheory))
+                                    idToIsotope.put(j, new Isotope("M+" + k, k, vertexId, pathVertices.get(j).getId()));
+                                else break;
                             }
-                            for (int j = mainId + 1; j < pathVertices.size(); j++) {
-                                isotope = new Isotope("M+" + j, j, vertexId, pathVertices.get(j).getId());
-                                pathVertices.get(j).setProperty(isotope);
-                            }
+
+                            if (idToIsotope.size() < 1) continue;
+
+                            Isotope isotope = new Isotope("M", 0, vertexId, vertexId);
+                            vertex.setProperty(isotope);
+                            for (Map.Entry<Integer, Isotope> entry : idToIsotope.entrySet())
+                                pathVertices.get(entry.getKey()).setProperty(entry.getValue());
                         }
                     }
                 }
             }
         }
+    }
+
+    private boolean isInRange(int k, double majorIntensity, double isoIntensity, double isoIntensityTheory) {
+
+        double norm = isoIntensity / majorIntensity;
+        return (norm < isoIntensityTheory + (isoIntensityTheory * isotopeToTolerance.get(
+                k)) && norm >= isoIntensityTheory - (isoIntensityTheory * isotopeToTolerance.get(k)));
     }
 
     /**

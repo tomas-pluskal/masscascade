@@ -106,10 +106,9 @@ public class SavitzkyGolaySmoothing extends CallableTask {
                     new ProfileImpl(profile.getId(), new XYPoint(profile.getMzData().get(0).x, Constants.MIN_ABUNDANCE),
                             profile.getTrace().getData().get(0).x, profile.getMzRange());
 
-            for (int i = 1; i < smoothedY.length - 1; i++) {
+            for (int i = 1; i < smoothedY.length - 1; i++)
                 smoothedProfile.addProfilePoint(new XYPoint(profile.getMzData().get(i).x, smoothedY[i]),
                         profile.getTrace().getData().get(i).x);
-            }
 
             smoothedProfile.closeProfile(new XYPoint(profile.getMzDataLast().x, Constants.MIN_ABUNDANCE),
                     profile.getTrace().getData().get(smoothedY.length - 1).x);

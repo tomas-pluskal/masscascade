@@ -191,7 +191,11 @@ public class ProfileImpl implements Profile {
             mzs[k] = dp.y;
             ints[k] = dp.z;
 
-            if (dp == centerPoint) rtIntCenter = MathUtils.getParabolaVertex(data.get(i - 1), dp, data.get(i + 1));
+            if (dp.equals(centerPoint)) rtIntCenter = MathUtils.getParabolaVertex(data.get(i - 1), dp, data.get(i + 1));
+        }
+
+        if (centerPoint == null) {
+            System.out.println("Aye");
         }
 
         double meanMz = cMean.evaluate(mzs, ints);
