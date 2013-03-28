@@ -62,7 +62,7 @@ public class SimpleSpectrum extends ZoomableChart {
     private static final int DISC_SIZE = 5;
     private static final int FONT_SIZE = 10;
     private static final int SCALE = 1000;
-    private static final int PRECISION = 3;
+    private static final int PRECISION = 2;
 
     private IRangePolicy rangePolicyY;
     private IRangePolicy rangePolicyX;
@@ -407,6 +407,7 @@ public class SimpleSpectrum extends ZoomableChart {
                 traces.get(dataSetTitle).setTracePainter(new TracePainterDisc(DISC_SIZE));
             } else if (painterMap.containsKey(PAINTERS.SPLINE)) {
                 traces.get(dataSetTitle).setTracePainter(new TracePainterSpline(PRECISION));
+                force = true;
             }
 
             if (painterMap.containsKey(PAINTERS.ANNO) && force) {

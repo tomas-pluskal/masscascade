@@ -55,6 +55,13 @@ public interface Profile {
     double getIntensity();
 
     /**
+     * Returns the minimum intensity.
+     *
+     * @return the minimum intensity
+     */
+    double getMinIntensity();
+
+    /**
      * Returns the rt-mz-intensity data list.
      *
      * @return the data list
@@ -111,6 +118,15 @@ public interface Profile {
      * @return the extracted ion chromatogram
      */
     Chromatogram getTrace();
+
+    /**
+     * Returns the extracted ion chromatogram.
+     *
+     * @return the extracted ion chromatogram
+     */
+    Chromatogram getTrace(int width);
+
+    XYZList getPaddedData(int width);
 
     /**
      * Sets a profile property.

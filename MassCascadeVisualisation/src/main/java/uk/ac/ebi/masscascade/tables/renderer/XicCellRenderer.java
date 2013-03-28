@@ -19,13 +19,16 @@
 
 package uk.ac.ebi.masscascade.tables.renderer;
 
+import org.apache.commons.math3.util.FastMath;
 import uk.ac.ebi.masscascade.core.chromatogram.MassChromatogram;
+import uk.ac.ebi.masscascade.utilities.math.LinearEquation;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.util.Collections;
 
 /**
  * Custom number cell renderer for XIC objects.
@@ -56,44 +59,22 @@ public class XicCellRenderer extends DefaultTableCellRenderer {
 
         g.setColor(Color.RED);
 
-        double yMax = 0;
-        double yMin = Double.MAX_VALUE;
-
-        double xMin = Double.MAX_VALUE;
-        double xMax = 0;
-
         if (xyList == null) return;
-
-        for (XYPoint xyPoint : xyList) {
-
-            if (yMax < xyPoint.y) yMax = xyPoint.y;
-            if (yMin > xyPoint.y) yMin = xyPoint.y;
-
-            if (xMax < xyPoint.x) xMax = xyPoint.x;
-            if (xMin > xyPoint.x) xMin = xyPoint.x;
-        }
-
-        xMin -= 5;
-        xMax += 5;
-
-        double mx = getWidth() / (xMax - xMin);
-        double bx = getWidth() - (mx * xMax);
-
-        double my = getHeight() / (yMax - yMin);
-        double by = getHeight() - (my * yMax);
 
         if (xyList.size() < 3) {
 
-            int y1 = getHeight();
-            int y2 = y1;
+            LinearEquation[] eqXY = getLqXY();
 
-            int x1 = (int) (mx * xyList.get(0).x + bx);
-            int x2 = x1;
+            int y1 = getHeight();
+            int y2;
+
+            int x1 = (int) eqXY[0].getY(xyList.get(0).x);
+            int x2;
 
             for (int i = 0; i < xyList.size(); i++) {
 
-                x2 = (int) (mx * xyList.get(i).x + bx);
-                y2 = (int) (getHeight() - (my * xyList.get(i).y + by));
+                x2 = (int) eqXY[0].getY(xyList.get(i).x);
+                y2 = (int) (getHeight() - eqXY[1].getY(xyList.get(i).y));
 
                 g.drawLine(x1, y1, x2, y2);
 
@@ -101,8 +82,7 @@ public class XicCellRenderer extends DefaultTableCellRenderer {
                 y1 = y2;
             }
 
-            g.drawLine(x1, y1, x1, getHeight());
-
+//            g.drawLine(x1, y1, x1, getHeight());
         } else {
 
             int np = xyList.size();
@@ -117,13 +97,12 @@ public class XicCellRenderer extends DefaultTableCellRenderer {
             float[] h = new float[np];
 
             for (int i = 0; i < np; i++) {
-                x[i] = (float) (mx * xyList.get(i).x + bx);
-                d[i] = (float) (getHeight() - my * xyList.get(i).y + by);
+                x[i] = (float) xyList.get(i).x;
+                d[i] = (float) xyList.get(i).y;
             }
 
-            for (int i = 1; i <= np - 1; i++) {
-                h[i] = x[i] - x[i - 1];
-            }
+            for (int i = 1; i <= np - 1; i++) h[i] = x[i] - x[i - 1];
+
             float[] sub = new float[np - 1];
             float[] diag = new float[np - 1];
             float[] sup = new float[np - 1];
@@ -137,11 +116,11 @@ public class XicCellRenderer extends DefaultTableCellRenderer {
             solveTridiag(sub, diag, sup, a, np - 2);
 
             // note that a[0]=a[np-1]=0, draw
-            int[] g2dXPoints = new int[(np * 3) - 3 + 1];
-            int[] g2dYPoints = new int[(np * 3) - 3 + 1];
+            float[] g2dXPoints = new float[(np * 3) - 3 + 1];
+            float[] g2dYPoints = new float[(np * 3) - 3 + 1];
             int g2dI = 1;
-            g2dXPoints[0] = Math.round(x[0]);
-            g2dYPoints[0] = Math.round(d[0]);
+            g2dXPoints[0] = x[0];
+            g2dYPoints[0] = d[0];
             for (int i = 1; i < np; i++) {
                 // loop over intervals between nodes
                 for (int j = 1; j <= 3; j++) {
@@ -152,13 +131,33 @@ public class XicCellRenderer extends DefaultTableCellRenderer {
                                     d[i]) * t1) / h[i];
                     t = x[i - 1] + t1;
 
-                    g2dXPoints[g2dI] = Math.round(t);
-                    g2dYPoints[g2dI] = (int) ((Math.round(y) > yMax) ? yMax : Math.round(y));
+                    g2dXPoints[g2dI] = t;
+                    g2dYPoints[g2dI] = y;
                     g2dI++;
                 }
             }
 
-            g.drawPolyline(g2dXPoints, g2dYPoints, g2dXPoints.length);
+            LinearEquation[] eqXY = getLqXY(g2dXPoints, g2dYPoints);
+
+            int x1 = (int) eqXY[0].getY(g2dXPoints[0]);
+            int x2;
+            int y1 = (int) (getHeight() - eqXY[1].getY(g2dYPoints[0]));
+            int y2;
+
+            for (int i = 1; i < g2dXPoints.length; i++) {
+
+                x2 = (int) FastMath.round(eqXY[0].getY(g2dXPoints[i]));
+                y2 = (int) FastMath.round(getHeight() - eqXY[1].getY(g2dYPoints[i]));
+
+                if (x1 == x2) {
+                    continue;
+                }
+
+                g.drawLine(x1, y1, x2, y2);
+
+                x1 = x2;
+                y1 = y2;
+            }
         }
     }
 
@@ -185,5 +184,67 @@ public class XicCellRenderer extends DefaultTableCellRenderer {
         for (i = n - 1; i >= 1; i--) {
             b[i] = (b[i] - sup[i] * b[i + 1]) / diag[i];
         }
+    }
+
+    private LinearEquation[] getLqXY() {
+
+        double yMax = 0;
+        double yMin = Double.MAX_VALUE;
+
+        double xMin = Double.MAX_VALUE;
+        double xMax = 0;
+
+        for (XYPoint xyPoint : xyList) {
+
+            if (yMax < xyPoint.y) yMax = xyPoint.y;
+            if (yMin > xyPoint.y) yMin = xyPoint.y;
+
+            if (xMax < xyPoint.x) xMax = xyPoint.x;
+            if (xMin > xyPoint.x) xMin = xyPoint.x;
+        }
+
+        xMin -= 5;
+        xMax += 5;
+
+        double mx = getWidth() / (xMax - xMin);
+        double bx = getWidth() - (mx * xMax);
+        LinearEquation lqX = new LinearEquation(mx ,bx);
+
+        double my = getHeight() / (yMax - yMin);
+        double by = getHeight() - (my * yMax);
+        LinearEquation lqY = new LinearEquation(my ,by);
+
+        return new LinearEquation[] { lqX, lqY };
+    }
+
+    private LinearEquation[] getLqXY(float[] g2dXPoints, float[] g2dYPoints) {
+
+        double yMax = 0;
+        double yMin = Double.MAX_VALUE;
+
+        double xMin = Double.MAX_VALUE;
+        double xMax = 0;
+
+        for (int i = 0; i < g2dXPoints.length; i++) {
+
+            if (yMax < g2dYPoints[i]) yMax = g2dYPoints[i];
+            if (yMin > g2dYPoints[i]) yMin = g2dYPoints[i];
+
+            if (xMax < g2dXPoints[i]) xMax = g2dXPoints[i];
+            if (xMin > g2dXPoints[i]) xMin = g2dXPoints[i];
+        }
+
+        xMin -= 5;
+        xMax += 5;
+
+        double mx = getWidth() / (xMax - xMin);
+        double bx = getWidth() - (mx * xMax);
+        LinearEquation lqX = new LinearEquation(mx ,bx);
+
+        double my = getHeight() / (yMax - yMin);
+        double by = getHeight() - (my * yMax);
+        LinearEquation lqY = new LinearEquation(my ,by);
+
+        return new LinearEquation[] { lqX, lqY };
     }
 }

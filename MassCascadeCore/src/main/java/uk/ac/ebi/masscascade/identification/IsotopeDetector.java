@@ -72,8 +72,8 @@ public class IsotopeDetector {
 
         {
             put(1, 0.50);
-            put(2, 0.50);
-            put(3, 0.75);
+            put(2, 0.90);
+            put(3, 0.90);
         }
     };
 

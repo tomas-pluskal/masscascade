@@ -147,6 +147,7 @@ public enum Parameter implements Option {
     POLYNOMIAL_ORDER("Polynomial order", 3),
     CORRELATION_THRESHOLD("Correlation threshold", 0.75),
     DERIVATIVE_THRESHOLD("Derivative threshold", 0.2),
+    SG_LEVEL("SG Filter Level", 3),
 
     /*
      * Obiwarp parameters.

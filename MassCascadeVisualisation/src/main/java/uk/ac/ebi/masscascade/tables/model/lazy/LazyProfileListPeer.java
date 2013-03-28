@@ -91,7 +91,7 @@ public class LazyProfileListPeer implements LazyListService<Object[]> {
             result[i][DEV] = profile.getDeviation();
             result[i][AREA] = profile.getArea();
             result[i][INFO] = ProfUtils.getProfileLabel(profile);
-            result[i][SHAPE] = profile.getTrace();
+            result[i][SHAPE] = profile.getTrace(3);
 
             i++;
             startElement++;

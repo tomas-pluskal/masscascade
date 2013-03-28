@@ -51,7 +51,6 @@ public abstract class LazyListTableModel<T> extends AbstractTableModel {
     }
 
     protected void addOnLoadListener() {
-
         getLazyList().addOnLoadListener(createOnLoadListener());
     }
 
@@ -78,17 +77,14 @@ public abstract class LazyListTableModel<T> extends AbstractTableModel {
     }
 
     protected LazyList<T> getLazyList() {
-
         return lazyList;
     }
 
     public void addDependentTable(JTable table) {
-
         dependentTables.add(table);
     }
 
     public void removeDependentTable(JTable table) {
-
         dependentTables.remove(table);
     }
 
@@ -118,7 +114,6 @@ public abstract class LazyListTableModel<T> extends AbstractTableModel {
     }
 
     public int getRowCount() {
-
         return getLazyList().size();
     }
 
@@ -133,7 +128,6 @@ public abstract class LazyListTableModel<T> extends AbstractTableModel {
     }
 
     public Object getDummyValueAt(int rowIndex, int columnIndex) {
-
         return 0;
     }
 

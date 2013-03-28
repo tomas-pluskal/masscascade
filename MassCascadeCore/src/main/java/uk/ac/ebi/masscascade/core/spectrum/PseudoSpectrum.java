@@ -110,9 +110,8 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      */
     public void addProfiles(Set<Profile> profiles) {
 
-        for (Profile peak : profiles) {
+        for (Profile peak : profiles)
             addProfile(peak);
-        }
     }
 
     /**
@@ -123,9 +122,8 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      */
     public Profile getProfile(int profileId) {
 
-        if (profileMap.containsKey(profileId)) {
+        if (profileMap.containsKey(profileId))
             return profileMap.get(profileId);
-        }
         return null;
     }
 
@@ -135,7 +133,6 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      * @return the profile list
      */
     public List<Profile> getProfileList() {
-
         return new ArrayList<Profile>(profileMap.values());
     }
 
@@ -145,7 +142,6 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      * @return the id - profile map
      */
     public Map<Integer, Profile> getProfileMap() {
-
         return profileMap;
     }
 
@@ -155,7 +151,6 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      * @return the rt range
      */
     public Range getRtRange() {
-
         return rtRange;
     }
 
@@ -166,7 +161,6 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      */
     @Override
     public Set<Property> getProperty(PropertyManager.TYPE type) {
-
         return propertyManager.getProperty(type);
     }
 
@@ -177,7 +171,6 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      */
     @Override
     public boolean hasProperty(PropertyManager.TYPE type) {
-
         return propertyManager.hasProperty(type);
     }
 
@@ -188,7 +181,6 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      */
     @Override
     public void setProperty(Property property) {
-
         propertyManager.addProperty(property);
     }
 
@@ -198,7 +190,6 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      * @return the spectrum
      */
     public static Spectrum getEmptySpectrum() {
-
         return new PseudoSpectrum(-1, new XYList(), -1, new ExtendableRange());
     }
 
@@ -209,7 +200,6 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      */
     @Override
     public Iterator<Profile> iterator() {
-
         return profileMap.values().iterator();
     }
 }

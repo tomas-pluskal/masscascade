@@ -40,6 +40,9 @@ public class Constants {
     // Number of threads used for web services
     public static final int NTHREADS = 10;
 
+    // Number of data points for padded data sets
+    public static final int PADDING = 3;
+
     /*
      * MSn level.
      */

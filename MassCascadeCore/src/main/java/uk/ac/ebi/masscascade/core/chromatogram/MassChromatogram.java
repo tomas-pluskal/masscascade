@@ -71,7 +71,6 @@ public class MassChromatogram implements Chromatogram, Serializable {
      * @return the chromatogram id
      */
     public String getId() {
-
         return id;
     }
 
@@ -81,7 +80,6 @@ public class MassChromatogram implements Chromatogram, Serializable {
      * @return the chromatogram data
      */
     public XYList getData() {
-
         return xicData;
     }
 
@@ -91,12 +89,10 @@ public class MassChromatogram implements Chromatogram, Serializable {
      * @return the tailing data point
      */
     public XYPoint getLast() {
-
         return xicData.get(xicData.size() - 1);
     }
 
     public Range getRange() {
-
         return new ExtendableRange(xicData.get(0).x, getLast().x);
     }
 
@@ -107,7 +103,6 @@ public class MassChromatogram implements Chromatogram, Serializable {
      * @return the representative mass
      */
     public double getMass() {
-
         return mass;
     }
 
@@ -117,7 +112,6 @@ public class MassChromatogram implements Chromatogram, Serializable {
      * @param mass the representative mass
      */
     public void setMass(double mass) {
-
         this.mass = mass;
     }
 
@@ -127,7 +121,6 @@ public class MassChromatogram implements Chromatogram, Serializable {
      * @return the deviation
      */
     public double getDeviation() {
-
         return deviation;
     }
 
@@ -137,7 +130,6 @@ public class MassChromatogram implements Chromatogram, Serializable {
      * @param deviation the mass deviation
      */
     public void setDeviation(double deviation) {
-
         this.deviation = deviation;
     }
 
@@ -148,7 +140,6 @@ public class MassChromatogram implements Chromatogram, Serializable {
      */
     @Override
     public String toString() {
-
         return id;
     }
 }

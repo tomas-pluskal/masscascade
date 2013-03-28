@@ -38,7 +38,6 @@ public class CosineSimilarity {
      * @param bins the number of bins
      */
     public CosineSimilarity(int bins) {
-
         this.numBins = bins;
     }
 

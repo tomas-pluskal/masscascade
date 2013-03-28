@@ -21,6 +21,7 @@ package uk.ac.ebi.masscascade.utilities.xyz;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class implementing a x y z point list.
@@ -32,6 +33,10 @@ public class XYZList extends ArrayList<XYZPoint> implements Serializable {
      */
     public XYZList() {
         super();
+    }
+
+    public XYZList(List<XYZPoint> xyzList) {
+        this.addAll(xyzList);
     }
 
     /**
@@ -71,5 +76,9 @@ public class XYZList extends ArrayList<XYZPoint> implements Serializable {
         for (XYZPoint dp : this) slice.add(new XYPoint(dp.x, dp.y));
 
         return slice;
+    }
+
+    public XYZList subList(int from, int to) {
+        return new XYZList(super.subList(from, to));
     }
 }

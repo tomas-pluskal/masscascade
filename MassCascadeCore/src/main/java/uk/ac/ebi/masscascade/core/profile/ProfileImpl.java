@@ -19,10 +19,8 @@
 
 package uk.ac.ebi.masscascade.core.profile;
 
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.core.PropertyManager;
 import uk.ac.ebi.masscascade.core.chromatogram.MassChromatogram;
@@ -53,8 +51,9 @@ public class ProfileImpl implements Profile {
 
     private final int id;
 
+    private double minIntensity;
     private double area;
-    private XYZPoint centerPoint;
+    private XYZPoint baseSignal;
     private XYZList data;
     private double deviation;
 
@@ -79,18 +78,7 @@ public class ProfileImpl implements Profile {
      * @param mzRange       the mz range
      */
     public ProfileImpl(int id, XYPoint mzIntDp, double retentionTime, Range mzRange) {
-
-        this.id = id;
-        this.mzRange = mzRange;
-
-        centerPoint = new XYZPoint(retentionTime, mzIntDp.x, mzIntDp.y);
-        data = new XYZList();
-        data.add(new XYZPoint(retentionTime, mzIntDp.x, mzIntDp.y));
-        deviation = 0d;
-        area = 0d;
-
-        propertyManager = new PropertyManager();
-        msnScans = new ArrayList<Integer>();
+        this(id, new XYZPoint(retentionTime, mzIntDp.x, mzIntDp.y), mzRange);
     }
 
     /**
@@ -105,11 +93,12 @@ public class ProfileImpl implements Profile {
         this.id = id;
         this.mzRange = mzRange;
 
-        centerPoint = dataPoint;
+        baseSignal = dataPoint;
         data = new XYZList();
         data.add(dataPoint);
         deviation = 0d;
         area = 0d;
+        minIntensity = Double.MAX_VALUE;
 
         propertyManager = new PropertyManager();
         msnScans = new ArrayList<Integer>();
@@ -122,11 +111,7 @@ public class ProfileImpl implements Profile {
      * @param rt      the retention time
      */
     public void addProfilePoint(XYPoint mzIntDp, double rt) {
-
-        if (mzIntDp.y > centerPoint.z) centerPoint = new XYZPoint(rt, mzIntDp.x, mzIntDp.y);
-
-        data.add(new XYZPoint(rt, mzIntDp.x, mzIntDp.y));
-        mzRange.extendRange(mzIntDp.x);
+        addProfilePoint(new XYZPoint(rt, mzIntDp.x, mzIntDp.y));
     }
 
     /**
@@ -136,10 +121,7 @@ public class ProfileImpl implements Profile {
      * @param rtIntDp the last rt intensity data pair
      */
     public void addProfilePoint(double mz, XYPoint rtIntDp) {
-
-        if (rtIntDp.y > centerPoint.z) centerPoint = new XYZPoint(rtIntDp.x, mz, rtIntDp.y);
-        data.add(new XYZPoint(rtIntDp.x, mz, rtIntDp.y));
-        mzRange.extendRange(mz);
+        addProfilePoint(new XYZPoint(rtIntDp.x, mz, rtIntDp.y));
     }
 
     /**
@@ -149,9 +131,19 @@ public class ProfileImpl implements Profile {
      */
     public void addProfilePoint(XYZPoint dataPoint) {
 
-        if (dataPoint.z > centerPoint.z) centerPoint = dataPoint;
+        if (dataPoint.z > baseSignal.z) baseSignal = dataPoint;
+        if (dataPoint.z < minIntensity && dataPoint.z != Constants.MIN_ABUNDANCE) minIntensity = dataPoint.z;
         data.add(dataPoint);
         mzRange.extendRange(dataPoint.y);
+    }
+
+    /**
+     * Returns the minimum intensity.
+     *
+     * @return the minimum intensity
+     */
+    public double getMinIntensity() {
+        return minIntensity;
     }
 
     /**
@@ -191,15 +183,18 @@ public class ProfileImpl implements Profile {
             mzs[k] = dp.y;
             ints[k] = dp.z;
 
-            if (dp.equals(centerPoint)) rtIntCenter = MathUtils.getParabolaVertex(data.get(i - 1), dp, data.get(i + 1));
+            if (dp.equals(baseSignal)) rtIntCenter = MathUtils.getParabolaVertex(data.get(i - 1), dp, data.get(i + 1));
         }
 
-        if (centerPoint == null) {
-            System.out.println("Aye");
+        if (rtIntCenter == null) {
+            for (XYZPoint p : data) {
+                System.out.println(p.x + " " + p.y + " " + p.z);
+            }
+            System.out.println("AHHH");
         }
 
         double meanMz = cMean.evaluate(mzs, ints);
-        centerPoint = new XYZPoint(rtIntCenter.x, meanMz, rtIntCenter.y);
+        baseSignal = new XYZPoint(rtIntCenter.x, meanMz, rtIntCenter.y);
         deviation = cDeviation.evaluate(mzs);
         area = MathUtils.getTrapezoidArea(data);
 
@@ -212,7 +207,7 @@ public class ProfileImpl implements Profile {
      * @return the central point
      */
     public XYZPoint getCenter() {
-        return centerPoint;
+        return baseSignal;
     }
 
     /**
@@ -221,7 +216,7 @@ public class ProfileImpl implements Profile {
      * @return the retention time
      */
     public double getRetentionTime() {
-        return centerPoint.x;
+        return baseSignal.x;
     }
 
     /**
@@ -230,7 +225,7 @@ public class ProfileImpl implements Profile {
      * @return the m/z value
      */
     public double getMz() {
-        return centerPoint.y;
+        return baseSignal.y;
     }
 
     /**
@@ -239,7 +234,7 @@ public class ProfileImpl implements Profile {
      * @return the intensity
      */
     public double getIntensity() {
-        return centerPoint.z;
+        return baseSignal.z;
     }
 
     /**
@@ -248,7 +243,7 @@ public class ProfileImpl implements Profile {
      * @return the mz-intensity point
      */
     public XYPoint getMzIntDp() {
-        return new XYPoint(centerPoint.y, centerPoint.z);
+        return new XYPoint(baseSignal.y, baseSignal.z);
     }
 
     /**
@@ -310,8 +305,35 @@ public class ProfileImpl implements Profile {
      *
      * @return the peak trace
      */
+    public Chromatogram getTrace(int width) {
+
+        XYZList paddedData = getPaddedData(width);
+        return new MassChromatogram(id + "", baseSignal.y, deviation, paddedData.getXZSlice());
+    }
+
+    /**
+     * Gets the peak trace.
+     *
+     * @return the peak trace
+     */
     public Chromatogram getTrace() {
-        return new MassChromatogram(id + "", centerPoint.y, deviation, data.getXZSlice());
+        return getTrace(0);
+    }
+
+    public XYZList getPaddedData(int width) {
+
+        if (width == 0) return data;
+
+        double deltaTime = data.get(1).x - data.get(0).x;
+        XYZList paddedData = data.subList(1, data.size() - 1);
+        for (int i = 0; i < width; i++) {
+            paddedData.add(0, new XYZPoint(paddedData.get(0).x - deltaTime, paddedData.get(0).y, minIntensity));
+            int paddedSize = paddedData.size() - 1;
+            paddedData.add(
+                    new XYZPoint(paddedData.get(paddedSize).x + deltaTime, paddedData.get(paddedSize).y, minIntensity));
+        }
+
+        return paddedData;
     }
 
     /**
@@ -397,7 +419,7 @@ public class ProfileImpl implements Profile {
 
         hash = (hash * 7) + Long.valueOf(Double.doubleToLongBits(deviation)).hashCode();
         hash = (hash * 7) + Long.valueOf(Double.doubleToLongBits(area)).hashCode();
-        hash = (hash * 7) + centerPoint.hashCode();
+        hash = (hash * 7) + baseSignal.hashCode();
         hash = (hash * 7) + mzRange.hashCode();
 
         return hash;
@@ -413,7 +435,7 @@ public class ProfileImpl implements Profile {
 
         ProfileImpl profile = (ProfileImpl) obj;
 
-        return (profile.getArea() == this.area && profile.getCenter().equals(
-                centerPoint) && profile.getMzRange().equals(mzRange));
+        return (profile.getArea() == this.area && profile.getCenter().equals(baseSignal) && profile.getMzRange().equals(
+                mzRange));
     }
 }
