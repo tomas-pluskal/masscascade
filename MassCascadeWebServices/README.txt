@@ -1,5 +1,6 @@
 MassCascade: Mass Spectrometry Library
 -----
+Copyright (C) 2013 EMBL - European Bioinformatics Institute
 Contributors: Stephan Beisken
 Tags: mass spectrometry, tandem mass spectrometry, analytical data processing
 License: GPLv3 or later

@@ -1,9 +1,7 @@
 /*
- * Copyright (c) 2013, Stephan Beisken. All rights reserved.
+ * Copyright (C) 2013 EMBL - European Bioinformatics Institute
  *
  * This file is part of MassCascade.
- * It was taken from the ChemSpiderBlog.
- * Copyright (c) 2011 Aileen Day
  *
  * MassCascade is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +15,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Contributors:
+ *   Stephan Beisken - initial API and implementation
  */
 
 package uk.ac.ebi.masscascade.ws.chemspider;

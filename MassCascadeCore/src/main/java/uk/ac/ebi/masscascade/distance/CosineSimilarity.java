@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Stephan Beisken. All rights reserved.
+ * Copyright (C) 2013 EMBL - European Bioinformatics Institute
  *
  * This file is part of MassCascade.
  *
@@ -15,6 +15,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Contributors:
+ *   Stephan Beisken - initial API and implementation
  */
 
 package uk.ac.ebi.masscascade.distance;
@@ -58,7 +61,7 @@ public class CosineSimilarity {
         if ((traceA != null) && (traceB != null)) {
 
             double min = FastMath.min(traceA.get(0).x, traceB.get(0).x);
-            double max = FastMath.max(traceA.get(traceA.size() - 1).x, traceB.get(traceB.size() - 1).x);
+            double max = FastMath.max(traceA.getLast().x, traceB.getLast().x);
             double width = (max - min) / numBins;
 
             for (int i = 1; i <= numBins; i++) {
