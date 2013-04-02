@@ -22,14 +22,15 @@ Functionality includes:
 * data binning for the m/z and time domain
 * data and profile filters for the m/z and time domain
 * gap filling for chromatographic profiles using natural cubic splines
-* isotope and list-based adduct detection
+* isotope, ion, and list-based adduct detection
 * ion chromatogram extraction and manipulation
 * data smoothing in the m/z and time domain
 * visualisation of spectra and chromatograms
+* web services for m/z and spectra queries
 
 The core classes are representations of essential mass spectrometry objects. These core objects are manipulated by task
-classes, each carrying out a single task on the core object. To reduce memory load and ensure persistence within a
-workflow environment, every task can serialize the core object to a specified directory if required.
+instances, each carrying out a single task on the core object. To reduce memory load and ensure persistence within a
+workflow environment, every task can serialize the core instance to a specified directory if required.
 
 Installation
 -------
