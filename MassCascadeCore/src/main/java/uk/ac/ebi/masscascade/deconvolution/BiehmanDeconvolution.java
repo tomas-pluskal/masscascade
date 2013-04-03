@@ -33,6 +33,7 @@ import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
+import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 import uk.ac.ebi.masscascade.utilities.xyz.YMinPoint;
 import uk.ac.ebi.masscascade.utilities.comparator.PointIntensityComparator;
 import uk.ac.ebi.masscascade.utilities.math.LinearEquation;
@@ -111,7 +112,7 @@ public class BiehmanDeconvolution extends CallableTask {
 
         profileId = 1;
 
-        for (Profile profile  : profileContainer) {
+        for (Profile profile : profileContainer) {
 
             if (profile.getMzData().size() < MIN_SIZE) continue;
             if (isNoise(profile.getTrace().getData())) continue;
@@ -198,11 +199,8 @@ public class BiehmanDeconvolution extends CallableTask {
             XYPoint apex = MathUtils.getParabolaVertex(dpL, maxDp, dpR);
 
             Profile deconProfile;
-            if (center) {
-                deconProfile = buildCenteredProfile(profile, xicData, apex, window);
-            } else {
-                deconProfile = buildProfile(profile, xicData, window);
-            }
+            if (center) deconProfile = buildCenteredProfile(profile, xicData, apex, window);
+            else deconProfile = buildProfile(profile, xicData, window);
             profiles.add(deconProfile);
         }
 
@@ -338,9 +336,9 @@ public class BiehmanDeconvolution extends CallableTask {
             }
         }
 
-        Profile centeredProfile =
-                new ProfileImpl(profileId, new XYPoint(rtIntMz.firstEntry().getValue(), rtIntMz.firstKey().y),
-                        rtIntMz.firstKey().x, profile.getMzRange());
+        Profile centeredProfile = new ProfileImpl(profileId,
+                new XYZPoint(rtIntMz.firstKey().x, rtIntMz.firstEntry().getValue(), rtIntMz.firstKey().y),
+                profile.getMzRange());
 
         Iterator<XYPoint> it = rtIntMz.keySet().iterator();
         it.next();

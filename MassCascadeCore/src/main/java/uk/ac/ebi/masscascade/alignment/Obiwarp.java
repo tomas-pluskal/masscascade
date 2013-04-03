@@ -131,9 +131,7 @@ public class Obiwarp extends CallableTask {
             Iterator<XYZPoint> dpIter = profile.getData().iterator();
             XYZPoint dp = dpIter.next();
             int timeBin = (int) FastMath.floor(((float) dp.x - times.first()) / timeWindow);
-            Profile alignedProfile =
-                    new ProfileImpl(profile.getId(), new XYZPoint(dp.x + corrections[timeBin], dp.y, dp.z),
-                            new ExtendableRange(dp.y, dp.y));
+            Profile alignedProfile = profile.copy(dp.x + corrections[timeBin]);
             while (dpIter.hasNext()) {
                 dp = dpIter.next();
                 timeBin = (int) FastMath.floor(((float) dp.x - times.first()) / timeWindow);

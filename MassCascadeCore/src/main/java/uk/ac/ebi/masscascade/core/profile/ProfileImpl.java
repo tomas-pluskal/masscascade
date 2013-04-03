@@ -92,6 +92,18 @@ public class ProfileImpl implements Profile {
      * @param mzRange   the mz range
      */
     public ProfileImpl(int id, XYZPoint dataPoint, Range mzRange) {
+        this(id, dataPoint, mzRange, new PropertyManager());
+    }
+
+    /**
+     * Constructs a mass spectrometry profile.
+     *
+     * @param id        the peak identifier
+     * @param dataPoint the rt-mz-intensity data point
+     * @param mzRange   the mz range
+     * @param manager   the property manager
+     */
+    public ProfileImpl(int id, XYZPoint dataPoint, Range mzRange, PropertyManager manager) {
 
         this.id = id;
         this.mzRange = mzRange;
@@ -103,8 +115,23 @@ public class ProfileImpl implements Profile {
         area = 0d;
         minIntensity = Double.MAX_VALUE;
 
-        propertyManager = new PropertyManager();
-        msnScans = new ArrayList<Integer>();
+        propertyManager = manager;
+        msnScans = new ArrayList<>();
+    }
+
+    public Profile copy() {
+        XYZPoint dp = data.get(0);
+        return new ProfileImpl(id, dp, new ExtendableRange(dp.y), propertyManager);
+    }
+
+    public Profile copy(double rt) {
+        XYZPoint dp = data.get(0);
+        return new ProfileImpl(id, new XYZPoint(rt, dp.y, Constants.MIN_ABUNDANCE), new ExtendableRange(dp.y),
+                propertyManager);
+    }
+
+    public PropertyManager getPropertyManager() {
+        return propertyManager;
     }
 
     /**

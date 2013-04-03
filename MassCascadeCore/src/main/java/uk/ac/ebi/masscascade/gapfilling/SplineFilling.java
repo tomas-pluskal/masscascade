@@ -135,9 +135,7 @@ public class SplineFilling extends CallableTask {
 
         XYList mzData = profile.getMzData();
 
-        Profile filledProfile = new ProfileImpl(profile.getId(), profile.getMzIntDp(), profile.getRetentionTime(),
-                profile.getMzRange());
-        filledProfile.addProfilePoint(mzData.get(0).x, xicData.get(0));
+        Profile filledProfile = profile.copy();
 
         for (int i = 1; i < xicDataSize - 1; i++) {
 
@@ -146,9 +144,7 @@ public class SplineFilling extends CallableTask {
                 XYList splineData = getDataValues(xicData, i);
                 filledProfile.addProfilePoint(mzData.get(i).x, getInterpolatedValue(xicData.get(i).x, splineData));
                 i++;
-            } else {
-                filledProfile.addProfilePoint(mzData.get(i).x, xicData.get(i));
-            }
+            } else filledProfile.addProfilePoint(mzData.get(i).x, xicData.get(i));
         }
 
         // add the remaining last data point of the XIC to the new data set

@@ -105,16 +105,13 @@ public class SavitzkyGolaySmoothing extends CallableTask {
             y = profile.getTrace(mzWindow).getData().getYs();
             smoothedY = sgFilter.smooth(y, coeffs);
 
-            smoothedProfile =
-                    new ProfileImpl(profile.getId(), new XYPoint(profile.getMzData().getFirst().x, Constants.MIN_ABUNDANCE),
-                            profile.getTrace().getData().getFirst().x, profile.getMzRange());
+            smoothedProfile = profile.copy();
 
             for (int i = mzWindow; i < smoothedY.length - mzWindow - 1; i++)
                 smoothedProfile.addProfilePoint(new XYPoint(profile.getMzData().get(i - mzWindow + 1).x, smoothedY[i]),
                         profile.getTrace().getData().get(i - mzWindow + 1).x);
 
-            smoothedProfile.closeProfile(new XYPoint(profile.getMzDataLast().x, Constants.MIN_ABUNDANCE),
-                    profile.getTrace().getData().getLast().x);
+            smoothedProfile.closeProfile(profile.getTrace().getData().getLast().x);
             outProfileContainer.addProfile(smoothedProfile);
 
             y = null;

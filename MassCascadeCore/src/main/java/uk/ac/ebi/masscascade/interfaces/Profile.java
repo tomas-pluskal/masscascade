@@ -43,6 +43,12 @@ public interface Profile {
      */
     int getId();
 
+    Profile copy();
+
+    Profile copy(double rt);
+
+    PropertyManager getPropertyManager();
+
     /**
      * Returns the m/z value.
      *
