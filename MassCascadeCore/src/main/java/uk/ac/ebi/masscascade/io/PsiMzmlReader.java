@@ -25,19 +25,20 @@ package uk.ac.ebi.masscascade.io;
 import uk.ac.ebi.jmzml.model.mzml.BinaryDataArray;
 import uk.ac.ebi.jmzml.model.mzml.CVParam;
 import uk.ac.ebi.jmzml.model.mzml.MzML;
+import uk.ac.ebi.jmzml.model.mzml.ParamGroup;
+import uk.ac.ebi.jmzml.model.mzml.Precursor;
 import uk.ac.ebi.jmzml.model.mzml.Spectrum;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshaller;
-import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.ScanImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Range;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
-import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.ScanUtils;
+import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
@@ -45,8 +46,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Class for reading PSI mzML files.
@@ -154,16 +153,18 @@ public class PsiMzmlReader extends CallableTask {
                     if (cvparam.getName().equals("scan start time")) {
                         retentionTime = Double.parseDouble(cvparam.getValue());
                         if (cvparam.getUnitName().equals("minute")) retentionTime *= 60;
-                    } else if (cvparam.getName().startsWith("filter")) {
-                        // ms 1
-                        // filter string FTMS + p ESI Full ms [85.00-900.00]
-                        // m2 2
-                        // filter string FTMS + c ESI d w Full ms2 127.04@hcd50.00 [75.00-140.00]
-                        // ms3 587.03@cid35.00 323.00@cid35.00
-                        Pattern p = Pattern.compile("ms(\\d).* (\\d+\\.\\d+)@");
-                        Matcher m = p.matcher(cvparam.getValue());
-                        if (m.find()) {
-                            parentMz = Double.parseDouble(m.group(2));
+                    }
+                }
+            }
+
+            if (spectrum.getPrecursorList() != null && spectrum.getPrecursorList().getPrecursor() != null) {
+                for (Precursor precursor : spectrum.getPrecursorList().getPrecursor()) {
+                    for (ParamGroup group : precursor.getSelectedIonList().getSelectedIon()) {
+                        for (CVParam cvParam : group.getCvParam()) {
+                            if (cvParam.getName().equals("selected ion m/z"))
+                                parentMz = Double.parseDouble(cvParam.getValue());
+                            else if (cvParam.getName().equals("charge state"))
+                                parentCharge = Integer.parseInt(cvParam.getValue());
                         }
                     }
                 }

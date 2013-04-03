@@ -27,6 +27,7 @@ import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.interfaces.Chromatogram;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.parameters.Constants;
+import uk.ac.ebi.masscascade.tracebuilder.ProfileMsnHelper;
 
 import java.io.File;
 import java.util.HashMap;
@@ -109,7 +110,7 @@ public interface RawContainer extends Container, Iterable<Scan> {
      *
      * @return the map
      */
-    Map<Integer, HashMap<Integer, Double>> getMSnParentDaughterMap();
+    ProfileMsnHelper getMsnHelper();
 
     /**
      * Returns the scan with the given array index.

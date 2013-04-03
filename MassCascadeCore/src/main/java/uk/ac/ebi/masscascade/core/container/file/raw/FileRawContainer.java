@@ -22,6 +22,8 @@
 
 package uk.ac.ebi.masscascade.core.container.file.raw;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.core.container.file.FileContainer;
 import uk.ac.ebi.masscascade.core.container.file.FileManager;
@@ -35,13 +37,13 @@ import uk.ac.ebi.masscascade.interfaces.Chromatogram;
 import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.parameters.Constants;
+import uk.ac.ebi.masscascade.tracebuilder.ProfileMsnHelper;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -71,7 +73,7 @@ public class FileRawContainer extends FileContainer implements RawContainer {
     /**
      * Constructs an empty mass spec raw file.
      *
-     * @param id               the file identifier
+     * @param id the file identifier
      */
     public FileRawContainer(String id) {
         this(id, System.getProperty("java.io.tmpdir"));
@@ -247,6 +249,7 @@ public class FileRawContainer extends FileContainer implements RawContainer {
 
     /**
      * Returns the number of scans of a particular level.
+     *
      * @param msn a MSN level
      * @return the number of scans
      */
@@ -424,29 +427,8 @@ public class FileRawContainer extends FileContainer implements RawContainer {
      * @return the map
      */
     @Override
-    public synchronized Map<Integer, HashMap<Integer, Double>> getMSnParentDaughterMap() {
-
-        Map<Integer, HashMap<Integer, Double>> resultMap = new HashMap<Integer, HashMap<Integer, Double>>();
-
-        if (scanNumbers.size() < 2) return resultMap;
-
-        Scan scan;
-        for (Integer scanNo : scanNumbers.get(1).keySet()) {
-
-            scan = getScan(scanNo);
-
-            if (scan.getParentMz() == 0) continue;
-
-            if (resultMap.containsKey(scan.getParentScan())) {
-                break;
-            }
-
-            HashMap<Integer, Double> dIndexdMass = new HashMap<Integer, Double>();
-            dIndexdMass.put(scan.getIndex(), scan.getParentMz());
-            resultMap.put(scan.getParentScan(), dIndexdMass);
-        }
-
-        return resultMap;
+    public synchronized ProfileMsnHelper getMsnHelper() {
+        return new ProfileMsnHelper(this);
     }
 
     /**

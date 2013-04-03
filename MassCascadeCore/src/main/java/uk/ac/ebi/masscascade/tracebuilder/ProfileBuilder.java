@@ -22,9 +22,7 @@
 
 package uk.ac.ebi.masscascade.tracebuilder;
 
-import org.apache.log4j.Level;
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
-import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
@@ -44,7 +42,11 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZTrace;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 /**
@@ -71,6 +73,7 @@ public class ProfileBuilder extends CallableTask {
     private RawContainer rawContainer;
     private ProfileContainer profileContainer;
 
+    private ProfileMsnHelper msnHelper;
     private int globalProfileId;
     private double lastRt;
     private double currRt;
@@ -125,17 +128,15 @@ public class ProfileBuilder extends CallableTask {
         profileContainer =
                 rawContainer.getBuilder().newInstance(ProfileContainer.class, id, rawContainer.getWorkingDirectory());
 
-        for (RawLevel level : rawContainer.getRawLevels()) {
-
-            if (level.getMsn() == Constants.MSN.MS1) buildProfiles();
-            else ; // do nothing for the time being
-        }
+        buildProfiles();
 
         profileContainer.finaliseFile();
         return profileContainer;
     }
 
     private void buildProfiles() {
+
+        msnHelper = rawContainer.getMsnHelper();
 
         for (Scan scan : rawContainer) {
 
@@ -144,7 +145,8 @@ public class ProfileBuilder extends CallableTask {
 
             if (traces.isEmpty()) {
                 for (XYPoint dataPoint : scan.getData()) {
-                    XYZTrace trace = new XYZTrace(dataPoint, currRt);
+                    XYZTrace trace =
+                            new XYZTrace(dataPoint, currRt, msnHelper.getChildIds(scan.getIndex(), dataPoint.x));
                     trace.push(new XYZPoint(lastRt, trace.get(0).y, Constants.MIN_ABUNDANCE));
                     traces.add(trace);
                 }
@@ -171,7 +173,7 @@ public class ProfileBuilder extends CallableTask {
             double nextSignal =
                     (signalPos == dataPoints.size() - 1) ? Double.MAX_VALUE : dataPoints.get(signalPos + 1).x;
 
-            XYZTrace signalTrace = new XYZTrace(signal, currRt);
+            XYZTrace signalTrace = new XYZTrace(signal, currRt, msnHelper.getChildIds(scan.getIndex(), signal.x));
             XYZTrace closestTrace = (XYZTrace) DataUtils.getClosestValue(signalTrace, traces);
 
             // (1) signal m/z not in the map >> map empty || null
@@ -214,7 +216,7 @@ public class ProfileBuilder extends CallableTask {
 
     private void appendTrace(XYZTrace signalTrace, XYZTrace closestTrace) {
 
-        closestTrace.add(signalTrace.get(0));
+        closestTrace.add(signalTrace.get(0), signalTrace.getMsnMap());
         tracesExtended.add(closestTrace);
     }
 
@@ -228,6 +230,12 @@ public class ProfileBuilder extends CallableTask {
         profile.closeProfile(currRt);
 
         if (profile.getIntensity() >= minIntensity) {
+
+            Map<Integer, Set<Integer>> msnMap = new HashMap<>();
+            for (int key : trace.getMsnMap().keySet())
+                // Guava cannot be handled by Kryo
+                msnMap.put(key, new HashSet<>(trace.getMsnMap().get(key)));
+            profile.setMsnScans(msnMap);
             profileContainer.addProfile(profile);
             globalProfileId++;
         }

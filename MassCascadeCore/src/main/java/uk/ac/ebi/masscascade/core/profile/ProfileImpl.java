@@ -33,16 +33,17 @@ import uk.ac.ebi.masscascade.interfaces.Property;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.properties.Label;
+import uk.ac.ebi.masscascade.utilities.math.MathUtils;
+import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
+import uk.ac.ebi.masscascade.utilities.xyz.XYList;
+import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 import uk.ac.ebi.masscascade.utilities.xyz.YMinPoint;
-import uk.ac.ebi.masscascade.utilities.xyz.XYList;
-import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
-import uk.ac.ebi.masscascade.utilities.math.MathUtils;
-import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -60,7 +61,7 @@ public class ProfileImpl implements Profile {
     private XYZList data;
     private double deviation;
 
-    private List<Integer> msnScans;
+    private Map<Integer, Set<Integer>> msnScans;
     private Range mzRange;
 
     private PropertyManager propertyManager;
@@ -116,7 +117,7 @@ public class ProfileImpl implements Profile {
         minIntensity = Double.MAX_VALUE;
 
         propertyManager = manager;
-        msnScans = new ArrayList<>();
+        msnScans = new HashMap<>();
     }
 
     public Profile copy() {
@@ -214,13 +215,6 @@ public class ProfileImpl implements Profile {
             ints[k] = dp.z;
 
             if (dp.equals(baseSignal)) rtIntCenter = MathUtils.getParabolaVertex(data.get(i - 1), dp, data.get(i + 1));
-        }
-
-        if (rtIntCenter == null) {
-            for (XYZPoint p : data) {
-                System.out.println(p.x + " " + p.y + " " + p.z);
-            }
-            System.out.println("AHHH");
         }
 
         double meanMz = cMean.evaluate(mzs, ints);
@@ -411,7 +405,7 @@ public class ProfileImpl implements Profile {
      *
      * @param msnScans a daughter scan index list
      */
-    public void setMsnScans(List<Integer> msnScans) {
+    public void setMsnScans(Map<Integer, Set<Integer>> msnScans) {
         this.msnScans = msnScans;
     }
 
@@ -420,7 +414,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the scan index list
      */
-    public List<Integer> getMsnScans() {
+    public Map<Integer, Set<Integer>> getMsnScans() {
         return msnScans;
     }
 

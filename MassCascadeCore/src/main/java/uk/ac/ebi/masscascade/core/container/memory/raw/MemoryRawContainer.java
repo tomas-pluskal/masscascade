@@ -33,6 +33,7 @@ import uk.ac.ebi.masscascade.interfaces.Chromatogram;
 import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.parameters.Constants;
+import uk.ac.ebi.masscascade.tracebuilder.ProfileMsnHelper;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
@@ -346,29 +347,8 @@ public class MemoryRawContainer extends MemoryContainer implements RawContainer 
      * @return the map
      */
     @Override
-    public Map<Integer, HashMap<Integer, Double>> getMSnParentDaughterMap() {
-
-        Map<Integer, HashMap<Integer, Double>> resultMap = new HashMap<Integer, HashMap<Integer, Double>>();
-
-        if (scans.size() < 2) return resultMap;
-
-        Scan scan;
-        for (Integer scanNo : scans.get(1).keySet()) {
-
-            scan = getScan(scanNo);
-
-            if (scan.getParentMz() == 0) continue;
-
-            if (resultMap.containsKey(scan.getParentScan())) {
-                break;
-            }
-
-            HashMap<Integer, Double> dIndexdMass = new HashMap<Integer, Double>();
-            dIndexdMass.put(scan.getIndex(), scan.getParentMz());
-            resultMap.put(scan.getParentScan(), dIndexdMass);
-        }
-
-        return resultMap;
+    public ProfileMsnHelper getMsnHelper() {
+        return new ProfileMsnHelper(this);
     }
 
     /**

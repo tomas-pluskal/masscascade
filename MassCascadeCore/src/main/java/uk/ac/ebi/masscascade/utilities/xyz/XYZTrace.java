@@ -22,6 +22,8 @@
 
 package uk.ac.ebi.masscascade.utilities.xyz;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Lists;
 import uk.ac.ebi.masscascade.interfaces.Trace;
 
 import java.util.ArrayList;
@@ -32,6 +34,7 @@ public class XYZTrace implements Trace, Comparable<Trace>, Iterable<XYZPoint> {
 
     public final double mzAnchor;
     private final List<XYZPoint> mzs;
+    private HashMultimap<Integer, Integer> msnToIds;
 
     // number of data points and average
     private int n;
@@ -44,10 +47,27 @@ public class XYZTrace implements Trace, Comparable<Trace>, Iterable<XYZPoint> {
      */
     public XYZTrace(XYPoint anchor, double rt) {
 
+        HashMultimap<Integer, Integer> msnToIds = HashMultimap.create();
         this.mzAnchor = anchor.x;
+        this.msnToIds = msnToIds;
 
-        mzs = new ArrayList<XYZPoint>();
-        mzs.add(new XYZPoint(rt, anchor.x, anchor.y));
+        mzs = Lists.newArrayList(new XYZPoint(rt, anchor.x, anchor.y));
+
+        n = 1;
+        avg = mzAnchor;
+    }
+
+    /**
+     * Constructs a trace with a rt-m/z-intensity triple as anchor.
+     *
+     * @param anchor a rt-m/z-intensity triple anchor
+     */
+    public XYZTrace(XYPoint anchor, double rt, HashMultimap<Integer, Integer> msnToIds) {
+
+        this.mzAnchor = anchor.x;
+        this.msnToIds = msnToIds;
+
+        mzs = Lists.newArrayList(new XYZPoint(rt, anchor.x, anchor.y));
 
         n = 1;
         avg = mzAnchor;
@@ -55,9 +75,10 @@ public class XYZTrace implements Trace, Comparable<Trace>, Iterable<XYZPoint> {
 
     /**
      * Constructs a trace with set parameters.
+     *
      * @param anchor a m/z anchor
-     * @param mzs a list of rt-m/z-intensity points
-     * @param avg an average for the rt-m/z-intensity points
+     * @param mzs    a list of rt-m/z-intensity points
+     * @param avg    an average for the rt-m/z-intensity points
      */
     public XYZTrace(double anchor, List<XYZPoint> mzs, double avg) {
 
@@ -65,6 +86,24 @@ public class XYZTrace implements Trace, Comparable<Trace>, Iterable<XYZPoint> {
         this.mzs = mzs;
         this.n = mzs.size();
         this.avg = avg;
+    }
+
+    public HashMultimap<Integer, Integer> getMsnMap() {
+        return msnToIds;
+    }
+
+    /**
+     * Adds a rt-m/z-intensity pair to the trace.
+     *
+     * @param rtMzIPair the rt-m/z-intensity pair
+     */
+    public void add(XYZPoint rtMzIPair, HashMultimap<Integer, Integer> msnToIds) {
+
+        mzs.add(rtMzIPair);
+        avg = ((avg * n) + rtMzIPair.y) / (n + 1);
+        n++;
+
+        this.msnToIds.putAll(msnToIds);
     }
 
     /**
@@ -81,7 +120,7 @@ public class XYZTrace implements Trace, Comparable<Trace>, Iterable<XYZPoint> {
 
     /**
      * Adds a rt-m/z-intensity pair to the beginning of the trace.
-     *
+     * <p/>
      * Statistics are not updated.
      *
      * @param rtMzIPair the rt-m/z-intensity pair

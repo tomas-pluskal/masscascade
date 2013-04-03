@@ -28,7 +28,7 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -156,14 +156,14 @@ public interface Profile {
      *
      * @param msnScans a daughter scan index list
      */
-    void setMsnScans(List<Integer> msnScans);
+    void setMsnScans(Map<Integer, Set<Integer>> msnScans);
 
     /**
      * Gets the daughter scan index list for this profile.
      *
      * @return the scan index list
      */
-    List<Integer> getMsnScans();
+    Map<Integer, Set<Integer>> getMsnScans();
 
     /**
      * Returns the absolute mz range.

@@ -41,14 +41,14 @@ import uk.ac.ebi.masscascade.properties.Identity;
 import uk.ac.ebi.masscascade.properties.Isotope;
 import uk.ac.ebi.masscascade.properties.Label;
 import uk.ac.ebi.masscascade.properties.Score;
-import uk.ac.ebi.masscascade.utilities.xyz.XYZList;
-import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
-import uk.ac.ebi.masscascade.utilities.xyz.XYList;
-import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
-import uk.ac.ebi.masscascade.utilities.xyz.YMinPoint;
 import uk.ac.ebi.masscascade.utilities.range.MovingRange;
 import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
+import uk.ac.ebi.masscascade.utilities.xyz.XYList;
+import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
+import uk.ac.ebi.masscascade.utilities.xyz.XYZList;
+import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
+import uk.ac.ebi.masscascade.utilities.xyz.YMinPoint;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -198,6 +198,7 @@ public class FileManager implements RunManager, Serializable {
             randomAccessFile.writeInt(length);
             randomAccessFile.write(data, 0, length);
         } catch (Exception exception) {
+            exception.printStackTrace();
             LOGGER.log(Level.ERROR, "File Manager on write: " + exception.getMessage());
         }
         return start;
