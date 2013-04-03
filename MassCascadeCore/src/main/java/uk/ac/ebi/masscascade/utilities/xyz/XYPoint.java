@@ -88,13 +88,11 @@ public class XYPoint implements Comparable<XYPoint>, Serializable {
     public boolean equals(Object obj) {
 
         if (this == obj) return true;
-
         if (obj == null) return false;
-
         if (getClass() != obj.getClass()) return false;
 
         final XYPoint other = (XYPoint) obj;
-        return !(this.x != other.x || this.y != other.y);
+        return this.x == other.x && this.y == other.y;
     }
 
     @Override
@@ -104,7 +102,7 @@ public class XYPoint implements Comparable<XYPoint>, Serializable {
         final int EQUAL = 0;
         final int AFTER = 1;
 
-        if (this == dp) return EQUAL;
+        if (this.x == dp.x) return EQUAL;
         if (x < dp.x) return BEFORE;
         if (x > dp.x) return AFTER;
 

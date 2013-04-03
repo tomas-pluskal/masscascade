@@ -26,15 +26,18 @@ import com.dtw.FastDTW;
 import com.dtw.TimeWarpInfo;
 import com.timeseries.TimeSeries;
 import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
+import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.core.raw.ScanImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Scan;
+import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -101,19 +104,19 @@ public class FastDtwAlignment extends CallableTask {
         String id = rawContainer.getId() + IDENTIFIER;
         RawContainer alignedRawContainer = rawContainer.getBuilder().newInstance(RawContainer.class, id, rawContainer);
 
-        Scan tarScan = null;
-        Scan refScan;
-        Scan corScan;
-
-        XYList mergedData = new XYList();
+        Scan corScan, refScan, tarScan;
 
         for (int i = 0; i < tsJ.size(); i++) {
 
             refScan = refRawContainer.getScanByIndex(i);
             List<Integer> tarPosList = info.getPath().getMatchingIndexesForJ(i);
 
-            for (int tarPos : tarPosList) {
-                tarScan = rawContainer.getScanByIndex(tarPos);
+            if (tarPosList.size() == 0) continue;
+
+            tarScan = rawContainer.getScanByIndex(tarPosList.get(0));
+            XYList mergedData = tarScan.getData();
+            for (int j = 1; j < tarPosList.size(); j++) {
+                tarScan = rawContainer.getScanByIndex(tarPosList.get(j));
                 mergedData.addAll(tarScan.getData());
             }
 
@@ -122,13 +125,13 @@ public class FastDtwAlignment extends CallableTask {
 
             corScan = buildAlignedScan(tarScan, refScan, mergedData);
             alignedRawContainer.addScan(corScan);
-
-            mergedData.clear();
         }
 
-        tarScan = null;
-        refScan = null;
-        corScan = null;
+        for (RawLevel level : rawContainer.getRawLevels()) {
+            if (level.getMsn() == Constants.MSN.MS1) continue;
+            for (Scan scan : rawContainer.iterator(level.getMsn()))
+                alignedRawContainer.addScan(scan);
+        }
 
         alignedRawContainer.finaliseFile(rawContainer.getRawInfo().getDate());
         return alignedRawContainer;

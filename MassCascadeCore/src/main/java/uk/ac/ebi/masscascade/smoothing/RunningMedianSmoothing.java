@@ -145,9 +145,7 @@ public class RunningMedianSmoothing extends CallableTask {
                     smoothedData = null;
                 }
             } else {
-                for (Scan msnScan : rawContainer.iterator(level.getMsn())) {
-                    smoothedRawContainer.addScan(msnScan);
-                }
+                for (Scan msnScan : rawContainer.iterator(level.getMsn())) smoothedRawContainer.addScan(msnScan);
             }
         }
 

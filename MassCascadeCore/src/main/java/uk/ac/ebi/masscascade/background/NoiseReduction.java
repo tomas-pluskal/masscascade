@@ -119,9 +119,7 @@ public class NoiseReduction extends CallableTask {
             if (level.getMsn() == Constants.MSN.MS1) {
                 buildTraceMap(completedTraces);
                 buildContainer(completedTraces, outRawContainer);
-            } else {
-                for (Scan scan : rawContainer.iterator(level.getMsn())) outRawContainer.addScan(scan);
-            }
+            } else for (Scan scan : rawContainer.iterator(level.getMsn())) outRawContainer.addScan(scan);
         }
 
         outRawContainer.finaliseFile(rawContainer.getRawInfo().getDate());

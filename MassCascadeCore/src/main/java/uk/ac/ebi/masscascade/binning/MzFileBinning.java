@@ -99,7 +99,7 @@ public class MzFileBinning extends CallableTask {
                     binImpl = null;
                     binnedScan = null;
                 }
-            }
+            } else for (Scan scan : rawContainer.iterator(level.getMsn())) outRawContainer.addScan(scan);
         }
 
         outRawContainer.finaliseFile(rawContainer.getRawInfo().getDate());

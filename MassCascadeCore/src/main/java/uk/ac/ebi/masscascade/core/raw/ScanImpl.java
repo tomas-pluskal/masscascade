@@ -156,7 +156,6 @@ public class ScanImpl implements Scan, Comparable<Scan> {
      * @return the scan index
      */
     public final int getIndex() {
-
         return scanIndex;
     }
 
@@ -166,7 +165,6 @@ public class ScanImpl implements Scan, Comparable<Scan> {
      * @return the experimental level
      */
     public final Constants.MSN getMsn() {
-
         return msn;
     }
 
@@ -176,7 +174,6 @@ public class ScanImpl implements Scan, Comparable<Scan> {
      * @return the parent scan index.
      */
     public final int getParentScan() {
-
         return parentScan;
     }
 
@@ -186,7 +183,6 @@ public class ScanImpl implements Scan, Comparable<Scan> {
      * @return the parent charge
      */
     public final int getParentCharge() {
-
         return parentCharge;
     }
 
@@ -196,7 +192,6 @@ public class ScanImpl implements Scan, Comparable<Scan> {
      * @return the parent mz
      */
     public final double getParentMz() {
-
         return parentMz;
     }
 
@@ -206,7 +201,6 @@ public class ScanImpl implements Scan, Comparable<Scan> {
      * @return the retention time
      */
     public final double getRetentionTime() {
-
         return retentionTime;
     }
 
@@ -216,7 +210,6 @@ public class ScanImpl implements Scan, Comparable<Scan> {
      * @return the total ion current
      */
     public final double getTotalIonCurrent() {
-
         return totalIonCurrent;
     }
 
@@ -226,7 +219,6 @@ public class ScanImpl implements Scan, Comparable<Scan> {
      * @return the mz range
      */
     public final Range getMzRange() {
-
         return mzRange;
     }
 
@@ -236,7 +228,6 @@ public class ScanImpl implements Scan, Comparable<Scan> {
      * @return the ion mode
      */
     public final Constants.ION_MODE getIonMode() {
-
         return ionMode;
     }
 

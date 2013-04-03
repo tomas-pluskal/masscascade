@@ -203,9 +203,7 @@ public class WaveletPeakPicking extends CallableTask {
                                     scan.getRetentionTime(), scan.getParentScan(), scan.getParentCharge(),
                                     scan.getParentMz()));
                 }
-            } else {
-                for (Scan scan : rawContainer.iterator(level.getMsn())) outRawContainer.addScan(scan);
-            }
+            } else for (Scan scan : rawContainer.iterator(level.getMsn())) outRawContainer.addScan(scan);
         }
 
         outRawContainer.finaliseFile(rawContainer.getRawInfo().getDate());

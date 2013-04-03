@@ -110,8 +110,7 @@ public class ScanFilter extends CallableTask {
                     }
                 }
             } else {
-                for (Scan scan : rawContainer.iterator(level.getMsn()))
-                    outRawContainer.addScan(scan);
+                for (Scan scan : rawContainer.iterator(level.getMsn())) outRawContainer.addScan(scan);
             }
         }
 
