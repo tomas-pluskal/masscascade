@@ -46,7 +46,7 @@ public class TextUtils {
      *
      * @param in an input stream
      * @return the read line
-     * @throws IOException unexpected behaviour
+     * @throws IOException stream input exceptions
      */
     public String readLineFromStream(InputStream in) throws IOException {
 
@@ -68,7 +68,7 @@ public class TextUtils {
      *
      * @param in an input stream
      * @return the read line
-     * @throws IOException unexpected behaviour
+     * @throws IOException stream input exceptions
      */
     public Float readNumberFromStream(InputStream in) throws IOException {
 
@@ -86,9 +86,9 @@ public class TextUtils {
     }
 
     /**
-     * Closes closeable reader and writer.
+     * Closes a closeable reader or writer.
      *
-     * @param c a reader / writer
+     * @param c a closeable reader or writer
      */
     public static void close(Closeable c) {
 
@@ -101,9 +101,9 @@ public class TextUtils {
     }
 
     /**
-     * Closes closeable xml stream reader.
+     * Closes a closeable xml stream reader.
      *
-     * @param c a xml stream reader
+     * @param c a closeable xml stream reader
      */
     public static void close(XMLEventReader c) {
 

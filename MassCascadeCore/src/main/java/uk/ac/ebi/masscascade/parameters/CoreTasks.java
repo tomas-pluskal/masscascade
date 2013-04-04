@@ -53,7 +53,6 @@ import uk.ac.ebi.masscascade.io.XCaliburReader;
 import uk.ac.ebi.masscascade.smoothing.RunningMedianSmoothing;
 import uk.ac.ebi.masscascade.smoothing.SavitzkyGolaySmoothing;
 import uk.ac.ebi.masscascade.tracebuilder.ProfileBuilder;
-import uk.ac.ebi.masscascade.tracebuilder.ProfileBuilderOld;
 import uk.ac.ebi.masscascade.tracebuilder.ProfileJoiner;
 import uk.ac.ebi.masscascade.tracebuilder.ProfileSplitter;
 

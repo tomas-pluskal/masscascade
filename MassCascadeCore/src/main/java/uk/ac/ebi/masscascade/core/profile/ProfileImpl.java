@@ -105,32 +105,71 @@ public class ProfileImpl implements Profile {
      * @param manager   the property manager
      */
     public ProfileImpl(int id, XYZPoint dataPoint, Range mzRange, PropertyManager manager) {
+        this(id, dataPoint, mzRange, manager, new HashMap<Integer, Set<Integer>>());
+    }
+
+    /**
+     * Constructs a mass spectrometry profile.
+     *
+     * @param id        the peak identifier
+     * @param dataPoint the rt-mz-intensity data point
+     * @param mzRange   the mz range
+     * @param manager   the property manager
+     * @param msnScans  the msn level to scan id map
+     */
+    public ProfileImpl(int id, XYZPoint dataPoint, Range mzRange, PropertyManager manager,
+            Map<Integer, Set<Integer>> msnScans) {
 
         this.id = id;
         this.mzRange = mzRange;
+        this.propertyManager = manager;
+        this.msnScans = msnScans;
+        this.baseSignal = dataPoint;
 
-        baseSignal = dataPoint;
         data = new XYZList();
         data.add(dataPoint);
         deviation = 0d;
         area = 0d;
         minIntensity = Double.MAX_VALUE;
-
-        propertyManager = manager;
-        msnScans = new HashMap<>();
     }
 
+    /**
+     * Copies the profile including all properties and msn information but excluding the profile data.
+     * <p/>
+     * The copy method facilitates operations that manipulate the data of the profile but are not supposed to alter any
+     * additional information, such as identified signals or msn scan pointers.
+     * <p/>
+     * The copied profile has the same zero intensity anchor as the original profile.
+     *
+     * @return the copied profile frame
+     */
     public Profile copy() {
         XYZPoint dp = data.get(0);
-        return new ProfileImpl(id, dp, new ExtendableRange(dp.y), propertyManager);
+        return new ProfileImpl(id, dp, new ExtendableRange(dp.y), propertyManager, msnScans);
     }
 
+    /**
+     * Copies the profile including all properties and msn information but excluding the profile data.
+     * <p/>
+     * The copy method facilitates operations that manipulate the data of the profile but are not supposed to alter any
+     * additional information, such as identified signals or msn scan pointers.
+     * <p/>
+     * The copied profile has a zero intensity anchor at the given time.
+     *
+     * @param rt the time for the zero intensity anchor
+     * @return the copied profile frame
+     */
     public Profile copy(double rt) {
         XYZPoint dp = data.get(0);
         return new ProfileImpl(id, new XYZPoint(rt, dp.y, Constants.MIN_ABUNDANCE), new ExtendableRange(dp.y),
-                propertyManager);
+                propertyManager, msnScans);
     }
 
+    /**
+     * Returns the property manager instance.
+     *
+     * @return the property manager instance
+     */
     public PropertyManager getPropertyManager() {
         return propertyManager;
     }

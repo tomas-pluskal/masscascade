@@ -43,10 +43,36 @@ public interface Profile {
      */
     int getId();
 
+    /**
+     * Copies the profile including all properties and msn information but excluding the profile data.
+     * <p/>
+     * The copy method facilitates operations that manipulate the data of the profile but are not supposed to alter any
+     * additional information, such as identified signals or msn scan pointers.
+     * <p/>
+     * The copied profile has the same zero intensity anchor as the original profile.
+     *
+     * @return the copied profile frame
+     */
     Profile copy();
 
+    /**
+     * Copies the profile including all properties and msn information but excluding the profile data.
+     * <p/>
+     * The copy method facilitates operations that manipulate the data of the profile but are not supposed to alter any
+     * additional information, such as identified signals or msn scan pointers.
+     * <p/>
+     * The copied profile has a zero intensity anchor at the given time.
+     *
+     * @param rt the time for the zero intensity anchor
+     * @return the copied profile frame
+     */
     Profile copy(double rt);
 
+    /**
+     * Returns the property manager instance.
+     *
+     * @return the property manager instance
+     */
     PropertyManager getPropertyManager();
 
     /**

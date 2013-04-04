@@ -60,7 +60,8 @@ public class XYZTrace implements Trace, Comparable<Trace>, Iterable<XYZPoint> {
     /**
      * Constructs a trace with a rt-m/z-intensity triple as anchor.
      *
-     * @param anchor a rt-m/z-intensity triple anchor
+     * @param anchor   the rt-m/z-intensity triple anchor
+     * @param msnToIds the multimap that holds the scan id pointers for all MSn levels
      */
     public XYZTrace(XYPoint anchor, double rt, HashMultimap<Integer, Integer> msnToIds) {
 
@@ -96,6 +97,7 @@ public class XYZTrace implements Trace, Comparable<Trace>, Iterable<XYZPoint> {
      * Adds a rt-m/z-intensity pair to the trace.
      *
      * @param rtMzIPair the rt-m/z-intensity pair
+     * @param msnToIds  the multimap that holds the scan id pointers for all MSn levels
      */
     public void add(XYZPoint rtMzIPair, HashMultimap<Integer, Integer> msnToIds) {
 
