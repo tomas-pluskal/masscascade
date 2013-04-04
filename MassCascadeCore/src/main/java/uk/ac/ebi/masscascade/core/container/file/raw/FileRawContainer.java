@@ -29,11 +29,14 @@ import uk.ac.ebi.masscascade.core.container.file.FileContainer;
 import uk.ac.ebi.masscascade.core.container.file.FileManager;
 import uk.ac.ebi.masscascade.core.chromatogram.BasePeakChromatogram;
 import uk.ac.ebi.masscascade.core.chromatogram.TotalIonChromatogram;
+import uk.ac.ebi.masscascade.core.profile.ProfileIterator;
 import uk.ac.ebi.masscascade.core.raw.RawInfo;
 import uk.ac.ebi.masscascade.core.raw.RawIterator;
 import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.core.raw.ScanImpl;
+import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.Chromatogram;
+import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.parameters.Constants;
@@ -502,7 +505,7 @@ public class FileRawContainer extends FileContainer implements RawContainer {
      */
     @Override
     public Iterator<Scan> iterator() {
-        return new RawIterator(new ArrayList<Long>(scanNumbers.get(0).values()), fileManager);
+        return new RawIterator(new ArrayList<>(scanNumbers.get(0).values()), fileManager);
     }
 
     /**
@@ -515,8 +518,18 @@ public class FileRawContainer extends FileContainer implements RawContainer {
         return new Iterable<Scan>() {
 
             public Iterator<Scan> iterator() {
-                return new RawIterator(new ArrayList<Long>(scanNumbers.get(msn.getLvl() - 1).values()), fileManager);
+                return new RawIterator(new ArrayList<>(scanNumbers.get(msn.getLvl() - 1).values()), fileManager);
             }
         };
+    }
+
+    /**
+     * Returns a profile iterator.
+     *
+     * @return the profile iterator
+     */
+    @Override
+    public Iterable<Profile> profileIterator() {
+        throw new MassCascadeException("Method not implemented.");
     }
 }

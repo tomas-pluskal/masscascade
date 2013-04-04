@@ -68,7 +68,6 @@ public class ProfileSplitter extends CallableTask {
      *          if the parameter map does not contain all variables required by this class
      */
     public void setParameters(ParameterMap params) throws MassCascadeException {
-
         profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
     }
 

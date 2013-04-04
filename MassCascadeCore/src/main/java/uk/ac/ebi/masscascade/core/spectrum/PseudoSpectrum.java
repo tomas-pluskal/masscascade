@@ -136,7 +136,7 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      * @return the profile list
      */
     public List<Profile> getProfileList() {
-        return new ArrayList<Profile>(profileMap.values());
+        return new ArrayList<>(profileMap.values());
     }
 
     /**

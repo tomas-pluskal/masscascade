@@ -29,6 +29,7 @@ import uk.ac.ebi.masscascade.core.container.file.FileManager;
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
 import uk.ac.ebi.masscascade.core.profile.ProfileIterator;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 
 import java.io.File;
@@ -256,6 +257,21 @@ public class FileProfileContainer extends FileContainer implements ProfileContai
      */
     @Override
     public Iterator<Profile> iterator() {
-        return new ProfileIterator(new ArrayList<Long>(profileNumber.values()), fileManager);
+        return new ProfileIterator(new ArrayList<>(profileNumber.values()), fileManager);
+    }
+
+    /**
+     * Returns a profile iterator.
+     *
+     * @return the profile iterator
+     */
+    @Override
+    public Iterable<Profile> profileIterator() {
+
+        return new Iterable<Profile>() {
+            public Iterator<Profile> iterator() {
+                return new ProfileIterator(new ArrayList<>(profileNumber.values()), fileManager);
+            }
+        };
     }
 }

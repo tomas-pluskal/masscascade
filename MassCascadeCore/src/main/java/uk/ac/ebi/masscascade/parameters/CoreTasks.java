@@ -46,8 +46,7 @@ import uk.ac.ebi.masscascade.identification.IsotopeKeeper;
 import uk.ac.ebi.masscascade.identification.IsotopeRemover;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Index;
-import uk.ac.ebi.masscascade.io.CmlReader;
-import uk.ac.ebi.masscascade.io.CmlWriter;
+import uk.ac.ebi.masscascade.io.MzTabWriter;
 import uk.ac.ebi.masscascade.io.PsiMzmlReader;
 import uk.ac.ebi.masscascade.io.XCaliburReader;
 import uk.ac.ebi.masscascade.smoothing.RunningMedianSmoothing;
@@ -65,8 +64,7 @@ public enum CoreTasks implements Index {
     DUMMY(null, PLACEHOLDER()),
 
     // reader and writer
-    CML_WRITER(CmlWriter.class, PLACEHOLDER()),
-    CML_READER(CmlReader.class, PLACEHOLDER()),
+    MZTAB_WRITER(MzTabWriter.class, PLACEHOLDER()),
     PSI_READER(PsiMzmlReader.class, PLACEHOLDER()),
     RAW_READER(XCaliburReader.class, PLACEHOLDER()),
 
@@ -89,7 +87,6 @@ public enum CoreTasks implements Index {
     // profile picker and extractor
     WAVELET(WaveletPeakPicking.class, "WV"),
     MASS_TRACE_BUILDER(ProfileBuilder.class, "TB"),
-    MASS_TRACE_BUILDER_OLD(ProfileBuilderOld.class, "TB"),
     MASS_TRACE_EXTRACTION(ProfileJoiner.class, "MT"),
     MASS_TRACE_EXPLOSION(ProfileSplitter.class, "MP"),
     COSINE_SIMILARITY(CosineSimilarityDistance.class, "CS"),

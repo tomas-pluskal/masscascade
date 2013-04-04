@@ -30,7 +30,6 @@ import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.core.container.file.FileContainerBuilder;
-import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.container.memory.MemoryContainerBuilder;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
@@ -38,7 +37,6 @@ import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
-import uk.ac.ebi.masscascade.io.CmlReader;
 import uk.ac.ebi.masscascade.io.PsiMzmlReader;
 import uk.ac.ebi.masscascade.io.XCaliburReader;
 import uk.ac.ebi.masscascade.parameters.Constants;
@@ -154,8 +152,6 @@ public class TaskRunner {
             files = inDirectory.listFiles(new Filter(Constants.FILE_FORMATS.RAW));
         else if (taskClass.equals(PsiMzmlReader.class))
             files = inDirectory.listFiles(new Filter(Constants.FILE_FORMATS.MZML));
-        else if (taskClass.equals(CmlReader.class))
-            files = inDirectory.listFiles(new Filter(Constants.FILE_FORMATS.CML));
 
         long start = System.currentTimeMillis();
 

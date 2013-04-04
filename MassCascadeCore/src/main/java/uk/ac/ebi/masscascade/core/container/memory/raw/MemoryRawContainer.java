@@ -30,6 +30,7 @@ import uk.ac.ebi.masscascade.core.raw.RawInfo;
 import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.Chromatogram;
+import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.parameters.Constants;
@@ -232,6 +233,7 @@ public class MemoryRawContainer extends MemoryContainer implements RawContainer 
 
     /**
      * Returns the number of scans of a particular level.
+     *
      * @param msn a MSN level
      * @return the number of scans
      */
@@ -435,5 +437,15 @@ public class MemoryRawContainer extends MemoryContainer implements RawContainer 
                 return scans.get(msn.getLvl() - 1).values().iterator();
             }
         };
+    }
+
+    /**
+     * Returns a profile iterator.
+     *
+     * @return the profile iterator
+     */
+    @Override
+    public Iterable<Profile> profileIterator() {
+        throw new MassCascadeException("Method not implemented.");
     }
 }

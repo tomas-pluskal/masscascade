@@ -26,6 +26,7 @@ import com.google.common.collect.TreeMultimap;
 import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.core.container.file.FileManager;
 import uk.ac.ebi.masscascade.core.container.memory.MemoryContainer;
+import uk.ac.ebi.masscascade.core.profile.ProfileIterator;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
@@ -209,5 +210,19 @@ public class MemoryProfileContainer extends MemoryContainer implements ProfileCo
     @Override
     public Iterator<Profile> iterator() {
         return profileMap.values().iterator();
+    }
+
+    /**
+     * Returns a profile iterator.
+     *
+     * @return the profile iterator
+     */
+    @Override
+    public Iterable<Profile> profileIterator() {
+        return new Iterable<Profile>() {
+            public Iterator<Profile> iterator() {
+                return profileMap.values().iterator();
+            }
+        };
     }
 }

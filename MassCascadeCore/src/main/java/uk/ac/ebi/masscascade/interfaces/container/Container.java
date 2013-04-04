@@ -25,6 +25,7 @@ package uk.ac.ebi.masscascade.interfaces.container;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 
 import java.io.File;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -73,4 +74,11 @@ public interface Container {
      * @return The {@link ContainerBuilder} matching this {@link Container}
      */
     ContainerBuilder getBuilder();
+
+    /**
+     * Returns a profile iterator.
+     *
+     * @return the profile iterator
+     */
+    Iterable<Profile> profileIterator();
 }

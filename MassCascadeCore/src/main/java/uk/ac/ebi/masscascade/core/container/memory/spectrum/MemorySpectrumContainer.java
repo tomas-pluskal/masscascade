@@ -22,8 +22,11 @@
 
 package uk.ac.ebi.masscascade.core.container.memory.spectrum;
 
+import uk.ac.ebi.masscascade.core.container.file.FileManager;
 import uk.ac.ebi.masscascade.core.container.memory.MemoryContainer;
+import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
+import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
@@ -125,7 +128,8 @@ public class MemorySpectrumContainer extends MemoryContainer implements Spectrum
      */
     public boolean removeAll() {
         spectraMap.clear();
-        basePeaks.clear();;
+        basePeaks.clear();
+        ;
         return (spectraMap.size() == 0);
     }
 
@@ -175,5 +179,55 @@ public class MemorySpectrumContainer extends MemoryContainer implements Spectrum
     @Override
     public List<XYPoint> getBasePeaks() {
         return basePeaks;
+    }
+
+    /**
+     * Returns a profile iterator.
+     *
+     * @return the profile iterator
+     */
+    @Override
+    public Iterable<Profile> profileIterator() {
+        return new Iterable<Profile>() {
+
+            public Iterator<Profile> iterator() {
+                return new SpectrumProfileIterator(spectraMap.values().iterator());
+            }
+        };
+    }
+}
+
+class SpectrumProfileIterator implements Iterator<Profile> {
+
+    private Iterator<Spectrum> spectrumIterator;
+    private Iterator<Profile> profileIterator;
+    private Spectrum cachedSpectrum;
+
+    public SpectrumProfileIterator(Iterator<Spectrum> spectrumIterator) {
+        this.spectrumIterator = spectrumIterator;
+
+        cachedSpectrum = spectrumIterator.next();
+        profileIterator = cachedSpectrum.iterator();
+    }
+
+    @Override
+    public boolean hasNext() {
+        return profileIterator.hasNext() || spectrumIterator.hasNext();
+    }
+
+    @Override
+    public Profile next() {
+
+        if (!profileIterator.hasNext()) {
+            cachedSpectrum = spectrumIterator.next();
+            profileIterator = cachedSpectrum.iterator();
+        }
+
+        return profileIterator.next();
+    }
+
+    @Override
+    public void remove() {
+        // do nothing
     }
 }

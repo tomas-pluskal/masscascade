@@ -27,7 +27,6 @@ import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
 import uk.ac.ebi.masscascade.core.raw.RawInfo;
 import uk.ac.ebi.masscascade.core.raw.RawLevel;
 import uk.ac.ebi.masscascade.interfaces.Range;
-import uk.ac.ebi.masscascade.io.CmlReader;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.ScanUtils;
@@ -53,7 +52,7 @@ import java.util.Map;
  */
 public class RawDeserializer extends ACmlDeserializer {
 
-    private static final Logger LOGGER = Logger.getLogger(CmlReader.class);
+    private static final Logger LOGGER = Logger.getLogger(RawDeserializer.class);
 
     // data container
     private FileRawContainer msFile;

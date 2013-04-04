@@ -120,5 +120,10 @@
             <!--<artifactId>com.springsource.org.apache.commons.io</artifactId>-->
             <!--<version>1.4.0</version>-->
         <!--</dependency>-->
+        <dependency>
+            <groupId>uk.ac.ebi.pride</groupId>
+            <artifactId>jmztab</artifactId>
+            <version>1.0.9</version>
+        </dependency>
     </dependencies>
 </project>

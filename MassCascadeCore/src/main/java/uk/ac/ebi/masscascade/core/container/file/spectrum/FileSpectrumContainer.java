@@ -24,8 +24,11 @@ package uk.ac.ebi.masscascade.core.container.file.spectrum;
 
 import uk.ac.ebi.masscascade.core.container.file.FileContainer;
 import uk.ac.ebi.masscascade.core.container.file.FileManager;
+import uk.ac.ebi.masscascade.core.profile.ProfileIterator;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.core.spectrum.SpectrumIterator;
+import uk.ac.ebi.masscascade.core.spectrum.SpectrumProfileIterator;
+import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
@@ -227,5 +230,21 @@ public class FileSpectrumContainer extends FileContainer implements SpectrumCont
     @Override
     public List<XYPoint> getBasePeaks() {
         return basePeaks;
+    }
+
+    /**
+     * Returns a profile iterator.
+     *
+     * @return the profile iterator
+     */
+    @Override
+    public Iterable<Profile> profileIterator() {
+
+        return new Iterable<Profile>() {
+
+            public Iterator<Profile> iterator() {
+                return new SpectrumProfileIterator(new ArrayList<>(spectraMap.values()), fileManager);
+            }
+        };
     }
 }
