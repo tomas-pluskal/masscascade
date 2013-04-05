@@ -59,11 +59,10 @@ public class FastDtwAlignment extends CallableTask {
     private int scanRadius;
 
     /**
-     * CConstructs an alignment task.
+     * Constructs an alignment task.
      *
      * @param params the parameter map
-     * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *
+     * @throws uk.ac.ebi.masscascade.exception.MassCascadeException if the task fails
      */
     public FastDtwAlignment(ParameterMap params) throws MassCascadeException {
 

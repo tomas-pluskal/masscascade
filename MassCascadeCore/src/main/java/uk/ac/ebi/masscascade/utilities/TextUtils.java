@@ -24,6 +24,8 @@ package uk.ac.ebi.masscascade.utilities;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import uk.ac.ebi.masscascade.interfaces.container.Container;
+import uk.ac.ebi.masscascade.parameters.Constants;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
@@ -113,5 +115,16 @@ public class TextUtils {
         } catch (XMLStreamException e) {
             LOGGER.log(Level.WARN, "Could not close xml stream\n" + e.getMessage());
         }
+    }
+
+    /**
+     * Returns a cleaned container id. The id is split on the delimiter '~'.
+     *
+     * @param id the container identifier
+     * @return the cleaned id
+     */
+    public static String cleanId(String id) {
+        int lastIndex = id.lastIndexOf(Constants.DELIMITER);
+        return (lastIndex == -1) ? id : id.substring(0, lastIndex);
     }
 }

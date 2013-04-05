@@ -39,6 +39,7 @@ public class Constants {
 
     // Separator
     public static final String SEPARATOR = " | ";
+    public static final String DELIMITER = "~";
 
     // Number of threads used for web services
     public static final int NTHREADS = 10;
