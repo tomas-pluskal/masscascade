@@ -107,6 +107,7 @@ public enum Parameter implements Option {
     MS_LEVEL("MSn level", Constants.MSN.MS1),
     POSITIVE_MODE("Positive ion mode", true),
     NEGATIVE_MODE("Negative ion mode", false),
+    NEUTRAL_LOSS("Neutral loss", false),
 
     /*
      * Column parameters for the KNIME workflow environment.

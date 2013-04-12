@@ -38,6 +38,7 @@ import java.util.ArrayList;
  * <ul>
  * <li>Parameter <code> MZ WINDOW PPM </code>- The mass tolerance in ppm.</li>
  * <li>Parameter <code> ION MODE </code>- The ion mode.</li>
+ * <li>Parameter <code> NEUTRAL LOSS </code>- If the input is a list of neutral losses.</li>
  * <li>Parameter <code> ADDUCT LIST </code>- The adducts to be searched for.</li>
  * <li>Parameter <code> SPECTRUM FILE </code>- The input spectrum container.</li>
  * </ul>
@@ -71,7 +72,8 @@ public class AdductFinder extends CallableTask {
 
         spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
         adductDetector = new AdductDetector(params.get(Parameter.MZ_WINDOW_PPM, Double.class),
-                params.get(Parameter.ION_MODE, Constants.ION_MODE.class));
+                params.get(Parameter.ION_MODE, Constants.ION_MODE.class),
+                params.get(Parameter.NEUTRAL_LOSS, Boolean.class));
         adductDetector.setAdductList(params.get(Parameter.ADDUCT_LIST, (new ArrayList<AdductSingle>()).getClass()));
     }
 

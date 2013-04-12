@@ -77,6 +77,7 @@ public class AdductDetector {
     private List<AdductSingle> adductList;
 
     private final Constants.ION_MODE ionMode;
+    private final boolean neutralLoss;
     private final double ppm;
 
     /**
@@ -84,20 +85,22 @@ public class AdductDetector {
      *
      * @param ionMode the acquisition mode
      */
-    public AdductDetector(Constants.ION_MODE ionMode) {
-        this(DEFAULT_MASS_TOLERANCE, ionMode);
+    public AdductDetector(Constants.ION_MODE ionMode, boolean neutralLoss) {
+        this(DEFAULT_MASS_TOLERANCE, ionMode, neutralLoss);
     }
 
     /**
      * Constructor for the adduct detector. Instantiates an empty adduct map.
      *
-     * @param ppm     the mass tolerance for the isotope and adduct search [ppm]
-     * @param ionMode the acquisition mode
+     * @param ppm         the mass tolerance for the isotope and adduct search [ppm]
+     * @param ionMode     the acquisition mode
+     * @param neutralLoss whether the adduct(s) results from a neutral loss
      */
-    public AdductDetector(double ppm, Constants.ION_MODE ionMode) {
+    public AdductDetector(double ppm, Constants.ION_MODE ionMode, boolean neutralLoss) {
 
         this.ppm = ppm;
         this.ionMode = ionMode;
+        this.neutralLoss = neutralLoss;
 
         if (ionMode.equals(Constants.ION_MODE.POSITIVE)) MH = "M+H";
         else if (ionMode.equals(Constants.ION_MODE.NEGATIVE)) MH = "M-H";
@@ -137,7 +140,7 @@ public class AdductDetector {
                 if (lineElements.length != 3) continue;
 
                 adductList.add(new AdductSingle(lineElements[0], Integer.parseInt(lineElements[1]),
-                        Double.parseDouble(lineElements[2]), ionMode));
+                        Double.parseDouble(lineElements[2]), ionMode, neutralLoss));
             }
         } catch (Exception exception) {
             LOGGER.log(Level.INFO, "Adduct record not readable. " + exception.getMessage());
@@ -231,6 +234,9 @@ public class AdductDetector {
      * @return the corrected m/z value matching the M+H signal
      */
     private double correctMz(double mz, AdductSingle adduct) {
+
+        if (neutralLoss) return mz - adduct.getMass();
+
         if (ionMode.equals(Constants.ION_MODE.POSITIVE))
             mz = (mz - adduct.getMass()) / adduct.getClusterSize() + Constants.PARTICLES.PROTON.getMass();
         else if (ionMode.equals(Constants.ION_MODE.NEGATIVE))
