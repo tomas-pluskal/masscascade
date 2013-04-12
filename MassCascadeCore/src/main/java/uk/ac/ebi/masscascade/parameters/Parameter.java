@@ -148,6 +148,7 @@ public enum Parameter implements Option {
     CODA("Chromatogram quality", 0.5),
     DURBIN("Durbin-Watson threshold", 0.5),
     ESTIMATE_NOISE("Estimate noise", false),
+    NOISE_FACTOR("Noise factor", 5),
     POLYNOMIAL_ORDER("Polynomial order", 3),
     CORRELATION_THRESHOLD("Correlation threshold", 0.75),
     DERIVATIVE_THRESHOLD("Derivative threshold", 0.2),

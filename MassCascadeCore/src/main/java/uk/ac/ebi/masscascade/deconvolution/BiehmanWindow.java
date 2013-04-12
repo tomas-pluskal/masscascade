@@ -48,7 +48,6 @@ public class BiehmanWindow {
     private int leftBoundary;
 
     private static final double MIN_PERCENT = 0.01;
-    private static final int NF_PERCEPTION_MULTIPLIER = 5;
 
     /**
      * Constructs a Biehman Deconvolution window.
@@ -91,7 +90,7 @@ public class BiehmanWindow {
      */
     private void findMaximumDp() {
 
-        for (int i = oriLeftBoundary; i < oriRightBoundary + 1; i++) {
+        for (int i = oriLeftBoundary; i <= oriRightBoundary; i++) {
             if (maxDp.y < xicData.get(i).y) {
                 maxDp = xicData.get(i);
                 maxDpIndex = i;
@@ -121,14 +120,14 @@ public class BiehmanWindow {
             } else if (curDp.y < rightMinDp.y) {
                 rightMinDp = curDp;
                 rightMinDpIndex = i;
-            } else if (curDp.y > NF_PERCEPTION_MULTIPLIER * noiseEstimate * Math.sqrt(rightMinDp.y)) {
+            } else if (curDp.y > noiseEstimate * Math.sqrt(rightMinDp.y)) {
                 rightBoundary = i - 1;
                 break;
             }
             rightBoundary = i;
         }
 
-        windowLength = (maxDpIndex < scanWindow) ? oriLeftBoundary : maxDpIndex - scanWindow;
+        windowLength = (maxDpIndex < scanWindow) ? oriLeftBoundary : maxDpIndex - scanWindow - 1;
         for (int i = maxDpIndex - 1; i >= windowLength; i--) {
 
             curDp = xicData.get(i);
@@ -140,7 +139,7 @@ public class BiehmanWindow {
             } else if (curDp.y < leftMinDp.y) {
                 leftMinDp = curDp;
                 leftMinDpIndex = i;
-            } else if (curDp.y > NF_PERCEPTION_MULTIPLIER * noiseEstimate * Math.sqrt(leftMinDp.y)) {
+            } else if (curDp.y > noiseEstimate * Math.sqrt(leftMinDp.y)) {
                 leftBoundary = i + 1;
                 break;
             }
@@ -154,7 +153,6 @@ public class BiehmanWindow {
      * @return the max. data point
      */
     public XYPoint getMaxDp() {
-
         return maxDp;
     }
 
@@ -164,7 +162,6 @@ public class BiehmanWindow {
      * @return the index of the max. data point
      */
     public int getMaxDpIndex() {
-
         return maxDpIndex;
     }
 
@@ -174,7 +171,6 @@ public class BiehmanWindow {
      * @return the min. data point
      */
     public XYPoint getRightMinDp() {
-
         return rightMinDp;
     }
 
@@ -184,7 +180,6 @@ public class BiehmanWindow {
      * @return the min. data point index.
      */
     public int getRightMinDpIndex() {
-
         return rightMinDpIndex;
     }
 
@@ -194,7 +189,6 @@ public class BiehmanWindow {
      * @return the index
      */
     public int getRightBoundary() {
-
         return rightBoundary;
     }
 
@@ -204,7 +198,6 @@ public class BiehmanWindow {
      * @return the min. data point
      */
     public XYPoint getLeftMinDp() {
-
         return leftMinDp;
     }
 
@@ -214,7 +207,6 @@ public class BiehmanWindow {
      * @return the min. data point index
      */
     public int getLeftMinDpIndex() {
-
         return leftMinDpIndex;
     }
 
@@ -224,7 +216,6 @@ public class BiehmanWindow {
      * @return the left boundary
      */
     public int getLeftBoundary() {
-
         return leftBoundary;
     }
 }

@@ -22,6 +22,7 @@
 
 package uk.ac.ebi.masscascade.deconvolution;
 
+import org.apache.commons.math3.util.FastMath;
 import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
@@ -46,6 +47,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Class implementing deconvolution using a modified Biller Biehman algorithm.
@@ -58,7 +60,6 @@ import java.util.TreeMap;
 public class BiehmanDeconvolution extends CallableTask {
 
     private static final int MIN_SIZE = 5;
-    private static final int NF_HEIGHT_MULTIPLIER = 4;
 
     private int scanWindow;
     private boolean center;
@@ -66,6 +67,7 @@ public class BiehmanDeconvolution extends CallableTask {
 
     private int profileId;
 
+    private int noiseFactor;
     private ProfileContainer profileContainer;
     private NoiseEstimation noiseEstimation;
 
@@ -93,6 +95,7 @@ public class BiehmanDeconvolution extends CallableTask {
 
         scanWindow = (params.get(Parameter.SCAN_WINDOW, Integer.class)) / 2;
         center = params.get(Parameter.CENTER, Boolean.class);
+        noiseFactor = params.get(Parameter.NOISE_FACTOR, Integer.class);
         profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
 
         noiseEstimation = new NoiseEstimation();
@@ -119,8 +122,8 @@ public class BiehmanDeconvolution extends CallableTask {
 
             noiseEstimate = noiseEstimation.getNoiseEstimate(profile);
 
-            List<Profile> profiles = new ArrayList<Profile>();
-            perceiveAll(profile, 0, profile.getMzData().size() - 1, profiles);
+            List<Profile> profiles = new ArrayList<>();
+            perceiveAll(profile, 0, profile.getMzData().size() - 1, profiles, -1);
 
             outProfileContainer.addProfileList(profiles);
         }
@@ -140,7 +143,6 @@ public class BiehmanDeconvolution extends CallableTask {
         double maxInt = 0;
 
         for (XYPoint dp : xicData) {
-
             avgInt += dp.y;
             maxInt = maxInt < dp.y ? dp.y : maxInt;
         }
@@ -158,11 +160,11 @@ public class BiehmanDeconvolution extends CallableTask {
      * @param oriRightBoundary the right bound
      * @param profiles         the profile list containing perceived putative peaks
      */
-    private void perceiveAll(Profile profile, int oriLeftBoundary, int oriRightBoundary, List<Profile> profiles) {
+    private void perceiveAll(Profile profile, int oriLeftBoundary, int oriRightBoundary, List<Profile> profiles, int pBoundary) {
 
         // define deconvolution window
         XYList xicData = profile.getTrace().getData();
-        BiehmanWindow window = new BiehmanWindow(xicData, oriLeftBoundary, oriRightBoundary, scanWindow, noiseEstimate);
+        BiehmanWindow window = new BiehmanWindow(xicData, oriLeftBoundary, oriRightBoundary, scanWindow, noiseEstimate * noiseFactor);
 
         XYPoint maxDp = window.getMaxDp();
         int leftBoundary = window.getLeftBoundary();
@@ -172,12 +174,11 @@ public class BiehmanDeconvolution extends CallableTask {
         LinearEquation background = new LinearEquation(window.getLeftMinDp(), window.getRightMinDp());
 
         // get deviation from background and sort by intensity
-        List<XYPoint> dpDevs = new ArrayList<XYPoint>();
-        for (int i = leftBoundary; i < rightBoundary + 1; i++) {
-            double corY = Math.abs(xicData.get(i).y - background.getY(xicData.get(i).x));
+        TreeSet<XYPoint> dpDevs = new TreeSet<>(new PointIntensityComparator());
+        for (int i = leftBoundary; i <= rightBoundary; i++) {
+            double corY = FastMath.abs(xicData.get(i).y - background.getY(xicData.get(i).x));
             dpDevs.add(new XYPoint(i, corY));
         }
-        Collections.sort(dpDevs, new PointIntensityComparator());
 
         // least squares background estimation from the lower half of the deviation array
         int half = 0;
@@ -191,29 +192,27 @@ public class BiehmanDeconvolution extends CallableTask {
 
         // check height of maximum data point
         double maxHeight = maxDp.y - backgroundSq.getY(maxDp.x);
-        if (maxHeight >= NF_HEIGHT_MULTIPLIER * noiseEstimate * Math.sqrt(maxDp.y)) {
+        if (maxHeight >= noiseFactor * noiseEstimate * Math.sqrt(maxDp.y)) {
 
             // calculate precise retention time via three-point parabola
             XYPoint dpL = xicData.get(window.getMaxDpIndex() - 1);
             XYPoint dpR = xicData.get(window.getMaxDpIndex() + 1);
             XYPoint apex = MathUtils.getParabolaVertex(dpL, maxDp, dpR);
 
-            Profile deconProfile;
-            if (center) deconProfile = buildCenteredProfile(profile, xicData, apex, window);
-            else deconProfile = buildProfile(profile, xicData, window);
+            Profile deconProfile =
+                    center ? buildCenteredProfile(profile, xicData, apex, window) : buildProfile(profile, xicData,
+                            window);
             deconProfile.setMsnScans(profile.getMsnScans());
             profiles.add(deconProfile);
         }
 
         // moving forward
-        if (oriRightBoundary == xicData.size() - 1 && oriRightBoundary != rightBoundary) {
-            perceiveAll(profile, window.getRightMinDpIndex(), xicData.size() - 1, profiles);
-        }
+        if (oriRightBoundary == xicData.size() - 1 && oriRightBoundary != rightBoundary && rightBoundary != pBoundary)
+            perceiveAll(profile, window.getRightMinDpIndex(), xicData.size() - 1, profiles, rightBoundary);
 
         // moving backward
-        if (oriLeftBoundary == 0 && oriLeftBoundary != leftBoundary) {
-            perceiveAll(profile, 0, window.getLeftMinDpIndex(), profiles);
-        }
+        if (oriLeftBoundary == 0 && oriLeftBoundary != leftBoundary && leftBoundary != pBoundary)
+            perceiveAll(profile, 0, window.getLeftMinDpIndex(), profiles, leftBoundary);
     }
 
     /**
@@ -234,6 +233,7 @@ public class BiehmanDeconvolution extends CallableTask {
             double mz = profile.getMzData().get(leftBoundary - 1).x;
             deconProfile = new ProfileImpl(profileId, new YMinPoint(mz), xicData.get(leftBoundary - 1).x,
                     profile.getMzRange());
+            deconProfile.addProfilePoint(profile.getMzData().get(leftBoundary).x, xicData.get(leftBoundary));
         } else {
             double mz = profile.getMzData().get(leftBoundary).x;
             deconProfile =
@@ -241,15 +241,12 @@ public class BiehmanDeconvolution extends CallableTask {
         }
         profileId++;
 
-        for (int i = leftBoundary + 1; i < rightBoundary + 1; i++) {
+        for (int i = leftBoundary + 1; i <= rightBoundary; i++)
             deconProfile.addProfilePoint(profile.getMzData().get(i).x, xicData.get(i));
-        }
 
-        if (xicData.get(rightBoundary).y != Constants.MIN_ABUNDANCE) {
+        if (xicData.get(rightBoundary).y != Constants.MIN_ABUNDANCE)
             deconProfile.closeProfile(profile.getMzData().get(rightBoundary + 1), xicData.get(rightBoundary + 1).x);
-        } else {
-            deconProfile.closeProfile();
-        }
+        else deconProfile.closeProfile();
 
         return deconProfile;
     }
