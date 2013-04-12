@@ -37,18 +37,35 @@ import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.properties.Identity;
 import uk.ac.ebi.masscascade.utilities.TextUtils;
 import uk.ac.ebi.pride.jmztab.MzTabFile;
-import uk.ac.ebi.pride.jmztab.MzTabParsingException;
 import uk.ac.ebi.pride.jmztab.model.SmallMolecule;
+import uk.ac.ebi.pride.jmztab.model.SpecRef;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.util.Set;
 
+/**
+ * Class implementing a mzTab writer. Profiles, either from a {@link ProfileContainer} or {@link SpectrumContainer},
+ * with identified profiles, are written out in mzTab format.
+ * <ul>
+ * <li>Parameter <code> OUTPUT DIRECTORY </code>- The m/z tolerance in ppm.</li>
+ * <li>Parameter <code> PROFILE CONTAINER </code>- The input profile container.</li>
+ * ################### or ###################
+ * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input spectrum container.</li>
+ * </ul>
+ */
 public class MzTabWriter extends CallableTask {
 
     private String outPath;
     private Container container;
 
+    /**
+     * Constructs an mzTab writer task.
+     *
+     * @param params the parameter map
+     * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
+     *          if the task fails
+     */
     public MzTabWriter(ParameterMap params) {
 
         super(MzTabWriter.class);
@@ -76,7 +93,7 @@ public class MzTabWriter extends CallableTask {
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
      * .Container} with the processed data.
      *
-     * @return the container with the processed data
+     * @return null; the task writes to disk
      */
     @Override
     public Container call() {
@@ -107,16 +124,19 @@ public class MzTabWriter extends CallableTask {
                         molecule.setSmiles(Lists.newArrayList(notation));
                     }
                     molecule.setAbundance(1, profile.getIntensity(), 0.0, 0.0);
+                    molecule.setCustomColumn("opt_masscascade_file_id", "" + container.getId());
+                    molecule.setCustomColumn("opt_masscascade_profile_id", "" + profile.getId());
                 }
 
                 mzTab.addSmallMolecule(molecule);
             }
 
-            File mzTabFile = new File(outPath + File.separator + container.getId() + ".mzTab");
+            File mzTabFile = new File(outPath + File.separator + TextUtils.cleanId(container.getId()) + ".mzTab");
             FileWriter writer = new FileWriter(mzTabFile);
             writer.write(mzTab.toMzTab());
             TextUtils.close(writer);
         } catch (Exception exception) {
+            exception.printStackTrace();
             LOGGER.log(Level.ERROR, "Error while parsing / writing mzTab file: " + exception.getMessage());
         }
 

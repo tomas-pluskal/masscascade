@@ -201,6 +201,7 @@ public class BiehmanDeconvolution extends CallableTask {
             Profile deconProfile;
             if (center) deconProfile = buildCenteredProfile(profile, xicData, apex, window);
             else deconProfile = buildProfile(profile, xicData, window);
+            deconProfile.setMsnScans(profile.getMsnScans());
             profiles.add(deconProfile);
         }
 

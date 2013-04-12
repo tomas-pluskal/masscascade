@@ -23,7 +23,6 @@
 package uk.ac.ebi.masscascade.deconvolution;
 
 import org.apache.commons.math3.util.FastMath;
-import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
@@ -35,7 +34,6 @@ import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZList;
-import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 import uk.ac.ebi.masscascade.utilities.xyz.YMinPoint;
 
 import java.util.ArrayList;
@@ -63,6 +61,8 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
     private int profileIndex;
 
     private ProfileContainer profileContainer;
+
+    private static final double RAD_ANGLE_IV = -2.0 * FastMath.PI / 180.0;
 
     /**
      * Constructor for a profile deconvolution task.
@@ -124,7 +124,7 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
             }
 
             avgIntensity /= (double) profileData.size();
-            final List<Profile> resolvedPeaks = new ArrayList<Profile>(2);
+            final List<Profile> resolvedPeaks = new ArrayList<>(2);
 
             // If the current chromatogram has characteristics of background or just noise return an empty array.
             if (avgIntensity > maxIntensity / 2.0) continue;
@@ -245,10 +245,14 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
 
                 XYZList data = profile.getData();
                 if (corStart < 0) corStart = 0;
-                else if (data.get(corStart).z > data.get(corStart + 1).z) corStart++;
+                if (data.get(corStart).z > data.get(corStart + 1).z) while (isFoward(corStart, data)) corStart++;
+                else while (isBackward(corStart, data)) corStart--;
 
                 if (corEnd >= data.size()) corEnd = data.size() - 1;
-                else if (data.get(corEnd).z > data.get(corEnd - 1).z) corEnd--;
+                if (data.get(corEnd).z > data.get(corEnd - 1).z) while (isBackward(corEnd, data)) corEnd--;
+                else while (isFoward(corEnd, data)) corEnd++;
+
+                if (corEnd - corStart <= 0) continue;
 
                 Profile deconProfile;
                 if (data.get(corStart).z == Constants.MIN_ABUNDANCE)
@@ -266,6 +270,7 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
                     deconProfile.addProfilePoint(data.get(current));
                 if (data.get(corEnd - 1).z == Constants.MIN_ABUNDANCE) deconProfile.closeProfile();
                 else deconProfile.closeProfile(data.get(corEnd).x);
+                deconProfile.setMsnScans(profile.getMsnScans());
                 profileList.add(deconProfile);
                 // If exists next overlapped peak, swap the indexes between next and current, and clean ending index
                 // for this new current peak.
@@ -286,6 +291,32 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
         }
 
         return profileList;
+    }
+
+    /**
+     * Checks whether the current profile data index moves one forward:
+     * atan2 in IV from 0 - -pi/2
+     *
+     * @param curr the current profile data index
+     * @param data the profile data
+     * @return whether to move one forward
+     */
+    private boolean isFoward(int curr, XYZList data) {
+        return curr + 1 < data.size() && FastMath.atan2(data.get(curr + 1).z - data.get(curr).z,
+                data.get(curr + 1).x - data.get(curr).x) <= RAD_ANGLE_IV;
+    }
+
+    /**
+     * Checks whether the current profile data index moves one back:
+     * atan2 in III from -pi/2 - -pi transformed to atan2 in IV from 0 - -pi/2 via x-axis inversion
+     *
+     * @param curr the current profile data index
+     * @param data the profile data
+     * @return whether to move one back
+     */
+    private boolean isBackward(int curr, XYZList data) {
+        return curr - 1 >= 0 && FastMath.atan2(data.get(curr - 1).z - data.get(curr).z,
+                (-1 * data.get(curr - 1).x) - data.get(curr).x) <= RAD_ANGLE_IV;
     }
 
     /**
