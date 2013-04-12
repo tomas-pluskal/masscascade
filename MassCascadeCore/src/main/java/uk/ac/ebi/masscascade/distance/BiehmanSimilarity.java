@@ -35,12 +35,15 @@ import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
+import uk.ac.ebi.masscascade.utilities.xyz.XYZList;
+import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 
 /**
  * Groups all profiles into pseudospectra based on their retention time and profile using a modified Biehman approach
@@ -102,8 +105,8 @@ public class BiehmanSimilarity extends CallableTask {
         spectrumContainer = profileContainer.getBuilder().newInstance(SpectrumContainer.class, id,
                 profileContainer.getWorkingDirectory());
 
-        Range rtRange = new ExtendableRange();
-        for (double rt : profileContainer.getTimes().keySet()) rtRange.extendRange(rt);
+        SortedSet<Double> rtSet = profileContainer.getTimes().keySet();
+        Range rtRange = new ExtendableRange(rtSet.first(), rtSet.last());
 
         double binWidth = scanDistance / binNumber;
         int noOfBins = (int) (rtRange.getSize() / binWidth) + 1;
@@ -113,12 +116,17 @@ public class BiehmanSimilarity extends CallableTask {
 
         for (Profile profile : profileContainer) {
             allProfileIds.add(profile.getId());
-            XYList profileData = profile.getTrace().getData();
+            XYZList profileData = profile.getData();
 
-            int traceMax = -1;
-            for (XYPoint dp : profileData) {
+            int traceMax = 0;
+            XYZPoint pDp = profileData.get(traceMax);
+            for (XYZPoint dp : profileData) {
+                if (dp.x > profile.getRetentionTime()) {
+                    if (dp.x - profile.getRetentionTime() > profile.getRetentionTime() - pDp.x) traceMax--;
+                    break;
+                }
+                pDp = dp;
                 traceMax++;
-                if (dp.x == profile.getRetentionTime()) break;
             }
 
             int reachMax = 1;
@@ -126,8 +134,8 @@ public class BiehmanSimilarity extends CallableTask {
             for (int leftI = traceMax - 1; leftI > 0; leftI++) {
 
                 sharpnessMaxL = Math.max(sharpnessMaxL,
-                        profileData.get(traceMax).y - profileData.get(leftI).y) / (reachMax * Math.sqrt(
-                        profileData.get(traceMax).y));
+                        profileData.get(traceMax).z - profileData.get(leftI).z) / (reachMax * Math.sqrt(
+                        profileData.get(traceMax).z));
 
                 if (reachMax == N_MAX) break;
                 reachMax++;
@@ -138,8 +146,8 @@ public class BiehmanSimilarity extends CallableTask {
             for (int rightI = traceMax + 1; rightI < profileData.size(); rightI++) {
 
                 sharpnessMaxR = Math.max(sharpnessMaxR,
-                        profileData.get(traceMax).y - profileData.get(rightI).y) / (reachMax * Math.sqrt(
-                        profileData.get(traceMax).y));
+                        profileData.get(traceMax).z - profileData.get(rightI).z) / (reachMax * Math.sqrt(
+                        profileData.get(traceMax).z));
 
                 if (reachMax == N_MAX) break;
                 reachMax++;
@@ -147,11 +155,8 @@ public class BiehmanSimilarity extends CallableTask {
 
             int binIndex = (int) ((profile.getRetentionTime() - rtRange.getLowerBounds()) / binWidth);
 
-            if (bins[binIndex] == null) {
-                bins[binIndex] = new Bin((sharpnessMaxL + sharpnessMaxR) / 2d, profile.getId());
-            } else {
-                bins[binIndex].add((sharpnessMaxL + sharpnessMaxR) / 2d, profile.getId());
-            }
+            if (bins[binIndex] == null) bins[binIndex] = new Bin((sharpnessMaxL + sharpnessMaxR) / 2d, profile.getId());
+            else bins[binIndex].add((sharpnessMaxL + sharpnessMaxR) / 2d, profile.getId());
         }
 
         int index = 1;

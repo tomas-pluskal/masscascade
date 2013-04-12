@@ -132,6 +132,20 @@ public interface Profile {
     double getRetentionTime();
 
     /**
+     * Returns the central point of the profile.
+     *
+     * @return the central point
+     */
+    XYZPoint getCenter();
+
+    /**
+     * Gets the last data point.
+     *
+     * @return the tailing data point
+     */
+    XYZPoint getLast();
+
+    /**
      * Returns a property list.
      *
      * @param type the property name

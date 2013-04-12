@@ -143,6 +143,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the copied profile frame
      */
+    @Override
     public Profile copy() {
         XYZPoint dp = data.get(0);
         return new ProfileImpl(id, dp, new ExtendableRange(dp.y), propertyManager, msnScans);
@@ -159,6 +160,7 @@ public class ProfileImpl implements Profile {
      * @param rt the time for the zero intensity anchor
      * @return the copied profile frame
      */
+    @Override
     public Profile copy(double rt) {
         XYZPoint dp = data.get(0);
         return new ProfileImpl(id, new XYZPoint(rt, dp.y, Constants.MIN_ABUNDANCE), new ExtendableRange(dp.y),
@@ -170,6 +172,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the property manager instance
      */
+    @Override
     public PropertyManager getPropertyManager() {
         return propertyManager;
     }
@@ -180,6 +183,7 @@ public class ProfileImpl implements Profile {
      * @param mzIntDp the mz int data pair
      * @param rt      the retention time
      */
+    @Override
     public void addProfilePoint(XYPoint mzIntDp, double rt) {
         addProfilePoint(new XYZPoint(rt, mzIntDp.x, mzIntDp.y));
     }
@@ -190,6 +194,7 @@ public class ProfileImpl implements Profile {
      * @param mz      the last mz
      * @param rtIntDp the last rt intensity data pair
      */
+    @Override
     public void addProfilePoint(double mz, XYPoint rtIntDp) {
         addProfilePoint(new XYZPoint(rtIntDp.x, mz, rtIntDp.y));
     }
@@ -199,6 +204,7 @@ public class ProfileImpl implements Profile {
      *
      * @param dataPoint the last rt-mz-intensity triple
      */
+    @Override
     public void addProfilePoint(XYZPoint dataPoint) {
 
         if (dataPoint.z > baseSignal.z) baseSignal = dataPoint;
@@ -212,6 +218,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the minimum intensity
      */
+    @Override
     public double getMinIntensity() {
         return minIntensity;
     }
@@ -222,6 +229,7 @@ public class ProfileImpl implements Profile {
      * @param mzIntDp   the last mz intensity data pair
      * @param closingRt the retention time
      */
+    @Override
     public void closeProfile(XYPoint mzIntDp, double closingRt) {
         addProfilePoint(new YMinPoint(mzIntDp.x), closingRt);
         closeProfile();
@@ -232,6 +240,7 @@ public class ProfileImpl implements Profile {
      *
      * @param closingRt the retention time
      */
+    @Override
     public void closeProfile(double closingRt) {
         addProfilePoint(new XYPoint(data.get(data.size() - 1).y, Constants.MIN_ABUNDANCE), closingRt);
         closeProfile();
@@ -240,6 +249,7 @@ public class ProfileImpl implements Profile {
     /**
      * Closes the profile and caluclates the profile stats.
      */
+    @Override
     public void closeProfile() {
 
         Mean cMean = new Mean();
@@ -269,6 +279,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the central point
      */
+    @Override
     public XYZPoint getCenter() {
         return baseSignal;
     }
@@ -278,6 +289,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the retention time
      */
+    @Override
     public double getRetentionTime() {
         return baseSignal.x;
     }
@@ -287,6 +299,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the m/z value
      */
+    @Override
     public double getMz() {
         return baseSignal.y;
     }
@@ -296,6 +309,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the intensity
      */
+    @Override
     public double getIntensity() {
         return baseSignal.z;
     }
@@ -305,6 +319,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the mz-intensity point
      */
+    @Override
     public XYPoint getMzIntDp() {
         return new XYPoint(baseSignal.y, baseSignal.z);
     }
@@ -314,6 +329,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the profile width
      */
+    @Override
     public Range getRtRange() {
         return new ExtendableRange(data.get(0).x, getLast().x);
     }
@@ -323,6 +339,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the standard deviation
      */
+    @Override
     public double getDeviation() {
         return deviation;
     }
@@ -332,6 +349,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the data
      */
+    @Override
     public XYList getMzData() {
         return data.getYZSlice();
     }
@@ -341,6 +359,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the last data point
      */
+    @Override
     public XYPoint getMzDataLast() {
         return new XYPoint(data.get(data.size() - 1).y, data.get(data.size() - 1).z);
     }
@@ -350,6 +369,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the mz range
      */
+    @Override
     public Range getMzRange() {
         return mzRange;
     }
@@ -359,6 +379,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the peak id
      */
+    @Override
     public int getId() {
         return id;
     }
@@ -368,6 +389,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the peak trace
      */
+    @Override
     public Chromatogram getTrace(int width) {
 
         XYZList paddedData = getPaddedData(width);
@@ -379,6 +401,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the peak trace
      */
+    @Override
     public Chromatogram getTrace() {
         return getTrace(0);
     }
@@ -404,6 +427,7 @@ public class ProfileImpl implements Profile {
      *
      * @param property the property object
      */
+    @Override
     public void setProperty(Property property) {
 
         if (property.getType() == PropertyManager.TYPE.Label) propertyManager.setProperty(property);
@@ -416,6 +440,7 @@ public class ProfileImpl implements Profile {
      * @param type the property name
      * @return the property list
      */
+    @Override
     public Set<Property> getProperty(PropertyManager.TYPE type) {
         return propertyManager.getProperty(type);
     }
@@ -426,6 +451,7 @@ public class ProfileImpl implements Profile {
      * @param type the property title
      * @return whether property is set
      */
+    @Override
     public boolean hasProperty(PropertyManager.TYPE type) {
         return propertyManager.hasProperty(type);
     }
@@ -435,6 +461,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the peak area
      */
+    @Override
     public double getArea() {
         return area;
     }
@@ -444,6 +471,7 @@ public class ProfileImpl implements Profile {
      *
      * @param msnScans a daughter scan index list
      */
+    @Override
     public void setMsnScans(Map<Integer, Set<Integer>> msnScans) {
         this.msnScans = msnScans;
     }
@@ -453,6 +481,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the scan index list
      */
+    @Override
     public Map<Integer, Set<Integer>> getMsnScans() {
         return msnScans;
     }
@@ -462,6 +491,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the time-intensity data set
      */
+    @Override
     public XYZList getData() {
         return data;
     }
@@ -471,6 +501,7 @@ public class ProfileImpl implements Profile {
      *
      * @return the tailing data point
      */
+    @Override
     public XYZPoint getLast() {
         return data.get(data.size() - 1);
     }
