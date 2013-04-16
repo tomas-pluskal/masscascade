@@ -22,8 +22,10 @@
 
 package uk.ac.ebi.masscascade.alignment;
 
+import com.google.common.collect.Lists;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Trace;
+import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.utilities.DataUtils;
 import uk.ac.ebi.masscascade.utilities.comparator.ProfileMassComparator;
@@ -46,7 +48,7 @@ public class ProfileBinTableModel extends AbstractTableModel implements Iterable
 
     private static final long serialVersionUID = 1526497097606220131L;
 
-    private List<ProfileContainer> profileContainers;
+    private List<Container> profileContainers;
     private double ppm;
     private double sec;
 
@@ -60,7 +62,7 @@ public class ProfileBinTableModel extends AbstractTableModel implements Iterable
      * @param ppm               the m/z tolerance value in ppm
      * @param sec               the time tolerance value in seconds
      */
-    public ProfileBinTableModel(List<ProfileContainer> profileContainers, double ppm, double sec) {
+    public ProfileBinTableModel(List<Container> profileContainers, double ppm, double sec) {
 
         this.profileContainers = profileContainers;
         this.ppm = ppm;
@@ -78,9 +80,9 @@ public class ProfileBinTableModel extends AbstractTableModel implements Iterable
      */
     public Map<String, Profile> getProfilesForRow(int rowIndex) {
 
-        Map<String, Profile> idToProfile = new HashMap<String, Profile>();
+        Map<String, Profile> idToProfile = new HashMap<>();
         for (Map.Entry<Integer, Integer> entry : profileBins.get(rowIndex).getContainerIndexToProfileId().entrySet()) {
-            Profile profile = profileContainers.get(entry.getKey()).getProfile(entry.getValue());
+            Profile profile = ((ProfileContainer) profileContainers.get(entry.getKey())).getProfile(entry.getValue());
             String id = "(" + entry.getKey() + "-" + profile.getId() + ")";
             idToProfile.put(id, profile);
         }
@@ -202,8 +204,8 @@ public class ProfileBinTableModel extends AbstractTableModel implements Iterable
 
         int index = -1;
         ProfileMap timeBins = new ProfileMap();
-        for (ProfileContainer container : profileContainers) {
-            List<Profile> profiles = container.getProfileList();
+        for (Container container : profileContainers) {
+            List<Profile> profiles = Lists.newArrayList(container.profileIterator());
             Collections.sort(profiles, new ProfileMassComparator());
             index++;
             for (Profile profile : profiles) {

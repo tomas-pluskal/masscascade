@@ -195,7 +195,6 @@ public class FileProfileContainer extends FileContainer implements ProfileContai
     public synchronized List<Profile> getProfileList() {
 
         List<Profile> profileList = new ArrayList<Profile>();
-
         for (Long l : profileNumber.values()) profileList.add(fileManager.read(l, ProfileImpl.class));
 
         return profileList;

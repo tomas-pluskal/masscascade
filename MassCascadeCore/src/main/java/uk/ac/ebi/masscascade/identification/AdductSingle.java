@@ -37,14 +37,12 @@ public class AdductSingle {
         this.name = name;
         this.mass = mass;
         this.charge = charge;
-        this.clusterSize = 1;
+        cluster = (name.startsWith("2") || name.startsWith("3"));
+        clusterSize = cluster ? Integer.parseInt(name.substring(0, 1)) : 1;
 
-        if (!neutralLoss)
+        if (!neutralLoss && !cluster)
             if (ionMode.equals(Constants.ION_MODE.POSITIVE)) this.mass -= Constants.PARTICLES.PROTON.getMass();
             else if (ionMode.equals(Constants.ION_MODE.NEGATIVE)) this.mass += Constants.PARTICLES.PROTON.getMass();
-
-        cluster = (name.startsWith("2") || name.startsWith("3"));
-        if (cluster) clusterSize = Integer.parseInt(name.substring(0, 1));
     }
 
     public String getName() {

@@ -106,7 +106,7 @@ public class AdductDetector {
         else if (ionMode.equals(Constants.ION_MODE.NEGATIVE)) MH = "M-H";
         else MH = "";
 
-        adductList = new ArrayList<AdductSingle>();
+        adductList = new ArrayList<>();
     }
 
     /**
@@ -164,7 +164,8 @@ public class AdductDetector {
         double[][] peakMassDeltas = getPeakMassDeltas(this.profileList);
 
         for (AdductSingle adduct : adductList) {
-            if (adduct.getMass() < -0.5 || adduct.getMass() >= 0.5) findAdductMassInDeltaArray(adduct, peakMassDeltas);
+            if (adduct.isCluster() || adduct.getMass() < -0.5 || adduct.getMass() >= 0.5)
+                findAdductMassInDeltaArray(adduct, peakMassDeltas);
         }
     }
 
@@ -184,7 +185,7 @@ public class AdductDetector {
 
                 double peakMassDelta = peakMassDeltas[row][col];
                 if (peakMassDelta == 0) break;
-                if (!adductMassRange.contains(peakMassDelta)) continue;
+                if (!adductMassRange.contains(peakMassDelta) && !adduct.isCluster()) continue;
 
                 Property[] adductAndReferenceProperty = null;
 
@@ -220,6 +221,7 @@ public class AdductDetector {
                     if (adductAndReferenceProperty != null) {
                         profileList.get(row).setProperty(adductAndReferenceProperty[0]);
                         profileList.get(col).setProperty(adductAndReferenceProperty[1]);
+                        if (adduct.isCluster()) break;
                     }
                 }
             }
