@@ -93,14 +93,6 @@ public class ProfileMsnHelper {
 
             msn++;
         }
-
-        for (Map<Integer, Map<Integer, Double>> map : msnMap) {
-            for (int i : map.keySet()) {
-                for (Map.Entry<Integer, Double> s : map.get(i).entrySet()) {
-                    System.out.println(i + " " + s.getValue() + " " + s.getKey());
-                }
-            }
-        }
     }
 
     /**
