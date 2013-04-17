@@ -193,12 +193,8 @@ public class AdductDetector {
                 if (adductMass < 0) {
                     if (adduct.isCluster()) {
                         double mz = correctMz(profileList.get(row).getMz(), adduct);
-                        for (Profile profile : profileList) {
-                            if (new ToleranceRange(mz, ppm).contains(profile.getMz())) {
-                                adductAndReferenceProperty = getProperties(adduct, row, col);
-                                break;
-                            }
-                        }
+                        if (new ToleranceRange(mz, ppm).contains(profileList.get(col).getMz()))
+                            adductAndReferenceProperty = getProperties(adduct, row, col);
                     } else adductAndReferenceProperty = getProperties(adduct, row, col);
 
                     if (adductAndReferenceProperty != null) {
@@ -210,18 +206,13 @@ public class AdductDetector {
                 } else if (adductMass > 0) {
                     if (adduct.isCluster()) {
                         double mz = correctMz(profileList.get(row).getMz(), adduct);
-                        for (Profile profile : profileList) {
-                            if (new ToleranceRange(mz, ppm).contains(profile.getMz())) {
-                                adductAndReferenceProperty = getProperties(adduct, col, row);
-                                break;
-                            }
-                        }
+                        if (new ToleranceRange(mz, ppm).contains(profileList.get(col).getMz()))
+                            adductAndReferenceProperty = getProperties(adduct, col, row);
                     } else adductAndReferenceProperty = getProperties(adduct, col, row);
 
                     if (adductAndReferenceProperty != null) {
                         profileList.get(row).setProperty(adductAndReferenceProperty[0]);
                         profileList.get(col).setProperty(adductAndReferenceProperty[1]);
-                        if (adduct.isCluster()) break;
                     }
                 }
             }

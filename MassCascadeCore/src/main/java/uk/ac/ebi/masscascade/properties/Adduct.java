@@ -22,6 +22,7 @@
 
 package uk.ac.ebi.masscascade.properties;
 
+import org.apache.commons.math3.util.FastMath;
 import uk.ac.ebi.masscascade.core.PropertyManager;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.Property;

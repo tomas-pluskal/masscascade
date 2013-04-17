@@ -63,7 +63,7 @@ public class PropertyManager {
      */
     public void setProperty(Property property) {
 
-        LinkedHashSet<Property> props = new LinkedHashSet<Property>();
+        LinkedHashSet<Property> props = new LinkedHashSet<>();
         props.add(property);
         properties.put(property.getType(), props);
     }
