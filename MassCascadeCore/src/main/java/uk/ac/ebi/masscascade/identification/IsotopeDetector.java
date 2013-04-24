@@ -22,10 +22,9 @@
 
 package uk.ac.ebi.masscascade.identification;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jgrapht.GraphPath;
-import org.jgrapht.Graphs;
-import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.alg.KShortestPaths;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedMultigraph;
@@ -38,14 +37,11 @@ import uk.ac.ebi.masscascade.properties.Isotope;
 import uk.ac.ebi.masscascade.utilities.comparator.ProfileMassComparator;
 import uk.ac.ebi.masscascade.utilities.math.LinearEquation;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
-import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -128,7 +124,8 @@ public class IsotopeDetector {
                 int chargeCount = 0;
                 for (Range protonDelta : protonDeltas) {
                     if (protonDelta.contains(profileDelta))
-                        Graphs.addEdgeWithVertices(graphs.get(chargeCount), profileList.get(row), profileList.get(col));
+                        JGraphTSync.addEdgeWithVertices(graphs.get(chargeCount), profileList.get(row),
+                                profileList.get(col));
                     chargeCount++;
                 }
             }
@@ -145,7 +142,7 @@ public class IsotopeDetector {
      */
     private List<Range> getProtonDeltas(int charge, double mz) {
 
-        List<Range> protonDeltas = new ArrayList<Range>();
+        List<Range> protonDeltas = new ArrayList<>();
         for (int curCharge = 1; curCharge <= charge; curCharge++) {
             double sigma = mz * massTolerance / Constants.PPM;
             protonDeltas.add(new ExtendableRange((ISOTOPE_DIFFERENCE - sigma) / curCharge,
@@ -160,11 +157,9 @@ public class IsotopeDetector {
      */
     private void adjustIsotopeLabels(List<DirectedMultigraph<Profile, DefaultEdge>> graphs) {
 
-        Set<Isotope> isoSet = new HashSet<Isotope>();
         for (DirectedMultigraph<Profile, DefaultEdge> graph : graphs) {
 
-            ConnectivityInspector connectivityChecker = new ConnectivityInspector(graph);
-            final List<Set<Profile>> connectedSets = connectivityChecker.connectedSets();
+            final List<Set<Profile>> connectedSets = JGraphTSync.getConnectedSets(graph);
 
             List<Profile> rootV = new ArrayList<Profile>();
             List<Profile> leafV = new ArrayList<Profile>();
@@ -179,14 +174,14 @@ public class IsotopeDetector {
 
                 for (final Profile root : rootV) {
                     KShortestPaths<Profile, DefaultEdge> pathFinder =
-                            new KShortestPaths<Profile, DefaultEdge>(graph, root, MAX_PATH);
+                            new KShortestPaths<>(graph, root, MAX_PATH);
                     for (final Profile leaf : leafV) {
                         List<GraphPath<Profile, DefaultEdge>> paths = pathFinder.getPaths(leaf);
                         if (paths == null) continue;
                         for (GraphPath<Profile, DefaultEdge> path : paths) {
                             int mainId = 0;
                             double maxIntensity = 0;
-                            final List<Profile> pathVertices = Graphs.getPathVertexList(path);
+                            final List<Profile> pathVertices = JGraphTSync.getPathVertexList(path);
                             Collections.sort(pathVertices, new ProfileMassComparator());
                             for (int i = 0; i < pathVertices.size(); i++) {
                                 vertex = pathVertices.get(i);
@@ -203,7 +198,7 @@ public class IsotopeDetector {
                             if (pathVertices.size() <= mainId + 1) continue;
 
                             Map<Integer, Isotope> idToIsotope = new HashMap<>();
-                            for (int j = mainId + 1, k = 1; j < pathVertices.size(); j++, k++) {
+                            for (int j = mainId + 1, k = 1; (j < pathVertices.size() && j < 4); j++, k++) {
                                 Profile isoVertex = pathVertices.get(j);
                                 double isoIntensityTheory = isotopeToEquation.get(k).getY(isoVertex.getMz() / BIN_SIZE);
 

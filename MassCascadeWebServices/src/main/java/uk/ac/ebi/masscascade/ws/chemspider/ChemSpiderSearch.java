@@ -26,6 +26,7 @@ import org.apache.log4j.Level;
 import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableWebservice;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
@@ -54,7 +55,7 @@ import java.util.concurrent.Future;
  * <li>Parameter <code> PROFILE CONTAINER </code>- The input profile container.</li>
  * </ul>
  */
-public class ChemSpiderSearch extends CallableTask {
+public class ChemSpiderSearch extends CallableWebservice {
 
     private String token;
     private Constants.ION_MODE ionMode;

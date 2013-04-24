@@ -38,8 +38,7 @@ public class ParameterMap {
      * Creates an empty parameter map.
      */
     public ParameterMap() {
-
-        parameters = new HashMap<Parameter, Object>();
+        parameters = new HashMap<>();
     }
 
     /**
@@ -48,7 +47,6 @@ public class ParameterMap {
      * @param parameters the parameter hash map
      */
     public ParameterMap(Map<Parameter, Object> parameters) {
-
         this.parameters = parameters;
     }
 
@@ -65,7 +63,9 @@ public class ParameterMap {
 
         if (instance.getClass().isInstance(parameter.getType())) {
             if (!(parameter.getType().equals(Double.class) && instance.getClass().equals(Integer.class)))
-                throw new MassCascadeException("Parameter value is not of type " + parameter.getType());
+                throw new MassCascadeException(
+                        "Parameter value " + parameter.name() + " is not of type " + parameter.getType() + ": " +
+                                instance.getClass().getName());
         }
 
         parameters.put(parameter, instance);
@@ -81,9 +81,13 @@ public class ParameterMap {
      */
     public <T> T get(Parameter parameter, Class<T> type) {
 
+        if (parameter == null) throw new MassCascadeException("Parameter is null");
+
         if (parameter.getType() != type) {
             if (!(type.equals(Double.class) && parameter.getType().equals(Integer.class)))
-                throw new MassCascadeException("Parameter value is not of type " + type);
+                throw new MassCascadeException(
+                        "Parameter value " + parameter.name() + " is not of type " + type + ": " + parameter.getType
+                                ().getName());
         }
 
         if (!parameters.containsKey(parameter)) throw new MassCascadeException(parameter.name() + " is not in the map");
@@ -98,7 +102,6 @@ public class ParameterMap {
      * @return if the parameter key is in the map
      */
     public boolean containsKey(Parameter parameter) {
-
         return parameters.containsKey(parameter);
     }
 
@@ -106,7 +109,6 @@ public class ParameterMap {
      * Creates and returns a copy of this object.
      */
     public ParameterMap clone() {
-
         return new ParameterMap(new HashMap(parameters));
     }
 }

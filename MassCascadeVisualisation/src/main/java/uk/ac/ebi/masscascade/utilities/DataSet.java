@@ -152,7 +152,6 @@ public class DataSet {
      * @return the x values
      */
     public final XYList getDataSet() {
-
         return xyList;
     }
 
@@ -163,7 +162,6 @@ public class DataSet {
      * @return the data point at position i
      */
     public final XYPoint get(int i) {
-
         return xyList.get(i);
     }
 
@@ -173,7 +171,6 @@ public class DataSet {
      * @return the x-axis label
      */
     public final String getxLabel() {
-
         return xLabel;
     }
 
@@ -183,7 +180,6 @@ public class DataSet {
      * @return the y-axis label
      */
     public final String getyLabel() {
-
         return yLabel;
     }
 
@@ -193,7 +189,6 @@ public class DataSet {
      * @return the data set title
      */
     public final String getTitle() {
-
         return title;
     }
 
@@ -203,7 +198,6 @@ public class DataSet {
      * @return the data set color
      */
     public final Color getColor() {
-
         return color;
     }
 
@@ -213,7 +207,6 @@ public class DataSet {
      * @return the data point annotations map
      */
     public final Map<XYPoint, String> getAnnotations() {
-
         return annotations;
     }
 
@@ -224,7 +217,6 @@ public class DataSet {
      * @return whether the data point is annotated
      */
     public final boolean hasAnnotation(XYPoint dataPoint) {
-
         return annotations.containsKey(dataPoint);
     }
 
@@ -235,7 +227,6 @@ public class DataSet {
      * @return the annotation of the target data point
      */
     public final String getAnnotation(XYPoint dataPoint) {
-
         return annotations.get(dataPoint);
     }
 }

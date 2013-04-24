@@ -102,6 +102,7 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      */
     public void addProfile(Profile profile) {
 
+        xyList.add(profile.getMzIntDp());
         profileMap.put(profile.getId(), profile);
         rtRange.extendRange(profile.getRetentionTime());
     }
@@ -125,8 +126,7 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      */
     public Profile getProfile(int profileId) {
 
-        if (profileMap.containsKey(profileId))
-            return profileMap.get(profileId);
+        if (profileMap.containsKey(profileId)) return profileMap.get(profileId);
         return null;
     }
 
@@ -204,5 +204,14 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
     @Override
     public Iterator<Profile> iterator() {
         return profileMap.values().iterator();
+    }
+
+    /**
+     * Returns the size of the spectrum, i.e., the number of profiles.
+     *
+     * @return the size
+     */
+    public int size() {
+        return profileMap.size();
     }
 }

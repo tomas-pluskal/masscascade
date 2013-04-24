@@ -49,8 +49,8 @@ public class ScanImpl implements Scan, Comparable<Scan> {
     private final double totalIonCurrent;
     private final Range mzRange;
     private final Constants.ION_MODE ionMode;
-    private final XYList xyList;
     private final XYList basePeak;
+    protected final XYList xyList;
 
     public ScanImpl() {
 

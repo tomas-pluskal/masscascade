@@ -20,24 +20,33 @@
  *   Stephan Beisken - initial API and implementation
  */
 
-package uk.ac.ebi.masscascade.interfaces;
+package uk.ac.ebi.masscascade.ws.massbank;
+
+import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
+
+import java.util.Comparator;
 
 /**
- * This is an index enumerating all available task classes that can run within the callable framework.
+ * Comparator for MassBank Result instances. The query score is used for comparison (descending order).
  */
-public interface Index {
+public class MassBankComparator implements Comparator<MassBankAPIStub.Result> {
 
     /**
-     * Returns the callable class.
-     *
-     * @return the callable class
+     * Compares two MassBank results by their score.
      */
-    Class<? extends Task> getCallableClass();
+    @Override
+    public int compare(MassBankAPIStub.Result result1, MassBankAPIStub.Result result2) {
 
-    /**
-     * Returns the abbreviated identifier.
-     *
-     * @return the identifier
-     */
-    String getIdentifier();
+        final int BEFORE = -1;
+        final int EQUAL = 0;
+        final int AFTER = 1;
+
+        double score1 = Double.parseDouble(result1.getScore());
+        double score2 = Double.parseDouble(result2.getScore());
+
+        if (score1 > score2) return BEFORE;
+        if (score1 < score2) return AFTER;
+
+        return EQUAL;
+    }
 }

@@ -143,7 +143,7 @@ public enum Parameter implements Option {
     OFFSET("Offset", 5),
     SHARPNESS("Sharpness", 1d),
     RESULTS("Max results", 50),
-    INSTRUMENTS("Instruments", ""),
+    INSTRUMENTS("Instruments", new ArrayList<String>()),
     CENTER("Center profiles", true),
     CODA("Chromatogram quality", 0.5),
     DURBIN("Durbin-Watson threshold", 0.5),
@@ -153,6 +153,8 @@ public enum Parameter implements Option {
     CORRELATION_THRESHOLD("Correlation threshold", 0.75),
     DERIVATIVE_THRESHOLD("Derivative threshold", 0.2),
     SG_LEVEL("SG Filter Level", 3),
+    SCORE("Minimum Score", 0.8),
+    MIN_PROFILES("Minimum no. of profiles", 3),
 
     /*
      * Obiwarp parameters.

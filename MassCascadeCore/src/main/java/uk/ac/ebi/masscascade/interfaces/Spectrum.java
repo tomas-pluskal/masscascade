@@ -82,4 +82,11 @@ public interface Spectrum extends Scan, Iterable<Profile> {
      * @param property the property to be set
      */
     void setProperty(Property property);
+
+    /**
+     * Returns the size of the spectrum, i.e., the number of profiles.
+     *
+     * @return the size
+     */
+    int size();
 }

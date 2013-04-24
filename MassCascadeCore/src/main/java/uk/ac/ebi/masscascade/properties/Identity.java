@@ -109,6 +109,15 @@ public class Identity implements Property {
     }
 
     /**
+     * Sets the notation.
+     *
+     * @param notation the notation
+     */
+    public void setNotation(String notation) {
+        this.notation = notation;
+    }
+
+    /**
      * Returns the property type.
      *
      * @return the property type

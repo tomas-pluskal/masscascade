@@ -27,6 +27,7 @@ import org.apache.log4j.Level;
 import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableWebservice;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
@@ -59,7 +60,7 @@ import java.util.concurrent.Future;
  * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input spectrum container.</li>
  * </ul>
  */
-public class MassBankSearch extends CallableTask {
+public class MassBankSearch extends CallableWebservice {
 
     private double ppm;
     private int cutoff;
@@ -101,7 +102,7 @@ public class MassBankSearch extends CallableTask {
         instruments = params.get(Parameter.INSTRUMENTS, (new ArrayList<String>()).getClass());
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         maxNumOfResults = params.get(Parameter.RESULTS, Integer.class);
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, FileSpectrumContainer.class);
+        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
     }
 
     /**
@@ -130,9 +131,9 @@ public class MassBankSearch extends CallableTask {
                 try {
                     outContainer.addSpectrum(search.get());
                 } catch (InterruptedException e) {
-                    LOGGER.log(Level.ERROR, e.getMessage());
+                    LOGGER.log(Level.ERROR, e);
                 } catch (ExecutionException e) {
-                    LOGGER.log(Level.ERROR, e.getMessage());
+                    LOGGER.log(Level.ERROR, e);
                 }
             }
 

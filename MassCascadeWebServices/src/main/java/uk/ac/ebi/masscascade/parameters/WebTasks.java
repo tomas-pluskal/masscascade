@@ -23,8 +23,10 @@
 package uk.ac.ebi.masscascade.parameters;
 
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.CallableWebservice;
 import uk.ac.ebi.masscascade.interfaces.Index;
 import uk.ac.ebi.masscascade.ws.chemspider.ChemSpiderSearch;
+import uk.ac.ebi.masscascade.ws.massbank.MassBankBatchSearch;
 import uk.ac.ebi.masscascade.ws.massbank.MassBankSearch;
 
 /**
@@ -33,9 +35,9 @@ import uk.ac.ebi.masscascade.ws.massbank.MassBankSearch;
 public enum WebTasks implements Index {
 
     CHEMSPIDER(ChemSpiderSearch.class, "DCS"),
-    MASSBANK(MassBankSearch.class, "DMB");
+    MASSBANK(MassBankBatchSearch.class, "DMB");
 
-    private final Class<? extends CallableTask> className;
+    private final Class<? extends CallableWebservice> className;
     private final String identifier;
 
     /**
@@ -44,7 +46,7 @@ public enum WebTasks implements Index {
      * @param className  the task class
      * @param identifier the abbreviated identifier
      */
-    private WebTasks(Class<? extends CallableTask> className, String identifier) {
+    private WebTasks(Class<? extends CallableWebservice> className, String identifier) {
 
         this.className = className;
         this.identifier = "-" + identifier;
@@ -55,7 +57,7 @@ public enum WebTasks implements Index {
      *
      * @return the callable task class
      */
-    public synchronized Class<? extends CallableTask> getCallableClass() {
+    public synchronized Class<? extends CallableWebservice> getCallableClass() {
         return className;
     }
 
@@ -66,5 +68,19 @@ public enum WebTasks implements Index {
      */
     public synchronized String getIdentifier() {
         return identifier;
+    }
+
+    /**
+     * Returns the corresponding enum for a task class.
+     *
+     * @param callableClass the task class
+     * @return the enum
+     */
+    public static WebTasks getEnumFor(Class<? extends CallableWebservice> callableClass) {
+
+        for (WebTasks x : WebTasks.values())
+            if (x.getCallableClass() == callableClass) return x;
+
+        return null;
     }
 }
