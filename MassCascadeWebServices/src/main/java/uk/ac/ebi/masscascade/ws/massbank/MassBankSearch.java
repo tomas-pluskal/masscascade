@@ -120,7 +120,7 @@ public class MassBankSearch extends CallableWebservice {
             stub = new MassBankAPIStub();
 
             ExecutorService executor = Executors.newFixedThreadPool(Constants.NTHREADS);
-            List<Future<Spectrum>> futureList = new ArrayList<Future<Spectrum>>();
+            List<Future<Spectrum>> futureList = new ArrayList<>();
 
             for (Spectrum ps : spectrumContainer) {
                 Callable<Spectrum> searcher = new SpectrumSearcher(ps);

@@ -144,6 +144,7 @@ public enum Parameter implements Option {
     SHARPNESS("Sharpness", 1d),
     RESULTS("Max results", 50),
     INSTRUMENTS("Instruments", new ArrayList<String>()),
+    DATABASES("Databases", new String[0]),
     CENTER("Center profiles", true),
     CODA("Chromatogram quality", 0.5),
     DURBIN("Durbin-Watson threshold", 0.5),

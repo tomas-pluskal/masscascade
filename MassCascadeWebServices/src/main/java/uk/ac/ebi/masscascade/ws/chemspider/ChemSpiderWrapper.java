@@ -151,7 +151,7 @@ public class ChemSpiderWrapper {
                     thisGetExtendedCompoundInfoArrayResponse.getGetExtendedCompoundInfoArrayResult()
                             .getExtendedCompoundInfo();
             for (int i = 0; i < thisExtendedCompoundInfo.length; i++) {
-                Map<String, String> thisCompoundExtendedCompoundInfoArrayOutput = new HashMap<String, String>();
+                Map<String, String> thisCompoundExtendedCompoundInfoArrayOutput = new HashMap<>();
                 thisCompoundExtendedCompoundInfoArrayOutput.put("CSID",
                         Integer.toString(thisExtendedCompoundInfo[i].getCSID()));
                 thisCompoundExtendedCompoundInfoArrayOutput.put("InChI", thisExtendedCompoundInfo[i].getInChI());

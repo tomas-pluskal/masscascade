@@ -36,7 +36,7 @@ public class ChemSpiderTest {
     /**
      * The ChemSpider token.
      */
-    private static final String TOKEN = "21c9de90-5a39-425a-ba56-b891530a3c7f";
+    private static final String TOKEN = "";
 
     /**
      * Tests the asynchronous ChemSpider web service. The <code> SearchByMass </code> service is used to retrieve
@@ -47,15 +47,24 @@ public class ChemSpiderTest {
     public void testMassAsync() {
 
         ChemSpiderWrapper wrapper = new ChemSpiderWrapper();
-        String[] databases = wrapper.getMassSpecAPIGetDatabasesResults();
+
+        String[] databases = new String[]{"ChEMBL", "Human Metabolome Database", "NIST", "NMRShiftDB",
+                                          "SDBS Spectral Database for Organic ", "Compounds",
+                                          "SMPDB Small Molecule Pathway Database", "WikiPathways", "ZINC", "ChEBI",
+                                          "PubChem"};
 
         String result = wrapper.getMassSpecAPISearchByMassAsyncResults(100.0, 0.001, databases, TOKEN);
-
-        String status = wrapper.getSearchGetAsyncSearchStatusResults(result, TOKEN);
-
+        System.out.println(result);
         int[] csids = wrapper.getSearchGetAsyncSearchResultResults(result, TOKEN);
+
+        if (csids == null) {
+            System.out.println("Empty");
+            return;
+        }
+
         Map<Integer, Map<String, String>> csidMap =
                 wrapper.getMassSpecAPIGetExtendedCompoundInfoArrayResults(csids, TOKEN);
+
         for (int csid : csidMap.keySet()) System.out.println(csid + " " + csidMap.get(csid).get("CommonName"));
     }
 }
