@@ -47,6 +47,7 @@ public enum Parameter implements Option {
     OUTPUT_DIRECTORY("Output directory", System.getProperty(Constants.JAVA_TMP)),
     WORKING_DIRECTORY("Working directory", System.getProperty(Constants.JAVA_TMP)),
     SECURITY_TOKEN("Security token", ""),
+    COLLISION_ENERGY("Collision energy", 30),
 
     /*
      * File parameters for the raw, profile, and spectrum entities.

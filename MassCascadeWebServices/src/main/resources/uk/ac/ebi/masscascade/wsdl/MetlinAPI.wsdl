@@ -1,0 +1,147 @@
+<?xml version="1.0"?>
+<wsdl:definitions
+        xmlns:tns="Metlin"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+        xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+        xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+        targetNamespace ="Metlin">
+    <wsdl:types>
+        <xsd:schema targetNamespace="Metlin">
+            <xsd:import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <xsd:import namespace="http://schemas.xmlsoap.org/wsdl/"/>
+            <xsd:complexType name="MassArray">
+                <xsd:complexContent>
+                    <xsd:restriction base="soapenc:Array">
+                        <xsd:attribute ref="soapenc:arrayType" wsdl:arrayType="xsd:float[]"/>
+                    </xsd:restriction>
+                </xsd:complexContent>
+            </xsd:complexType>
+            <xsd:complexType name="AdductArray">
+                <xsd:complexContent>
+                    <xsd:restriction base="soapenc:Array">
+                        <xsd:attribute ref="soapenc:arrayType" wsdl:arrayType="xsd:string[]"/>
+                    </xsd:restriction>
+                </xsd:complexContent>
+            </xsd:complexType>
+            <xsd:complexType name="IntensityArray">
+                <xsd:complexContent>
+                    <xsd:restriction base="soapenc:Array">
+                        <xsd:attribute ref="soapenc:arrayType" wsdl:arrayType="xsd:int[]"/>
+                    </xsd:restriction>
+                </xsd:complexContent>
+            </xsd:complexType>
+            <xsd:complexType name="MetaboliteSearchRequest">
+                <xsd:all>
+                    <xsd:element name="token" type="xsd:string"/>
+                    <xsd:element name="mass" type="tns:MassArray"/>
+                    <xsd:element name="adduct" type="tns:AdductArray"/>
+                    <xsd:element name="tolerance" type="xsd:float"/>
+                    <xsd:element name="tolunits" type="xsd:string"/>
+                </xsd:all>
+            </xsd:complexType>
+            <xsd:complexType name="SpectrumMatchRequest">
+                <xsd:all>
+                    <xsd:element name="token" type="xsd:string"/>
+                    <xsd:element name="mass" type="tns:MassArray"/>
+                    <xsd:element name="intensity" type="tns:IntensityArray"/>
+                    <xsd:element name="mode" type="xsd:string"/>
+                    <xsd:element name="collisionEnergy" type="xsd:int"/>
+                    <xsd:element name="toleranceMSMS" type="xsd:float"/>
+                    <xsd:element name="tolerancePrecursor" type="xsd:int"/>
+                    <xsd:element name="precursorMass" type="xsd:float"/>
+                </xsd:all>
+            </xsd:complexType>
+
+            <xsd:complexType name="LineInfo">
+                <xsd:all>
+                    <xsd:element name="molid" type="xsd:string"/>
+                    <xsd:element name="mass" type="xsd:string"/>
+                    <xsd:element name="name" type="xsd:string"/>
+                    <xsd:element name="formula" type="xsd:string"/>
+                </xsd:all>
+            </xsd:complexType>
+            <xsd:complexType name="SpectrumLineInfo">
+                <xsd:all>
+                    <xsd:element name="metlinID" type="xsd:string"/>
+                    <xsd:element name="name" type="xsd:string"/>
+                    <xsd:element name="metlinScore" type="xsd:string"/>
+                    <xsd:element name="precursor" type="xsd:string"/>
+                    <xsd:element name="precursorPPM" type="xsd:string"/>
+                    <xsd:element name="spectrumMatching" type="xsd:string"/>
+                </xsd:all>
+            </xsd:complexType>
+
+            <xsd:complexType name="singleSearchResult">
+                <xsd:complexContent>
+                    <xsd:restriction base="soapenc:Array">
+                        <xsd:attribute ref="soapenc:arrayType" wsdl:arrayType="tns:LineInfo"/>
+                    </xsd:restriction>
+                </xsd:complexContent>
+            </xsd:complexType>
+            <xsd:complexType name="SpectrumMatchResult">
+                <xsd:complexContent>
+                    <xsd:restriction base="soapenc:Array">
+                        <xsd:attribute ref="soapenc:arrayType" wsdl:arrayType="tns:spectrumLineInfo"/>
+                    </xsd:restriction>
+                </xsd:complexContent>
+            </xsd:complexType>
+
+            <xsd:complexType name="multiSearchResult">
+                <xsd:complexContent>
+                    <xsd:restriction base="soapenc:Array">
+                        <xsd:attribute ref="soapenc:arrayType" wsdl:arrayType="tns:singleSearchResult[]"/>
+                    </xsd:restriction>
+                </xsd:complexContent>
+            </xsd:complexType>
+        </xsd:schema>
+    </wsdl:types>
+    <wsdl:message name="MetaboliteSearchRequest">
+        <wsdl:part name="MetaboliteSearchRequest" type="tns:MetaboliteSearchRequest"/>
+    </wsdl:message>
+    <wsdl:message name="MetaboliteSearchResponse">
+        <wsdl:part name="result" type="tns:LineInfo"/>
+    </wsdl:message>
+    <wsdl:message name="SpectrumMatchRequest">
+        <wsdl:part name="SpectrumMatchRequest" type="tns:SpectrumMatchRequest"/>
+    </wsdl:message>
+    <wsdl:message name="SpectrumMatchResponse">
+        <wsdl:part name="result" type="tns:SpectrumMatchResult"/>
+    </wsdl:message>
+    <wsdl:portType name="MetlinPortType">
+        <wsdl:operation name="MetaboliteSearch">
+            <wsdl:input message="tns:MetaboliteSearchRequest"/>
+            <wsdl:output message="tns:MetaboliteSearchResponse"/>
+        </wsdl:operation>
+        <wsdl:operation name="SpectrumMatch">
+            <wsdl:input message="tns:SpectrumMatchRequest"/>
+            <wsdl:output message="tns:SpectrumMatchResponse"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="MetlinBinding" type="tns:MetlinPortType">
+        <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="MetaboliteSearch">
+            <soap:operation soapAction="SOAP/Metlin#MetaboliteSearch"/>
+            <wsdl:input>
+                <soap:body use="encoded" namespace="Metlin" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="encoded"  namespace="Metlin" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="SpectrumMatch">
+            <soap:operation soapAction="SOAP/Metlin#SpectrumMatch"/>
+            <wsdl:input>
+                <soap:body use="encoded" namespace="Metlin" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="encoded" namespace="Metlin" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="MetlinService">
+        <wsdl:port name="MetlinPort" binding="tns:MetlinBinding">
+            <soap:address location='http://metlin.scripps.edu/soap/soapserver2.php' />
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>
