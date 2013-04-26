@@ -26,6 +26,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.google.common.collect.TreeMultimap;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import uk.ac.ebi.masscascade.core.MsnManager;
 import uk.ac.ebi.masscascade.core.PropertyManager;
 import uk.ac.ebi.masscascade.core.chromatogram.BasePeakChromatogram;
 import uk.ac.ebi.masscascade.core.chromatogram.MassChromatogram;
@@ -147,6 +148,7 @@ public class FileManager implements RunManager, Serializable {
         kryo.register(TreeMultimap.class);
         kryo.register(LinkedHashMap.class);
         kryo.register(LinkedHashSet.class);
+        kryo.register(MsnManager.class);
     }
 
     /**

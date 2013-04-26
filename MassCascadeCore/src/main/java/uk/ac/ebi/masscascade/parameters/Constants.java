@@ -51,7 +51,7 @@ public class Constants {
      * MSn level.
      */
     public enum MSN {
-        MS1(1), MS2(2), MS3(3), MSn(4);
+        MS1(1), MS2(2), MS3(3), MS4(4), MSn(5);
 
         private int ms;
 
@@ -64,12 +64,10 @@ public class Constants {
         }
 
         public static MSN get(int value) {
-
             return MSN.valueOf("MS" + value);
         }
 
         public static MSN get(String value) {
-
             return MSN.valueOf("MS" + value);
         }
     }

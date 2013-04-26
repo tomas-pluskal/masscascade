@@ -49,6 +49,7 @@ import uk.ac.ebi.masscascade.interfaces.Index;
 import uk.ac.ebi.masscascade.io.MzTabWriter;
 import uk.ac.ebi.masscascade.io.PsiMzmlReader;
 import uk.ac.ebi.masscascade.io.XCaliburReader;
+import uk.ac.ebi.masscascade.msn.MSnBuilder;
 import uk.ac.ebi.masscascade.smoothing.RunningMedianSmoothing;
 import uk.ac.ebi.masscascade.smoothing.SavitzkyGolaySmoothing;
 import uk.ac.ebi.masscascade.tracebuilder.ProfileBuilder;
@@ -109,7 +110,10 @@ public enum CoreTasks implements Index {
 
     // profile selection
     DURBIN(DurbinWatsonFilter.class, "DW"),
-    CODA(CodaFilter.class, "CD");
+    CODA(CodaFilter.class, "CD"),
+
+    // MSn
+    MSN_COMPILER(MSnBuilder.class, "MSN");
 
     private final Class<? extends CallableTask> className;
     private final String identifier;

@@ -70,7 +70,7 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
 
         super(scanIndex, Constants.MSN.MS1, Constants.ION_MODE.IN_SILICO, xyList, rt, -1, 0, -1);
 
-        profileMap = new HashMap<Integer, Profile>();
+        profileMap = new HashMap<>();
         propertyManager = new PropertyManager();
         this.rtRange = rtRange;
     }
@@ -88,7 +88,7 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
 
         super(scanIndex, Constants.MSN.MS1, Constants.ION_MODE.IN_SILICO, xyList, rt, -1, 0, -1);
 
-        profileMap = new HashMap<Integer, Profile>();
+        profileMap = new HashMap();
         this.rtRange = rtRange;
         propertyManager = new PropertyManager();
 
@@ -194,6 +194,21 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      */
     public static Spectrum getEmptySpectrum() {
         return new PseudoSpectrum(-1, new XYList(), -1, new ExtendableRange());
+    }
+
+    /**
+     * Sets the spectrum's parent.
+     *
+     * @param scanId the parent scan id
+     * @param mz     the parent m/z
+     * @param charge the parent charge
+     */
+    @Override
+    public void setParent(int scanId, double mz, int charge) {
+
+        this.parentMz = mz;
+        this.parentScan = scanId;
+        this.parentCharge = charge;
     }
 
     /**

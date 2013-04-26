@@ -23,11 +23,13 @@
 package uk.ac.ebi.masscascade.interfaces;
 
 import uk.ac.ebi.masscascade.core.PropertyManager;
+import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -196,14 +198,45 @@ public interface Profile {
      *
      * @param msnScans a daughter scan index list
      */
-    void setMsnScans(Map<Integer, Set<Integer>> msnScans);
+    void setMsnScans(Map<Constants.MSN, Set<Integer>> msnScans);
 
     /**
      * Gets the daughter scan index list for this profile.
      *
      * @return the scan index list
      */
-    Map<Integer, Set<Integer>> getMsnScans();
+    Map<Constants.MSN, Set<Integer>> getMsnScans();
+
+    /**
+     * Returns whether the profile has MSn scan pointers.
+     *
+     * @return whether MSn scan pointers exist
+     */
+    public boolean hasMsnScans();
+
+    /**
+     * Adds a spectrum to a particular MSn level.
+     *
+     * @param msn      a MSn level
+     * @param spectrum a spectrum
+     */
+    public void addMsnSpectrum(Constants.MSN msn, Spectrum spectrum);
+
+    /**
+     * Whether the profile has MSn spectra.
+     *
+     * @param msn the msn level
+     * @return whether spectra for the MSn exist
+     */
+    public boolean hasMsnSpectra(Constants.MSN msn);
+
+    /**
+     * Returns the list of MSn spectra of a particular level.
+     *
+     * @param msn the msn level
+     * @return the list of MSn spectra
+     */
+    public List<Spectrum> getMsnSpectra(Constants.MSN msn);
 
     /**
      * Returns the absolute mz range.

@@ -25,12 +25,14 @@ package uk.ac.ebi.masscascade.core.profile;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.apache.log4j.Logger;
+import uk.ac.ebi.masscascade.core.MsnManager;
 import uk.ac.ebi.masscascade.core.PropertyManager;
 import uk.ac.ebi.masscascade.core.chromatogram.MassChromatogram;
 import uk.ac.ebi.masscascade.interfaces.Chromatogram;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Property;
 import uk.ac.ebi.masscascade.interfaces.Range;
+import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.properties.Label;
 import uk.ac.ebi.masscascade.utilities.math.MathUtils;
@@ -41,8 +43,7 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYZList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 import uk.ac.ebi.masscascade.utilities.xyz.YMinPoint;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,9 +62,9 @@ public class ProfileImpl implements Profile {
     private XYZList data;
     private double deviation;
 
-    private Map<Integer, Set<Integer>> msnScans;
     private Range mzRange;
 
+    private MsnManager msnManager;
     private PropertyManager propertyManager;
 
     /**
@@ -105,25 +106,24 @@ public class ProfileImpl implements Profile {
      * @param manager   the property manager
      */
     public ProfileImpl(int id, XYZPoint dataPoint, Range mzRange, PropertyManager manager) {
-        this(id, dataPoint, mzRange, manager, new HashMap<Integer, Set<Integer>>());
+        this(id, dataPoint, mzRange, manager, new MsnManager());
     }
 
     /**
      * Constructs a mass spectrometry profile.
      *
-     * @param id        the peak identifier
-     * @param dataPoint the rt-mz-intensity data point
-     * @param mzRange   the mz range
-     * @param manager   the property manager
-     * @param msnScans  the msn level to scan id map
+     * @param id         the peak identifier
+     * @param dataPoint  the rt-mz-intensity data point
+     * @param mzRange    the mz range
+     * @param manager    the property manager
+     * @param msnManager the msn manager
      */
-    public ProfileImpl(int id, XYZPoint dataPoint, Range mzRange, PropertyManager manager,
-            Map<Integer, Set<Integer>> msnScans) {
+    public ProfileImpl(int id, XYZPoint dataPoint, Range mzRange, PropertyManager manager, MsnManager msnManager) {
 
         this.id = id;
         this.mzRange = mzRange;
         this.propertyManager = manager;
-        this.msnScans = msnScans;
+        this.msnManager = msnManager;
         this.baseSignal = dataPoint;
 
         data = new XYZList();
@@ -146,7 +146,7 @@ public class ProfileImpl implements Profile {
     @Override
     public Profile copy() {
         XYZPoint dp = data.get(0);
-        return new ProfileImpl(id, dp, new ExtendableRange(dp.y), propertyManager, msnScans);
+        return new ProfileImpl(id, dp, new ExtendableRange(dp.y), propertyManager, msnManager);
     }
 
     /**
@@ -164,7 +164,7 @@ public class ProfileImpl implements Profile {
     public Profile copy(double rt) {
         XYZPoint dp = data.get(0);
         return new ProfileImpl(id, new XYZPoint(rt, dp.y, Constants.MIN_ABUNDANCE), new ExtendableRange(dp.y),
-                propertyManager, msnScans);
+                propertyManager, msnManager);
     }
 
     /**
@@ -472,8 +472,8 @@ public class ProfileImpl implements Profile {
      * @param msnScans a daughter scan index list
      */
     @Override
-    public void setMsnScans(Map<Integer, Set<Integer>> msnScans) {
-        this.msnScans = msnScans;
+    public void setMsnScans(Map<Constants.MSN, Set<Integer>> msnScans) {
+        msnManager.addMsnToScanIds(msnScans);
     }
 
     /**
@@ -482,8 +482,51 @@ public class ProfileImpl implements Profile {
      * @return the scan index list
      */
     @Override
-    public Map<Integer, Set<Integer>> getMsnScans() {
-        return msnScans;
+    public Map<Constants.MSN, Set<Integer>> getMsnScans() {
+        return msnManager.getMsnToScanIds();
+    }
+
+    /**
+     * Adds a spectrum to a particular MSn level.
+     *
+     * @param msn      a MSn level
+     * @param spectrum a spectrum
+     */
+    @Override
+    public void addMsnSpectrum(Constants.MSN msn, Spectrum spectrum) {
+        msnManager.addMsnSpectrum(msn, spectrum);
+    }
+
+    /**
+     * Whether the profile has MSn spectra.
+     *
+     * @param msn the msn level
+     * @return whether spectra for the MSn exist
+     */
+    @Override
+    public boolean hasMsnSpectra(Constants.MSN msn) {
+        return msnManager.getSpectra(msn).size() > 0;
+    }
+
+    /**
+     * Returns the list of MSn spectra of a particular level.
+     *
+     * @param msn the msn level
+     * @return the list of MSn spectra
+     */
+    @Override
+    public List<Spectrum> getMsnSpectra(Constants.MSN msn) {
+        return msnManager.getSpectra(msn);
+    }
+
+    /**
+     * Returns whether the profile has MSn scan pointers.
+     *
+     * @return whether MSn scan pointers exist
+     */
+    @Override
+    public boolean hasMsnScans() {
+        return msnManager.getMsnToScanIds().size() > 0;
     }
 
     /**

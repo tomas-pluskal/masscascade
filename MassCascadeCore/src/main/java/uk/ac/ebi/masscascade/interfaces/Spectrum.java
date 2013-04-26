@@ -63,6 +63,15 @@ public interface Spectrum extends Scan, Iterable<Profile> {
     Map<Integer, Profile> getProfileMap();
 
     /**
+     * Sets the spectrum's parent.
+     *
+     * @param scanId the parent scan id
+     * @param mz     the parent m/z
+     * @param charge the parent charge
+     */
+    public void setParent(int scanId, double mz, int charge);
+
+    /**
      * Returns the value of the selected property.
      *
      * @return the property value

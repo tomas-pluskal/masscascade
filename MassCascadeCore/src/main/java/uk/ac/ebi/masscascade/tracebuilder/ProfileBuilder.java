@@ -22,6 +22,7 @@
 
 package uk.ac.ebi.masscascade.tracebuilder;
 
+import org.apache.commons.math3.util.FastMath;
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
@@ -78,8 +79,8 @@ public class ProfileBuilder extends CallableTask {
     private double lastRt;
     private double currRt;
 
-    private final TreeSet<Trace> traces = new TreeSet<Trace>();
-    private final TreeSet<Trace> tracesExtended = new TreeSet<Trace>();
+    private final TreeSet<Trace> traces = new TreeSet<>();
+    private final TreeSet<Trace> tracesExtended = new TreeSet<>();
 
     /**
      * Constructs a profile builder task.
@@ -141,7 +142,7 @@ public class ProfileBuilder extends CallableTask {
         for (Scan scan : rawContainer) {
 
             currRt = scan.getRetentionTime();
-            if (lastRt == 0) lastRt = Math.max(0, currRt - 1);
+            if (lastRt == 0) lastRt = FastMath.max(0, currRt - 1);
 
             if (traces.isEmpty()) {
                 for (XYPoint dataPoint : scan.getData()) {
@@ -182,7 +183,7 @@ public class ProfileBuilder extends CallableTask {
             else if (traces.contains(signalTrace)) {
                 if (!tracesExtended.contains(signalTrace)) appendTrace(signalTrace, closestTrace);
                 // (3) signal m/z is in the map >> closest key
-            } else if (Math.abs(closestTrace.getAvg() - signal.x) <= Math.abs(closestTrace.getAvg() - nextSignal)) {
+            } else if (FastMath.abs(closestTrace.getAvg() - signal.x) <= FastMath.abs(closestTrace.getAvg() - nextSignal)) {
                 // check if the signal m/z is within the tolerance range and was not already extended
                 if (new ToleranceRange(closestTrace.getAvg(), ppm).contains(signal.x) && !tracesExtended.contains(
                         closestTrace)) appendTrace(signalTrace, closestTrace);
@@ -231,10 +232,10 @@ public class ProfileBuilder extends CallableTask {
 
         if (profile.getIntensity() >= minIntensity) {
 
-            Map<Integer, Set<Integer>> msnMap = new HashMap<>();
+            Map<Constants.MSN, Set<Integer>> msnMap = new HashMap<>();
             for (int key : trace.getMsnMap().keySet())
                 // Guava cannot be handled by Kryo
-                msnMap.put(key, new HashSet<>(trace.getMsnMap().get(key)));
+                msnMap.put(Constants.MSN.get(key + 2), new HashSet<>(trace.getMsnMap().get(key)));
             profile.setMsnScans(msnMap);
             profileContainer.addProfile(profile);
             globalProfileId++;
