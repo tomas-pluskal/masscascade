@@ -28,6 +28,7 @@ import uk.ac.ebi.masscascade.interfaces.Index;
 import uk.ac.ebi.masscascade.ws.chemspider.ChemSpiderSearch;
 import uk.ac.ebi.masscascade.ws.massbank.MassBankBatchSearch;
 import uk.ac.ebi.masscascade.ws.massbank.MassBankSearch;
+import uk.ac.ebi.masscascade.ws.metlin.MetlinSearch;
 
 /**
  * An index for web tasks. Callable tasks that implement web services are registered here and assigned an identifier.
@@ -35,7 +36,8 @@ import uk.ac.ebi.masscascade.ws.massbank.MassBankSearch;
 public enum WebTasks implements Index {
 
     CHEMSPIDER(ChemSpiderSearch.class, "DCS"),
-    MASSBANK(MassBankBatchSearch.class, "DMB");
+    MASSBANK(MassBankBatchSearch.class, "DMB"),
+    METLIN(MetlinSearch.class, "DMT");
 
     private final Class<? extends CallableWebservice> className;
     private final String identifier;

@@ -23,13 +23,17 @@
 package uk.ac.ebi.masscascade.ws.metlin;
 
 import org.apache.log4j.Level;
+import org.codehaus.jackson.map.ObjectMapper;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableWebservice;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
+import uk.ac.ebi.masscascade.properties.Identity;
+import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -38,14 +42,19 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
- * Web task to query Metlin, matching MSn spectra where possible. Metlin requires
+ * Web task to query Metlin, matching MS2 spectra where possible. Metlin requires
  * users to provide a token for certain web services which must be provided for the web task to work.
  * <ul>
  * <li>Parameter <code> MZ WINDOW PPM </code>- The m/z tolerance value for the precursor ions in ppm (1-100).</li>
  * <li>Parameter <code> MZ WINDOW AMU </code>- The m/z tolerance value for the MS2 signals in dalton (0.001-0.5).</li>
  * <li>Parameter <code> ION MODE </code>- The ion mode.</li>
+ * <li>Parameter <code> SCORE METLIN </code>- The minimum Metlin query score.</li>
  * <li>Parameter <code> COLLISION ENERGY </code>- The collision energy.</li>
  * <li>Parameter <code> SECURITY TOKEN </code>- The Metlin security token.</li>
  * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input spectrum container.</li>
@@ -53,13 +62,12 @@ import java.net.URL;
  */
 public class MetlinSearch extends CallableWebservice {
 
-    // #30 MS2 limit
-
     private String token;
     private String ionMode;
     private int collisionEnergy;
     private double ppmMS1;
     private double ppmMS2;
+    private int minScore;
     private SpectrumContainer spectrumContainer;
 
     /**
@@ -88,6 +96,7 @@ public class MetlinSearch extends CallableWebservice {
         ppmMS1 = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         ppmMS2 = params.get(Parameter.MZ_WINDOW_AMU, Double.class);
         token = params.get(Parameter.SECURITY_TOKEN, String.class);
+        minScore = params.get(Parameter.SCORE_METLIN, Integer.class);
         collisionEnergy = params.get(Parameter.COLLISION_ENERGY, Integer.class);
         spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
 
@@ -107,56 +116,110 @@ public class MetlinSearch extends CallableWebservice {
         SpectrumContainer outContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
                 spectrumContainer.getWorkingDirectory());
 
-        for (Profile profile : spectrumContainer.profileIterator()) {
-
-            queryMetlin(profile);
+        for (Spectrum spectrum : spectrumContainer) {
+            for (Profile profile : spectrum) {
+                if (profile.hasMsnSpectra(Constants.MSN.MS2)) queryMetlin(profile);
+            }
+            outContainer.addSpectrum(spectrum);
         }
 
+        outContainer.finaliseFile();
         return outContainer;
     }
 
     private void queryMetlin(Profile profile) {
 
-        String urlPrefix = "http://metlin.scripps.edu/REST/search/index.php?";
+        String urlPrefix = "http://metlin.scripps.edu/REST/match/index.php?";
         String urlToken = "token=" + token;
         String urlMz = "mass[]=";
         String urlIntensity = "intensity[]=";
         String urlMode = "mode=" + ionMode;
         String urlCollisionEnergy = "ce=" + collisionEnergy;
-        String urlPpmMs1 = "tolPrec=" + ppmMS1;
         String urlPpmMs2 = "tolMS=" + ppmMS2;
+        String urlPpmMs1 = "tolPrec=" + ppmMS1;
         String urlParent = "prec=";
 
         String delimiter = "&";
 
-        try {
-            URL url = new URL("");
+        List<Spectrum> msnSpectra = profile.getMsnSpectra(Constants.MSN.MS2);
+        for (Spectrum msnSpectrum : msnSpectra) {
 
-            // take note that special formatting is required for "+" signs
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setReadTimeout(10000);
-            conn.setConnectTimeout(15000);
-            conn.setRequestMethod("GET");
-            conn.setDoInput(true);
-            conn.setDoOutput(true);
-            OutputStream os = conn.getOutputStream();
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-            writer.close();
-            os.close();
+            StringBuilder urlBuilder = new StringBuilder();
+            urlBuilder.append(urlPrefix);
+            urlBuilder.append(token);
+            urlBuilder.append(delimiter);
 
-            conn.connect();
-            BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder sb = new StringBuilder();
-            String line = null;
+            StringBuilder mzBuilder = new StringBuilder();
+            StringBuilder intBuilder = new StringBuilder();
+            for (XYPoint dp : msnSpectrum.getData()) {
+                mzBuilder.append(urlMz);
+                mzBuilder.append(dp.x);
+                mzBuilder.append(delimiter);
 
-            while ((line = rd.readLine()) != null) {
-                sb.append(line + '\n');
+                intBuilder.append(urlIntensity);
+                intBuilder.append(dp.y);
+                intBuilder.append(delimiter);
             }
 
-            System.out.println(sb.toString());
+            urlBuilder.append(mzBuilder.toString());
+            urlBuilder.append(intBuilder.toString());
+            urlBuilder.append(urlMode);
+            urlBuilder.append(ionMode);
+            urlBuilder.append(delimiter);
+            urlBuilder.append(urlCollisionEnergy);
+            urlBuilder.append(collisionEnergy);
+            urlBuilder.append(delimiter);
+            urlBuilder.append(urlPpmMs2);
+            urlBuilder.append(ppmMS2);
+            urlBuilder.append(delimiter);
+            urlBuilder.append(urlPpmMs1);
+            urlBuilder.append(ppmMS1);
+            urlBuilder.append(delimiter);
+            urlBuilder.append(urlParent);
+            urlBuilder.append(msnSpectrum.getParentMz());
 
-        } catch (Exception exception) {
-            LOGGER.log(Level.ERROR, "Metlin query failed: " + exception);
+            try {
+                URL url = new URL(urlBuilder.toString());
+
+                LOGGER.log(Level.WARN, urlBuilder.toString());
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(60000);
+                conn.setConnectTimeout(15000);
+                conn.setRequestMethod("GET");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                writer.close();
+                os.close();
+
+                conn.connect();
+                BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = rd.readLine()) != null) sb.append(line + '\n');
+                line = sb.toString();
+
+                ObjectMapper mapper = new ObjectMapper();
+                ArrayList<ArrayList<LinkedHashMap<String, Object>>> metlin =
+                        mapper.readValue(line, new ArrayList<ArrayList<LinkedHashMap<String, Object>>>().getClass());
+
+                for (ArrayList<LinkedHashMap<String, Object>> metlinSpectrum : metlin) {
+                    Iterator<LinkedHashMap<String, Object>> iter = metlinSpectrum.iterator();
+                    int metlinId = (int) iter.next().get("value");
+                    String metlinName = (String) iter.next().get("value");
+                    double metlinScore = (int) iter.next().get("value");
+                    String metlinPrec = (String) iter.next().get("value");
+                    int metlinPrecPpm = (int) iter.next().get("value");
+
+                    if (metlinScore < minScore) continue;
+                    Identity identity = new Identity(metlinId + "", metlinName, "", metlinScore);
+                    profile.setProperty(identity);
+                }
+            } catch (Exception exception) {
+                LOGGER.log(Level.ERROR, "Metlin query failed: " + exception);
+            }
         }
     }
 }

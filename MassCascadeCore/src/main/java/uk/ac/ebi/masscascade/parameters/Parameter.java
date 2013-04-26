@@ -47,7 +47,7 @@ public enum Parameter implements Option {
     OUTPUT_DIRECTORY("Output directory", System.getProperty(Constants.JAVA_TMP)),
     WORKING_DIRECTORY("Working directory", System.getProperty(Constants.JAVA_TMP)),
     SECURITY_TOKEN("Security token", ""),
-    COLLISION_ENERGY("Collision energy", 30),
+    COLLISION_ENERGY("Collision energy", 20),
 
     /*
      * File parameters for the raw, profile, and spectrum entities.
@@ -156,6 +156,7 @@ public enum Parameter implements Option {
     DERIVATIVE_THRESHOLD("Derivative threshold", 0.2),
     SG_LEVEL("SG Filter Level", 3),
     SCORE("Minimum Score", 0.8),
+    SCORE_METLIN("Minimum Metlin Score", 80),
     MIN_PROFILES("Minimum no. of profiles", 3),
 
     /*

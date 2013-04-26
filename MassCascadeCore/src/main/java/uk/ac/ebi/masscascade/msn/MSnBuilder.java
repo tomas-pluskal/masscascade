@@ -201,6 +201,8 @@ public class MSnBuilder extends CallableTask {
             for (int i = 1; i < trace.size(); i++) msnProfile.addProfilePoint(xyzTrace.get(i));
             msnProfile.closeProfile(((XYZTrace) trace).get(trace.size() - 1).x + 1);
 
+            if (msnProfile.getIntensity() < minIntensity) continue;
+
             spectrumProfiles.add(msnProfile);
             spectrumData.add(msnProfile.getMzIntDp());
         }

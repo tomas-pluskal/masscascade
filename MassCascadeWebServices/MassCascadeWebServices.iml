@@ -78,6 +78,8 @@
     <orderEntry type="library" name="Maven: javax.ws.rs:jsr311-api:1.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.axis2:axis2-transport-http:1.6.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.0" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.jackson:jackson-mapper-asl:1.9.12" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.jackson:jackson-core-asl:1.9.12" level="project" />
   </component>
 </module>
 
