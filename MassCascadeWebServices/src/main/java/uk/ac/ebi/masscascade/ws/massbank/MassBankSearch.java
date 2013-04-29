@@ -26,7 +26,6 @@ import org.apache.axis2.AxisFault;
 import org.apache.log4j.Level;
 import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.CallableWebservice;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
@@ -55,6 +54,7 @@ import java.util.concurrent.Future;
  * <li>Parameter <code> MZ WINDOW PPM </code>- The m/z tolerance value in ppm.</li>
  * <li>Parameter <code> ION MODE </code>- The ion mode.</li>
  * <li>Parameter <code> RESULTS </code>- The max. number of retrieved results.</li>
+ * <li>Parameter <code> MS LEVEL </code>- The MSn level to be queried.</li>
  * <li>Parameter <code> INSTRUMENTS </code>- The instruments to be included in the query.</li>
  * <li>Parameter <code> MIN PROFILE INTENSITY </code>- The min. valid profile intensity.</li>
  * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input spectrum container.</li>
@@ -66,6 +66,7 @@ public class MassBankSearch extends CallableWebservice {
     private int cutoff;
     private int maxNumOfResults;
     private List<String> instruments;
+    private Constants.MSN msn;
     private Constants.ION_MODE ionMode;
 
     private MassBankAPIStub stub;
@@ -101,6 +102,7 @@ public class MassBankSearch extends CallableWebservice {
         ionMode = params.get(Parameter.ION_MODE, Constants.ION_MODE.class);
         instruments = params.get(Parameter.INSTRUMENTS, (new ArrayList<String>()).getClass());
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
+        msn = params.get(Parameter.MS_LEVEL, Constants.MSN.class);
         maxNumOfResults = params.get(Parameter.RESULTS, Integer.class);
         spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
     }
@@ -173,11 +175,27 @@ public class MassBankSearch extends CallableWebservice {
         @Override
         public Spectrum call() throws Exception {
 
+            if (msn == Constants.MSN.MS1) {
+                queryMSn(spectrum, null);
+            } else {
+                for (Profile profile : spectrum) {
+                    if (profile.hasMsnSpectra(msn)) {
+                        for (Spectrum msnSpectrumX : profile.getMsnSpectra(msn)) {
+                            queryMSn(msnSpectrumX, profile);
+                        }
+                    }
+                }
+            }
+            return spectrum;
+        }
+
+        private void queryMSn(Spectrum spectrum, Profile parent) throws Exception {
+
             String[] mzs = new String[spectrum.getProfileMap().size()];
             String[] ints = new String[spectrum.getProfileMap().size()];
 
             double[] intsVal = new double[spectrum.getProfileMap().size()];
-            TreeSet<Double> mzsOrder = new TreeSet<Double>();
+            TreeSet<Double> mzsOrder = new TreeSet<>();
 
             double max = Double.MIN_VALUE;
 
@@ -224,45 +242,51 @@ public class MassBankSearch extends CallableWebservice {
                     else if (ionMode.equals(Constants.ION_MODE.NEGATIVE))
                         mass = mass - Constants.PARTICLES.PROTON.getMass();
 
-                    Double closestValue = DataUtils.getClosestValue(mass, mzsOrder);
-                    if (closestValue != null && new ToleranceRange(mass, ppm).contains(closestValue)) {
-                        String iupacString = getIUPACNotation(id);
-                        Identity identity = new Identity(id, title, iupacString, score);
-                        for (Profile profile : spectrum) {
-                            if (profile.getMz() == closestValue) profile.setProperty(identity);
+                    if (parent == null) {
+                        Double closestValue = DataUtils.getClosestValue(mass, mzsOrder);
+                        if (closestValue != null && new ToleranceRange(mass, ppm).contains(closestValue)) {
+                            String iupacString = getIUPACNotation(id);
+                            Identity identity = new Identity(id, title, iupacString, score);
+                            for (Profile profile : spectrum) {
+                                if (profile.getMz() == closestValue) profile.setProperty(identity);
+                            }
+                        }
+                    } else {
+                        if (new ToleranceRange(parent.getMz(), ppm).contains(mass)) {
+                            String iupacString = getIUPACNotation(id);
+                            Identity identity = new Identity(id, title, iupacString, score);
+                            parent.setProperty(identity);
                         }
                     }
                 }
             }
-
-            return spectrum;
-        }
-    }
-
-    /**
-     * Retrieves the full record info and extracts the InChI.
-     *
-     * @param id the record id
-     * @return the inchi string
-     * @throws Exception if SOAP retrieval fails
-     */
-    private String getIUPACNotation(String id) throws Exception {
-
-        String iupacString = "";
-
-        MassBankAPIStub.GetRecordInfo rci = new MassBankAPIStub.GetRecordInfo();
-        rci.addIds(id);
-        MassBankAPIStub.GetRecordInfoResponse rciR = stub.getRecordInfo(rci);
-        String resString = rciR.get_return()[0].getInfo();
-
-        int iupacIndex = resString.indexOf(IUPAC);
-        if (iupacIndex != -1) {
-            iupacIndex = iupacIndex + IUPAC.length();
-            int iupacStop = resString.indexOf('\n', iupacIndex);
-            if (iupacStop == -1) iupacStop = resString.indexOf('\r', iupacIndex);
-            if (iupacStop != -1) iupacString = resString.substring(iupacIndex, iupacStop);
         }
 
-        return iupacString;
+        /**
+         * Retrieves the full record info and extracts the InChI.
+         *
+         * @param id the record id
+         * @return the inchi string
+         * @throws Exception if SOAP retrieval fails
+         */
+        private String getIUPACNotation(String id) throws Exception {
+
+            String iupacString = "";
+
+            MassBankAPIStub.GetRecordInfo rci = new MassBankAPIStub.GetRecordInfo();
+            rci.addIds(id);
+            MassBankAPIStub.GetRecordInfoResponse rciR = stub.getRecordInfo(rci);
+            String resString = rciR.get_return()[0].getInfo();
+
+            int iupacIndex = resString.indexOf(IUPAC);
+            if (iupacIndex != -1) {
+                iupacIndex = iupacIndex + IUPAC.length();
+                int iupacStop = resString.indexOf('\n', iupacIndex);
+                if (iupacStop == -1) iupacStop = resString.indexOf('\r', iupacIndex);
+                if (iupacStop != -1) iupacString = resString.substring(iupacIndex, iupacStop);
+            }
+
+            return iupacString;
+        }
     }
 }

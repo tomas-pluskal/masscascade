@@ -36,6 +36,7 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;

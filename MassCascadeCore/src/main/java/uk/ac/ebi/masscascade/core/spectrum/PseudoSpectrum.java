@@ -29,11 +29,14 @@ import uk.ac.ebi.masscascade.interfaces.Property;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.parameters.Constants;
+import uk.ac.ebi.masscascade.utilities.comparator.ProfileMassComparator;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -61,25 +64,7 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
     /**
      * Constructs a fully configured pseudo spectrum.
      *
-     * @param scanIndex the scan index
-     * @param xyList    the data set collection
-     * @param rtRange   the retention time range
-     * @param rt        the retention time
-     */
-    public PseudoSpectrum(int scanIndex, XYList xyList, double rt, Range rtRange) {
-
-        super(scanIndex, Constants.MSN.MS1, Constants.ION_MODE.IN_SILICO, xyList, rt, -1, 0, -1);
-
-        profileMap = new HashMap<>();
-        propertyManager = new PropertyManager();
-        this.rtRange = rtRange;
-    }
-
-    /**
-     * Constructs a fully configured pseudo spectrum.
-     *
      * @param scanIndex  the scan index
-     * @param xyList     the data set collection
      * @param rtRange    the retention time range
      * @param rt         the retention time
      * @param profileSet the profile set
@@ -102,7 +87,6 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      */
     public void addProfile(Profile profile) {
 
-        xyList.add(profile.getMzIntDp());
         profileMap.put(profile.getId(), profile);
         rtRange.extendRange(profile.getRetentionTime());
     }
@@ -114,7 +98,9 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      */
     public void addProfiles(Set<Profile> profiles) {
 
-        for (Profile peak : profiles)
+        List<Profile> profileList = new ArrayList<>(profiles);
+        Collections.sort(profileList, new ProfileMassComparator());
+        for (Profile peak : profileList)
             addProfile(peak);
     }
 
@@ -193,7 +179,7 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      * @return the spectrum
      */
     public static Spectrum getEmptySpectrum() {
-        return new PseudoSpectrum(-1, new XYList(), -1, new ExtendableRange());
+        return new PseudoSpectrum(-1, new XYList(), new ExtendableRange(), -1, new HashSet<Profile>());
     }
 
     /**

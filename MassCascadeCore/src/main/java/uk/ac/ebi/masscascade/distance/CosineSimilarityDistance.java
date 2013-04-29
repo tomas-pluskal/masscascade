@@ -41,6 +41,7 @@ import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -170,8 +171,9 @@ public class CosineSimilarityDistance extends CallableTask {
             XYList spectrumData = new XYList();
             spectrumData.add(profile.getMzIntDp());
             Range range = new ExtendableRange(profile.getRetentionTime(), profile.getRetentionTime());
-            Spectrum pseudoSpectrum = new PseudoSpectrum(index++, spectrumData, profile.getRetentionTime(), range);
-            pseudoSpectrum.addProfile(profile);
+            Set<Profile> pSet = new HashSet<>();
+            pSet.add(profile);
+            Spectrum pseudoSpectrum = new PseudoSpectrum(index++, spectrumData, range, profile.getRetentionTime(), pSet);
             spectrumContainer.addSpectrum(pseudoSpectrum);
         }
     }

@@ -100,7 +100,7 @@ public class IsotopeRemover extends CallableTask {
 
             rtRange = new ExtendableRange();
             xyList = new XYList();
-            profileSet = new HashSet<Profile>();
+            profileSet = new HashSet<>();
 
             for (Profile profile : ((PseudoSpectrum) spectrum).getProfileList()) {
                 if (profile.hasProperty(PropertyManager.TYPE.Isotope)) {

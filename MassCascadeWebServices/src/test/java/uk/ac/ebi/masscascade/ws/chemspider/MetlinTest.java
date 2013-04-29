@@ -22,11 +22,7 @@
 
 package uk.ac.ebi.masscascade.ws.chemspider;
 
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -36,16 +32,12 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.KeyStore;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class MetlinTest {
 
-    private static final String token = "GW8fXPSP9aCdsnVj";
+    private static final String token = "";
 
     @Test
     public void testMetlinMetabolite() throws Exception {
@@ -84,6 +76,8 @@ public class MetlinTest {
                         ".071&mass[]=42.034&mass[]=69.045&mass[]=123.043&mass[]=83.060&mass[]=109" +
                         ".036&intensity[]=10877&intensity[]=2221&intensity[]=644&intensity[]=351&intensity[]=350" +
                         "&intensity[]=318&intensity[]=234&mode=pos&ce=20&tolMS=0.5&tolPrec=100&prec=195.0877");
+
+        System.out.println(url.toString());
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setReadTimeout(60000);
