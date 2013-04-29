@@ -181,7 +181,9 @@ public class MassBankSearch extends CallableWebservice {
                 for (Profile profile : spectrum) {
                     if (profile.hasMsnSpectra(msn)) {
                         for (Spectrum msnSpectrumX : profile.getMsnSpectra(msn)) {
-                            queryMSn(msnSpectrumX, profile);
+                            int parentId = msnSpectrumX.getParentScan();
+                            if (profile.getId() == parentId) queryMSn(msnSpectrumX, profile);
+                            else queryMSn(msnSpectrumX, profile.getMsnSpectra(msn.up()).get(0).getProfile(parentId));
                         }
                     }
                 }

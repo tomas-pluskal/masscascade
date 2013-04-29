@@ -63,6 +63,10 @@ public class Constants {
             return ms;
         }
 
+        public MSN up() {
+            return this == MS1 ? MS1 : get(ms - 1);
+        }
+
         public static MSN get(int value) {
             return MSN.valueOf("MS" + value);
         }
