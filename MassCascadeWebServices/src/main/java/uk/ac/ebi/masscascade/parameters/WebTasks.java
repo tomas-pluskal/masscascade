@@ -25,6 +25,7 @@ package uk.ac.ebi.masscascade.parameters;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.CallableWebservice;
 import uk.ac.ebi.masscascade.interfaces.Index;
+import uk.ac.ebi.masscascade.interfaces.Task;
 import uk.ac.ebi.masscascade.ws.chemspider.ChemSpiderSearch;
 import uk.ac.ebi.masscascade.ws.massbank.MassBankBatchSearch;
 import uk.ac.ebi.masscascade.ws.massbank.MassBankSearch;
@@ -78,7 +79,7 @@ public enum WebTasks implements Index {
      * @param callableClass the task class
      * @return the enum
      */
-    public static WebTasks getEnumFor(Class<? extends CallableWebservice> callableClass) {
+    public static WebTasks getEnumFor(Class<? extends Task> callableClass) {
 
         for (WebTasks x : WebTasks.values())
             if (x.getCallableClass() == callableClass) return x;

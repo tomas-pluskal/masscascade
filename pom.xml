@@ -20,6 +20,7 @@
         <module>MassCascadeCore</module>
         <module>MassCascadeVisualisation</module>
         <module>MassCascadeWebServices</module>
+        <module>MassCascadeReference</module>
     </modules>
     <repositories>
         <repository>

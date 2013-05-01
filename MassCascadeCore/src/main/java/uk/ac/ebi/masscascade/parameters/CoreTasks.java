@@ -38,6 +38,7 @@ import uk.ac.ebi.masscascade.distance.CosineSimilarityDistance;
 import uk.ac.ebi.masscascade.filter.MzFilter;
 import uk.ac.ebi.masscascade.filter.ProfileFilter;
 import uk.ac.ebi.masscascade.filter.ScanFilter;
+import uk.ac.ebi.masscascade.filter.SpectrumFilter;
 import uk.ac.ebi.masscascade.gapfilling.SplineFilling;
 import uk.ac.ebi.masscascade.identification.AdductFinder;
 import uk.ac.ebi.masscascade.identification.IonFinder;
@@ -46,6 +47,7 @@ import uk.ac.ebi.masscascade.identification.IsotopeKeeper;
 import uk.ac.ebi.masscascade.identification.IsotopeRemover;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Index;
+import uk.ac.ebi.masscascade.interfaces.Task;
 import uk.ac.ebi.masscascade.io.MzTabWriter;
 import uk.ac.ebi.masscascade.io.PsiMzmlReader;
 import uk.ac.ebi.masscascade.io.XCaliburReader;
@@ -77,6 +79,7 @@ public enum CoreTasks implements Index {
     PROFILE_FILTER(ProfileFilter.class, "PF"),
     MASS_FILTER(MzFilter.class, "MF"),
     SCAN_FILTER(ScanFilter.class, "SF"),
+    SPECTRUM_FILTER(SpectrumFilter.class, "PSF"),
 
     // utilities
     FAST_DTW(FastDtwAlignment.class, "DTW"),
@@ -136,7 +139,6 @@ public enum CoreTasks implements Index {
      * @return the callable class
      */
     public synchronized Class<? extends CallableTask> getCallableClass() {
-
         return className;
     }
 
@@ -146,7 +148,6 @@ public enum CoreTasks implements Index {
      * @return the identifier
      */
     public synchronized String getIdentifier() {
-
         return identifier;
     }
 
@@ -156,7 +157,6 @@ public enum CoreTasks implements Index {
      * @return the placeholder
      */
     private static String PLACEHOLDER() {
-
         return "";
     }
 
@@ -166,7 +166,7 @@ public enum CoreTasks implements Index {
      * @param callableClass the task class
      * @return the enum
      */
-    public static CoreTasks getEnumFor(Class<? extends CallableTask> callableClass) {
+    public static CoreTasks getEnumFor(Class<? extends Task> callableClass) {
 
         for (CoreTasks x : CoreTasks.values())
             if (x.getCallableClass() == callableClass) return x;

@@ -104,4 +104,11 @@ public interface RunManager {
      * @return if successful
      */
     boolean removeFile();
+
+    /**
+     * Sets whether the current data file is temporary and should be deleted when the JVM exists.
+     *
+     * @param tmp the file state
+     */
+    public void setTmp(boolean tmp);
 }

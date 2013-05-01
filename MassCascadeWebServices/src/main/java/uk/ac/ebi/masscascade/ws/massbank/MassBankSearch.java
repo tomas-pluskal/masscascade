@@ -116,7 +116,8 @@ public class MassBankSearch extends CallableWebservice {
     public SpectrumContainer call() {
 
         String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer outContainer = new FileSpectrumContainer(id, spectrumContainer.getWorkingDirectory());
+        SpectrumContainer outContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
+                spectrumContainer.getWorkingDirectory());
 
         try {
             stub = new MassBankAPIStub();
@@ -248,7 +249,9 @@ public class MassBankSearch extends CallableWebservice {
                         Double closestValue = DataUtils.getClosestValue(mass, mzsOrder);
                         if (closestValue != null && new ToleranceRange(mass, ppm).contains(closestValue)) {
                             String iupacString = getIUPACNotation(id);
-                            Identity identity = new Identity(id, title, iupacString, score);
+                            Identity identity =
+                                    new Identity(id, title.split(";")[0], iupacString, score, "MassBank", msn.name(),
+                                            title);
                             for (Profile profile : spectrum) {
                                 if (profile.getMz() == closestValue) profile.setProperty(identity);
                             }
@@ -256,7 +259,9 @@ public class MassBankSearch extends CallableWebservice {
                     } else {
                         if (new ToleranceRange(parent.getMz(), ppm).contains(mass)) {
                             String iupacString = getIUPACNotation(id);
-                            Identity identity = new Identity(id, title, iupacString, score);
+                            Identity identity =
+                                    new Identity(id, title.split(";")[0], iupacString, score, "MassBank", msn.name(),
+                                            title);
                             parent.setProperty(identity);
                         }
                     }

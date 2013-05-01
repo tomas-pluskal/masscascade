@@ -22,6 +22,7 @@
 
 package uk.ac.ebi.masscascade.ws.metlin;
 
+import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Level;
 import org.codehaus.jackson.map.ObjectMapper;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
@@ -239,8 +240,6 @@ public class MetlinSearch extends CallableWebservice {
                 try {
                     URL url = new URL(urlBuilder.toString());
 
-                    LOGGER.log(Level.WARN, urlBuilder.toString());
-
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setReadTimeout(120000);
                     conn.setConnectTimeout(120000);
@@ -268,12 +267,13 @@ public class MetlinSearch extends CallableWebservice {
                         int metlinId = (Integer) iter.next().get("value");
                         String metlinName = (String) iter.next().get("value");
                         double metlinScore = Integer.parseInt((String) iter.next().get("value"));
+                        metlinScore = FastMath.round(metlinScore * 10);
                         String metlinPrec = (String) iter.next().get("value");
                         int metlinPrecPpm = (Integer) iter.next().get("value");
 
                         if (metlinScore < minScore) continue;
-                        Identity identity = new Identity(metlinId + "", metlinName, "", metlinScore);
-                        System.out.println("Annotated with: " + metlinName + " " + profile.getId());
+                        Identity identity = new Identity(metlinId + "", metlinName, "", metlinScore, "Metlin",
+                                Constants.MSN.MS2.name(), "");
                         profile.setProperty(identity);
                     }
                 } catch (Exception exception) {

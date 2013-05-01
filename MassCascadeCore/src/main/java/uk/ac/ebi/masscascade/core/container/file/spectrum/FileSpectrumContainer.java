@@ -70,8 +70,8 @@ public class FileSpectrumContainer extends FileContainer implements SpectrumCont
     public FileSpectrumContainer(String id, String workingDirectory) {
 
         this.id = id;
-        spectraMap = new LinkedHashMap<Integer, Long>();
-        basePeaks = new ArrayList<XYPoint>();
+        spectraMap = new LinkedHashMap<>();
+        basePeaks = new ArrayList<>();
 
         fileManager = new FileManager(workingDirectory);
         fileManager.openFile();
@@ -87,8 +87,8 @@ public class FileSpectrumContainer extends FileContainer implements SpectrumCont
     public FileSpectrumContainer(String id, String dataFile, Collection<Spectrum> spectrumSet) {
 
         this.id = id;
-        spectraMap = new LinkedHashMap<Integer, Long>();
-        basePeaks = new ArrayList<XYPoint>();
+        spectraMap = new LinkedHashMap<>();
+        basePeaks = new ArrayList<>();
 
         fileManager = new FileManager(new File(dataFile));
         fileManager.openFile();
@@ -210,6 +210,8 @@ public class FileSpectrumContainer extends FileContainer implements SpectrumCont
      */
     @Override
     public void finaliseFile() {
+
+        fileManager.setTmp(false);
         fileManager.closeFile();
     }
 

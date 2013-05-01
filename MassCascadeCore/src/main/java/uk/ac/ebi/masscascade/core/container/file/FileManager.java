@@ -57,6 +57,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -74,6 +75,7 @@ public class FileManager implements RunManager, Serializable {
     private static final long serialVersionUID = -5655253365433590239L;
 
     private File dataFile;
+    private boolean tmp;
     private RandomAccessFile randomAccessFile;
     private Kryo kryo;
 
@@ -84,8 +86,24 @@ public class FileManager implements RunManager, Serializable {
      */
     public FileManager(String workingDirectory) {
 
+        tmp = true;
         try {
             dataFile = File.createTempFile("masscascade_", ".tmp", new File(workingDirectory));
+
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+
+                public void run() {
+                    if (tmp) {
+                        try {
+                            if (randomAccessFile != null) randomAccessFile.close();
+                            boolean deleted = dataFile.delete();
+                            LOGGER.log(Level.WARN, "Deleted tmp file: " + dataFile.getName() + " -> " + deleted);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
         } catch (IOException exception) {
             LOGGER.log(Level.ERROR, "Tmp file could could not be opened: " + exception.getMessage());
         }
@@ -156,6 +174,7 @@ public class FileManager implements RunManager, Serializable {
      *
      * @return is success
      */
+    @Override
     public void openFile() throws MassCascadeException {
 
         try {
@@ -185,6 +204,7 @@ public class FileManager implements RunManager, Serializable {
      * @param object the object for serialization
      * @return the pointer
      */
+    @Override
     public long write(Object object) {
 
         long start = -1L;
@@ -212,6 +232,7 @@ public class FileManager implements RunManager, Serializable {
      * @param start the object pointer
      * @return the object
      */
+    @Override
     public synchronized <T> T read(long start, Class<T> objectClass) {
 
         if (start == -1) return null;
@@ -241,6 +262,7 @@ public class FileManager implements RunManager, Serializable {
      * @param startPositions scan pointers
      * @return the list of scans
      */
+    @Override
     public List<Object> read(Collection<Long> startPositions, Class objectClass) {
 
         List<Object> objectList = new ArrayList<Object>();
@@ -253,6 +275,7 @@ public class FileManager implements RunManager, Serializable {
      *
      * @return the file name
      */
+    @Override
     public String getFileName() {
         return dataFile.getName();
     }
@@ -262,6 +285,7 @@ public class FileManager implements RunManager, Serializable {
      *
      * @return the absolute file name
      */
+    @Override
     public String getAbsoluteFileName() {
         return dataFile.getAbsolutePath();
     }
@@ -271,6 +295,7 @@ public class FileManager implements RunManager, Serializable {
      *
      * @return the working directory
      */
+    @Override
     public String getWorkingDirectory() {
 
         String absPath = dataFile.getAbsolutePath();
@@ -282,6 +307,7 @@ public class FileManager implements RunManager, Serializable {
      *
      * @return the dta file
      */
+    @Override
     public File getDataFile() {
         return dataFile;
     }
@@ -291,7 +317,18 @@ public class FileManager implements RunManager, Serializable {
      *
      * @return if successful
      */
+    @Override
     public boolean removeFile() {
         return dataFile.delete();
+    }
+
+    /**
+     * Sets whether the current data file is temporary and should be deleted when the JVM exists.
+     *
+     * @param tmp the file state
+     */
+    @Override
+    public void setTmp(boolean tmp) {
+        this.tmp = tmp;
     }
 }

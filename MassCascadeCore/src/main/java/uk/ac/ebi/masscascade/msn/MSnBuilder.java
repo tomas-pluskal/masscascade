@@ -70,6 +70,7 @@ public class MSnBuilder extends CallableTask {
     private RawContainer rawContainer;
     private SpectrumContainer spectrumContainer;
 
+    private int globalMsnId = 1;
     private final TreeMap<Trace, Boolean> traceToExtended = new TreeMap<>();
 
     /**
@@ -189,7 +190,6 @@ public class MSnBuilder extends CallableTask {
         Set<Profile> spectrumProfiles = new HashSet<>();
         XYList spectrumData = new XYList();
 
-        int id = 1;
         int totalMsnScans = profile.getMsnScans().get(msn).size();
         for (Trace trace : traceToExtended.keySet()) {
             if (trace.size() - 1 != totalMsnScans) continue;
@@ -197,7 +197,7 @@ public class MSnBuilder extends CallableTask {
             XYZTrace xyzTrace = (XYZTrace) trace;
 
             Range mzRange = new ExtendableRange(xyzTrace.get(0).y);
-            Profile msnProfile = new ProfileImpl(id++, xyzTrace.get(0), mzRange, profile.getPropertyManager());
+            Profile msnProfile = new ProfileImpl(globalMsnId++, xyzTrace.get(0), mzRange, profile.getPropertyManager());
             for (int i = 1; i < trace.size(); i++) msnProfile.addProfilePoint(xyzTrace.get(i));
             msnProfile.closeProfile(((XYZTrace) trace).get(trace.size() - 1).x + 1);
 

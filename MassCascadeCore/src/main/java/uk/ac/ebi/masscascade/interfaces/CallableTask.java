@@ -27,6 +27,8 @@ import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.parameters.CoreTasks;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 
+import java.io.File;
+
 /**
  * An abstract implementation of a callable task class. The stub instantiates the logging facility and retrieves the
  * task identifier.

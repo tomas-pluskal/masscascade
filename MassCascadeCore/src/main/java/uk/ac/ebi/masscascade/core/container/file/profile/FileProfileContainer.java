@@ -127,6 +127,7 @@ public class FileProfileContainer extends FileContainer implements ProfileContai
     @Override
     public void finaliseFile() {
 
+        fileManager.setTmp(false);
         fileManager.closeFile();
     }
 

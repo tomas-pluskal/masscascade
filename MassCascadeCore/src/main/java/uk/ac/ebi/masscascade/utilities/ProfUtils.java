@@ -32,6 +32,7 @@ import uk.ac.ebi.masscascade.properties.Identity;
 import uk.ac.ebi.masscascade.properties.Isotope;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -123,5 +124,38 @@ public class ProfUtils {
             label = label.substring(0, label.lastIndexOf(Constants.SEPARATOR));
 
         return label;
+    }
+
+    /**
+     * Groups a set of identities by name.
+     *
+     * @param properties the set of identities
+     * @return the grouped list
+     */
+    public static List<Identity> getGroupedIdentities(Set<Property> properties) {
+
+        Map<String, Identity> nameToIdentity = new HashMap<>();
+
+        for (Property property : properties) {
+            if (!(property instanceof Identity)) continue;
+            Identity identity = (Identity) property;
+
+            String name = identity.getName();
+            if (nameToIdentity.containsKey(name)) {
+                Identity existingIdentity = nameToIdentity.get(name);
+
+                String id = existingIdentity.getId() + Constants.DELIMITER + identity.getId();
+                if (existingIdentity.getScore() < identity.getScore()) identity =
+                        new Identity(id, name, identity.getSource(), identity.getScore(), identity.getSource(),
+                                identity.getEvidence(), identity.getComments());
+                else identity = new Identity(id, name, existingIdentity.getSource(), existingIdentity.getScore(),
+                        existingIdentity.getSource(), existingIdentity.getEvidence(), existingIdentity.getComments());
+                nameToIdentity.put(identity.getName(), identity);
+            } else {
+                nameToIdentity.put(identity.getName(), identity);
+            }
+        }
+
+        return new ArrayList<>(nameToIdentity.values());
     }
 }

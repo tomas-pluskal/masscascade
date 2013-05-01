@@ -25,6 +25,7 @@ package uk.ac.ebi.masscascade.interfaces;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 
+import java.io.File;
 import java.util.concurrent.Callable;
 
 /**

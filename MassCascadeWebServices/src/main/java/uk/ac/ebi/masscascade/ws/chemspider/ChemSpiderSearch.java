@@ -25,6 +25,7 @@ package uk.ac.ebi.masscascade.ws.chemspider;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Ints;
+import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Level;
 import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
@@ -157,8 +158,9 @@ public class ChemSpiderSearch extends CallableWebservice {
                         double mass = profile.getMz();
                         if (ionMode == Constants.ION_MODE.POSITIVE) mass -= Constants.PARTICLES.PROTON.getMass();
                         else if (ionMode == Constants.ION_MODE.NEGATIVE) mass += Constants.PARTICLES.PROTON.getMass();
-                        double score = Math.abs((mass - identMass) * Constants.PPM / mass);
-                        Identity identity = new Identity(ident, name, notation, score);
+                        double score = FastMath.abs((mass - identMass) * Constants.PPM / mass);
+                        score = FastMath.round(-0.001 * score + 1000);
+                        Identity identity = new Identity(ident, name, notation, score, "ChemSpider", "m/z", "");
 
                         if (inchis.contains(notation)) continue;
 

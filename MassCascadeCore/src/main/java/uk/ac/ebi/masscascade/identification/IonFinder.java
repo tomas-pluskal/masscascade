@@ -22,6 +22,7 @@
 
 package uk.ac.ebi.masscascade.identification;
 
+import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Level;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
@@ -167,8 +168,9 @@ public class IonFinder extends CallableTask {
 
                 closestIon = DataUtils.getClosestKey(mz, ionMzs);
                 if (closestIon != null && new ToleranceRange(mz, ppm).contains(closestIon)) {
-                    double score = Math.abs(mz - closestIon) * Constants.PPM / mz;
-                    Identity identity = new Identity("", ionMzs.get(closestIon), "", score);
+                    double score = FastMath.abs(mz - closestIon) * Constants.PPM / mz;
+                    score = FastMath.round(-0.001 * score + 1000);
+                    Identity identity = new Identity("", ionMzs.get(closestIon), "", score, "IonFinder", "m/z", "");
                     profile.setProperty(identity);
                 }
             }

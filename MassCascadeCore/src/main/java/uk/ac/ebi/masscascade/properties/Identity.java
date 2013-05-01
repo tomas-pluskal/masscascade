@@ -35,6 +35,9 @@ public class Identity implements Property {
     private String name;
     private String notation;
     private double score;
+    private String source;
+    private String evidence;
+    private String comments;
 
     /**
      * Constructor for serialization.
@@ -44,7 +47,10 @@ public class Identity implements Property {
         id = "";
         name = "";
         notation = "";
-        score = -1;
+        score = 0;
+        source = "";
+        comments = "";
+        evidence = "";
     }
 
     /**
@@ -54,13 +60,20 @@ public class Identity implements Property {
      * @param name     the name
      * @param notation the notation
      * @param score    the score
+     * @param source   the source
+     * @param evidence the evidence
+     * @param comments the comments
      */
-    public Identity(String id, String name, String notation, double score) {
+    public Identity(String id, String name, String notation, double score, String source, String evidence,
+            String comments) {
 
         this.id = id;
         this.name = name;
         this.notation = notation;
         this.score = score;
+        this.source = source;
+        this.comments = comments;
+        this.evidence = evidence;
     }
 
     /**
@@ -109,12 +122,48 @@ public class Identity implements Property {
     }
 
     /**
+     * Returns the score.
+     *
+     * @return the score
+     */
+    public double getScore() {
+        return score;
+    }
+
+    /**
      * Sets the notation.
      *
      * @param notation the notation
      */
     public void setNotation(String notation) {
         this.notation = notation;
+    }
+
+    /**
+     * Returns the source.
+     *
+     * @return the source
+     */
+    public String getSource() {
+        return source;
+    }
+
+    /**
+     * Returns the comment string.
+     *
+     * @return the comment string
+     */
+    public String getComments() {
+        return comments;
+    }
+
+    /**
+     * Returns the evidence string.
+     *
+     * @return the evidence string
+     */
+    public String getEvidence() {
+        return evidence;
     }
 
     /**

@@ -217,6 +217,7 @@ public class FileRawContainer extends FileContainer implements RawContainer {
         ticData = null;
         basePeakData = null;
 
+        fileManager.setTmp(false);
         fileManager.closeFile();
     }
 
