@@ -33,6 +33,7 @@ import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Property;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.properties.Label;
 import uk.ac.ebi.masscascade.utilities.math.MathUtils;
@@ -43,6 +44,8 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYZList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 import uk.ac.ebi.masscascade.utilities.xyz.YMinPoint;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -484,6 +487,49 @@ public class ProfileImpl implements Profile {
     @Override
     public Map<Constants.MSN, Set<Integer>> getMsnScans() {
         return msnManager.getMsnToScanIds();
+    }
+
+    /**
+     * Gets the daughter scan index list for this profile specific for the given time range.
+     *
+     * @param container the raw data container
+     * @param timeRange the time range
+     * @return the scan index list
+     */
+    @Override
+    public Map<Constants.MSN, Set<Integer>> getMsnScans(RawContainer container, Range timeRange) {
+
+        Map<Constants.MSN, Set<Integer>> msnToScanIds = msnManager.getMsnToScanIds();
+        if (msnToScanIds.isEmpty()) return msnToScanIds;
+
+        Map<Constants.MSN, Set<Integer>> resultMap = new HashMap<>();
+        Set<Integer> resultSet = new HashSet<>();
+        for (Integer scanId : msnToScanIds.get(Constants.MSN.MS2)) {
+            double scanRt = container.getScan(scanId).getRetentionTime();
+            if (scanRt >= timeRange.getLowerBounds() - 2 && scanRt <= timeRange.getUpperBounds() + 2)
+                resultSet.add(scanId);
+        }
+        resultMap.put(Constants.MSN.MS2, resultSet);
+
+        recoverMSn(msnToScanIds, resultMap, Constants.MSN.MS3);
+
+        return resultMap;
+    }
+
+    private void recoverMSn(Map<Constants.MSN, Set<Integer>> oldMap, Map<Constants.MSN, Set<Integer>> newMap,
+            Constants.MSN msn) {
+
+        if (oldMap.containsKey(msn)) {
+            Set<Integer> resultSet = new HashSet<>();
+            for (int parentScanId : oldMap.get(msn)) {
+                if (newMap.get(msn.up()).contains(parentScanId)) resultSet.add(parentScanId);
+            }
+            if (!resultSet.isEmpty()) {
+                newMap.put(msn, resultSet);
+                recoverMSn(oldMap, newMap, msn.down());
+            }
+        }
+        return;
     }
 
     /**

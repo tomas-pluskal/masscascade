@@ -26,7 +26,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import uk.ac.ebi.masscascade.interfaces.Trace;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 

@@ -23,6 +23,7 @@
 package uk.ac.ebi.masscascade.interfaces;
 
 import uk.ac.ebi.masscascade.core.PropertyManager;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
@@ -206,6 +207,15 @@ public interface Profile {
      * @return the scan index list
      */
     Map<Constants.MSN, Set<Integer>> getMsnScans();
+
+    /**
+     * Gets the daughter scan index list for this profile specific for the given time range.
+     *
+     * @param container the raw data container
+     * @param timeRange the time range
+     * @return the scan index list
+     */
+    Map<Constants.MSN, Set<Integer>> getMsnScans(RawContainer container, Range timeRange);
 
     /**
      * Returns whether the profile has MSn scan pointers.

@@ -22,13 +22,13 @@
 
 package uk.ac.ebi.masscascade.distance;
 
-import org.jgrapht.GraphHelper;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
+import uk.ac.ebi.masscascade.identification.JGraphTSync;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Range;
@@ -138,7 +138,7 @@ public class CosineSimilarityDistance extends CallableTask {
 
                 vectorDistance = cosineSimilarity.getDistance(rowData, colData);
                 if (vectorDistance >= threshold)
-                    GraphHelper.addEdgeWithVertices(graph, profileList.get(row), profileList.get(column));
+                    JGraphTSync.addEdgeWithVertices(graph, profileList.get(row), profileList.get(column));
             }
         }
 
@@ -173,7 +173,8 @@ public class CosineSimilarityDistance extends CallableTask {
             Range range = new ExtendableRange(profile.getRetentionTime(), profile.getRetentionTime());
             Set<Profile> pSet = new HashSet<>();
             pSet.add(profile);
-            Spectrum pseudoSpectrum = new PseudoSpectrum(index++, spectrumData, range, profile.getRetentionTime(), pSet);
+            Spectrum pseudoSpectrum =
+                    new PseudoSpectrum(index++, spectrumData, range, profile.getRetentionTime(), pSet);
             spectrumContainer.addSpectrum(pseudoSpectrum);
         }
     }

@@ -29,6 +29,7 @@ import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -54,6 +55,7 @@ import java.util.TreeSet;
  * <ul>
  * <li>Parameter <code> SCAN WINDOW </code>- The number of scans defining the time window.</li>
  * <li>Parameter <code> CENTER </code>- If found peaks should be centered around their apex.</li>
+ * <li>Parameter <code> RAW FILE </code>- The input raw container.</li>
  * <li>Parameter <code> PROFILE FILE </code>- The input profile container.</li>
  * </ul>
  */
@@ -69,6 +71,7 @@ public class BiehmanDeconvolution extends CallableTask {
 
     private int noiseFactor;
     private ProfileContainer profileContainer;
+    private RawContainer rawContainer;
     private NoiseEstimation noiseEstimation;
 
     /**
@@ -96,6 +99,7 @@ public class BiehmanDeconvolution extends CallableTask {
         scanWindow = (params.get(Parameter.SCAN_WINDOW, Integer.class)) / 2;
         center = params.get(Parameter.CENTER, Boolean.class);
         noiseFactor = params.get(Parameter.NOISE_FACTOR, Integer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
         profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
 
         noiseEstimation = new NoiseEstimation();
@@ -202,7 +206,7 @@ public class BiehmanDeconvolution extends CallableTask {
             Profile deconProfile =
                     center ? buildCenteredProfile(profile, xicData, apex, window) : buildProfile(profile, xicData,
                             window);
-            deconProfile.setMsnScans(profile.getMsnScans());
+            deconProfile.setMsnScans(profile.getMsnScans(rawContainer, deconProfile.getRtRange()));
             profiles.add(deconProfile);
         }
 

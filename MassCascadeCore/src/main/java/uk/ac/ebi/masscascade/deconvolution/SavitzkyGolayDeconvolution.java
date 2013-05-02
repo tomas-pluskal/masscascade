@@ -28,6 +28,7 @@ import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -49,6 +50,7 @@ import java.util.List;
  * <li>Parameter <code> SCAN WINDOW </code>- The number of scans defining the time window.</li>
  * <li>Parameter <code> MIN PROFILE INTENSITY </code>- The minimum intensity of the deconvoluted profiles.</li>
  * <li>Parameter <code> DERIVATIVE THRESHOLD </code>- The minimum intensity of the 2nd derivative.</li>
+ * <li>Parameter <code> RAW FILE </code>- The input raw container.</li>
  * <li>Parameter <code> PROFILE FILE </code>- The input profile container.</li>
  * </ul>
  */
@@ -61,6 +63,7 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
     private int profileIndex;
 
     private ProfileContainer profileContainer;
+    private RawContainer rawContainer;
 
     private static final double RAD_ANGLE_IV = -2.0 * FastMath.PI / 180.0;
 
@@ -90,6 +93,7 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
         intensity = params.get(Parameter.MIN_PROFILE_INTENSITY, Double.class);
         intensityThreshold = params.get(Parameter.DERIVATIVE_THRESHOLD, Double.class);
         sgFilterWidth = params.get(Parameter.SG_LEVEL, Integer.class);
+        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
         profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
 
         profileIndex = 1;
@@ -137,8 +141,7 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
             final double noiseThreshold = calcDerivativeThreshold(secondDerivative, intensityThreshold);
 
             // Search for peaks.
-            final List<Profile> resolvedOriginalPeaks =
-                    peaksSearch(profileData, profile, secondDerivative, noiseThreshold);
+            final List<Profile> resolvedOriginalPeaks = peaksSearch(profile, secondDerivative, noiseThreshold);
 
             // Apply final filter of detected peaks, according with setup parameters.
             for (final Profile p : resolvedOriginalPeaks) {
@@ -155,16 +158,15 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
     /**
      * Deconvolutes the given mass trace.
      *
-     * @param profileData             the trace data
      * @param profile                 the original profile
      * @param derivativeOfIntensities the derived intensity values
      * @param intensityThreshold      the intensity threshold
      * @return the deconvoluted trace components
      */
-    private List<Profile> peaksSearch(final XYList profileData, final Profile profile,
-            final double[] derivativeOfIntensities, final double intensityThreshold) {
+    private List<Profile> peaksSearch(final Profile profile, final double[] derivativeOfIntensities,
+            final double intensityThreshold) {
 
-        List<Profile> profileList = new ArrayList<Profile>();
+        List<Profile> profileList = new ArrayList<>();
 
         // Flag to identify the current and next overlapped peak.
         boolean activeFirstPeak = false;
@@ -177,6 +179,9 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
         int crossZero = 0;
 
         final int totalNumberPoints = derivativeOfIntensities.length;
+
+        int pCorStart = Integer.MIN_VALUE;
+        int pCorEnd = Integer.MIN_VALUE;
 
         // Indexes of start and ending of the current peak and beginning of the next.
         int currentPeakStart = totalNumberPoints;
@@ -252,7 +257,12 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
                 if (data.get(corEnd).z > data.get(corEnd - 1).z) while (isBackward(corEnd, data)) corEnd--;
                 else while (isFoward(corEnd, data)) corEnd++;
 
-                if (corEnd - corStart <= 0) continue;
+                if (corEnd - corStart <= 0 || (pCorStart == corStart && pCorEnd == corEnd)) continue;
+
+//                if (corEnd - corStart <= 0) continue;
+
+                pCorStart = corStart;
+                pCorEnd = corEnd;
 
                 Profile deconProfile;
                 if (data.get(corStart).z == Constants.MIN_ABUNDANCE)
@@ -270,7 +280,7 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
                     deconProfile.addProfilePoint(data.get(current));
                 if (data.get(corEnd - 1).z == Constants.MIN_ABUNDANCE) deconProfile.closeProfile();
                 else deconProfile.closeProfile(data.get(corEnd).x);
-                deconProfile.setMsnScans(profile.getMsnScans());
+                deconProfile.setMsnScans(profile.getMsnScans(rawContainer, deconProfile.getRtRange()));
                 profileList.add(deconProfile);
                 // If exists next overlapped peak, swap the indexes between next and current, and clean ending index
                 // for this new current peak.
