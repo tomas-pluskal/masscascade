@@ -25,10 +25,8 @@ package uk.ac.ebi.masscascade.ws.massbank;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Doubles;
-import org.apache.axis2.AxisFault;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Level;
-import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableWebservice;
 import uk.ac.ebi.masscascade.interfaces.Profile;
@@ -39,27 +37,20 @@ import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.properties.Identity;
 import uk.ac.ebi.masscascade.utilities.DataUtils;
-import uk.ac.ebi.masscascade.utilities.math.LinearEquation;
 import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
-import javax.mail.MessageRemovedException;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 /**
  * Web task to run a spectrum search against MassBank using the MassBank's batch web service.
  * <ul>
+ * <li>Parameter <code> MZ WINDOW PPM </code>- The m/z tolerance value for the precursor ions in ppm.</li>
  * <li>Parameter <code> SCORE </code>- The minimum score per hit (min-0, max=1).</li>
  * <li>Parameter <code> ION MODE </code>- The ion mode.</li>
  * <li>Parameter <code> RESULTS </code>- The max. number of retrieved results.</li>
@@ -76,6 +67,7 @@ public class MassBankBatchSearch extends CallableWebservice {
     private List<String> instruments;
     private Constants.ION_MODE ionMode;
     private Constants.MSN msn;
+    private double ppm;
 
     private MassBankAPIStub stub;
 
@@ -109,6 +101,7 @@ public class MassBankBatchSearch extends CallableWebservice {
     @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
+        ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         ionMode = params.get(Parameter.ION_MODE, Constants.ION_MODE.class);
         instruments = params.get(Parameter.INSTRUMENTS, (new ArrayList<String>()).getClass());
         minNumOfProfiles = params.get(Parameter.MIN_PROFILES, Integer.class);
@@ -131,49 +124,7 @@ public class MassBankBatchSearch extends CallableWebservice {
                 spectrumContainer.getWorkingDirectory());
 
         try {
-            List<String> queries = new ArrayList<>();
-            for (Spectrum ps : spectrumContainer) {
-
-                if (msn == Constants.MSN.MS1) {
-                    if (ps.size() < minNumOfProfiles) continue;
-
-                    double maxY = Constants.MIN_ABUNDANCE;
-                    for (XYPoint dp : ps.getData()) if (dp.y > maxY) maxY = dp.y;
-
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("Name: " + ps.getIndex() + ";");
-                    for (XYPoint dp : ps.getData()) {
-                        sb.append(dp.x);
-                        sb.append(",");
-                        sb.append(dp.y * 1000 / maxY);
-                        sb.append(";");
-                    }
-                    queries.add(sb.toString());
-                } else {
-                    for (Profile profile : ps) {
-                        if (profile.hasMsnSpectra(msn)) {
-                            for (Spectrum singleMsnPs : profile.getMsnSpectra(msn)) {
-                                if (singleMsnPs.size() < minNumOfProfiles) continue;
-
-                                double maxY = Constants.MIN_ABUNDANCE;
-                                for (XYPoint dp : singleMsnPs.getData()) if (dp.y > maxY) maxY = dp.y;
-
-                                StringBuilder sb = new StringBuilder();
-                                sb.append(
-                                        "Name: " + ps.getIndex() + "-" + profile.getId() + "-" + singleMsnPs
-                                                .getParentScan() + ";");
-                                for (XYPoint dp : singleMsnPs.getData()) {
-                                    sb.append(dp.x);
-                                    sb.append(",");
-                                    sb.append(dp.y * 1000 / maxY);
-                                    sb.append(";");
-                                }
-                                queries.add(sb.toString());
-                            }
-                        }
-                    }
-                }
-            }
+            List<String> queries = buildQuery();
 
             stub = new MassBankAPIStub();
             MassBankAPIStub.ExecBatchJob batchJob = new MassBankAPIStub.ExecBatchJob();
@@ -195,7 +146,6 @@ public class MassBankBatchSearch extends CallableWebservice {
             MassBankAPIStub.GetJobResultResponse finalResponse = stub.getJobResult(batchJobResult);
 
             MassBankAPIStub.ResultSet[] resultSets = finalResponse.get_return();
-
             Multimap<String, Identity> recordIdsToIdentities = HashMultimap.create();
 
             if (msn == Constants.MSN.MS1) {
@@ -226,7 +176,8 @@ public class MassBankBatchSearch extends CallableWebservice {
 
                         Double closestValue = DataUtils.getClosestValue(mass, mzTree);
                         if (closestValue != null) {
-                            Identity identity = new Identity(id, title.split(";")[0], "", score, "MassBank", msn.name(), title);
+                            Identity identity =
+                                    new Identity(id, title.split(";")[0], "", score, "MassBank", msn.name(), title);
                             recordIdsToIdentities.put(resultId, identity);
                             if (sIdToMzProfiId.containsKey(querySpectrumId)) {
                                 sIdToMzProfiId.get(querySpectrumId).put(closestValue, identity);
@@ -261,6 +212,7 @@ public class MassBankBatchSearch extends CallableWebservice {
             } else {
 
                 Map<Integer, Multimap<Integer[], Identity>> sIdToMzProfiId = new HashMap<>();
+                Map<Identity, Double> identityToMass = new HashMap<>();
 
                 for (MassBankAPIStub.ResultSet resultSet : resultSets) {
                     String[] ids = resultSet.getQueryName().split("-");
@@ -288,8 +240,8 @@ public class MassBankBatchSearch extends CallableWebservice {
                         String name = title.split(";")[0];
                         Identity identity = new Identity(resultId, name, "", score, "MassBank", msn.name(), title);
                         recordIdsToIdentities.put(resultId, identity);
+                        identityToMass.put(identity, mass);
 
-                        // spectrum id -> (go to ms -1) -> profile id -> List<identity>
                         if (sIdToMzProfiId.containsKey(specIdMs1)) {
                             sIdToMzProfiId.get(specIdMs1).put(new Integer[]{profileIdMs1, profileIdMsn}, identity);
                         } else {
@@ -302,44 +254,30 @@ public class MassBankBatchSearch extends CallableWebservice {
                     }
                 }
 
-                Map<Identity, String> identityToInchI = new HashMap<>();
-                MassBankAPIStub.GetRecordInfo rci = new MassBankAPIStub.GetRecordInfo();
-                for (String recID : recordIdsToIdentities.keySet()) {
-                    LOGGER.log(Level.ERROR, "MIEP MSN" + " " + recID);
-                    rci.addIds(recID);
-                }
-                MassBankAPIStub.GetRecordInfoResponse rciR = stub.getRecordInfo(rci);
-                for (MassBankAPIStub.RecordInfo recInfo : rciR.get_return()) {
-                    String recInfoDetail = recInfo.getInfo();
-                    String iupacString = "";
-                    int iupacIndex = recInfoDetail.indexOf(IUPAC);
-                    if (iupacIndex != -1) {
-                        iupacIndex = iupacIndex + IUPAC.length();
-                        int iupacStop = recInfoDetail.indexOf('\n', iupacIndex);
-                        if (iupacStop == -1) iupacStop = recInfoDetail.indexOf('\r', iupacIndex);
-                        if (iupacStop != -1) iupacString = recInfoDetail.substring(iupacIndex, iupacStop);
-                    }
-
-                    for (Identity identity : recordIdsToIdentities.get(recInfo.getId()))
-                        identityToInchI.put(identity, iupacString);
-                }
-
+                Map<Identity, String> identityToInChI = getIUPACNotation(recordIdsToIdentities);
                 for (Spectrum spectrum : spectrumContainer) {
                     if (sIdToMzProfiId.containsKey(spectrum.getIndex())) {
-                        Multimap<Integer[], Identity> tmpMm = sIdToMzProfiId.get(spectrum.getIndex());
-                        for (Integer[] profId : tmpMm.keySet()) {
-                            Profile tmpProf = spectrum.getProfile(profId[0]);
+                        Multimap<Integer[], Identity> msnSpectrum = sIdToMzProfiId.get(spectrum.getIndex());
+                        for (Integer[] profIds : msnSpectrum.keySet()) {
+                            Profile tmpProf = spectrum.getProfile(profIds[0]);
                             if (msn.up() == Constants.MSN.MS1) {
-                                for (Identity identity : tmpMm.get(profId)) {
-                                    identity.setNotation(identityToInchI.get(identity));
-                                    tmpProf.setProperty(identity);
+                                for (Identity identity : msnSpectrum.get(profIds)) {
+                                    if (new ToleranceRange(identityToMass.get(identity), ppm).contains(
+                                            tmpProf.getMz())) {
+                                        identity.setNotation(identityToInChI.get(identity));
+                                        tmpProf.setProperty(identity);
+                                    }
                                 }
                             } else {
-                                for (Spectrum sss : tmpProf.getMsnSpectra(msn.up())) {
-                                    if (sss.getProfile(profId[1]) != null) {
-                                        for (Identity identity : tmpMm.get(profId)) {
-                                            identity.setNotation(identityToInchI.get(identity));
-                                            sss.getProfile(profId[1]).setProperty(identity);
+                                for (Spectrum parentSpectrum : tmpProf.getMsnSpectra(msn.up())) {
+                                    Profile parentProfile = parentSpectrum.getProfile(profIds[1]);
+                                    if (parentProfile != null) {
+                                        for (Identity identity : msnSpectrum.get(profIds)) {
+                                            if (new ToleranceRange(identityToMass.get(identity), ppm).contains(
+                                                    parentProfile.getMz())) {
+                                                identity.setNotation(identityToInChI.get(identity));
+                                                parentProfile.setProperty(identity);
+                                            }
                                         }
                                         break;
                                     }
@@ -359,6 +297,54 @@ public class MassBankBatchSearch extends CallableWebservice {
         return outContainer;
     }
 
+    private List<String> buildQuery() {
+
+        List<String> queries = new ArrayList<>();
+        for (Spectrum ps : spectrumContainer) {
+
+            if (msn == Constants.MSN.MS1) {
+                if (ps.size() < minNumOfProfiles) continue;
+
+                double maxY = Constants.MIN_ABUNDANCE;
+                for (XYPoint dp : ps.getData()) if (dp.y > maxY) maxY = dp.y;
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("Name: " + ps.getIndex() + ";");
+                for (XYPoint dp : ps.getData()) {
+                    sb.append(dp.x);
+                    sb.append(",");
+                    sb.append(dp.y * 1000 / maxY);
+                    sb.append(";");
+                }
+                queries.add(sb.toString());
+            } else {
+                for (Profile profile : ps) {
+                    if (profile.hasMsnSpectra(msn)) {
+                        for (Spectrum singleMsnPs : profile.getMsnSpectra(msn)) {
+                            if (singleMsnPs.size() < minNumOfProfiles) continue;
+
+                            double maxY = Constants.MIN_ABUNDANCE;
+                            for (XYPoint dp : singleMsnPs.getData()) if (dp.y > maxY) maxY = dp.y;
+
+                            StringBuilder sb = new StringBuilder();
+                            sb.append(
+                                    "Name: " + ps.getIndex() + "-" + profile.getId() + "-" + singleMsnPs
+                                            .getParentScan() + ";");
+                            for (XYPoint dp : singleMsnPs.getData()) {
+                                sb.append(dp.x);
+                                sb.append(",");
+                                sb.append(dp.y * 1000 / maxY);
+                                sb.append(";");
+                            }
+                            queries.add(sb.toString());
+                        }
+                    }
+                }
+            }
+        }
+        return queries;
+    }
+
     /**
      * Retrieves the full record info and extracts the InChI.
      *
@@ -371,10 +357,7 @@ public class MassBankBatchSearch extends CallableWebservice {
         Map<Identity, String> identityToInchI = new HashMap<>();
 
         MassBankAPIStub.GetRecordInfo rci = new MassBankAPIStub.GetRecordInfo();
-        for (String recID : recIdToIdentities.keySet()) {
-            LOGGER.log(Level.ERROR, "MIEP" + " " + recID);
-            rci.addIds(recID);
-        }
+        for (String recID : recIdToIdentities.keySet()) rci.addIds(recID);
         MassBankAPIStub.GetRecordInfoResponse rciR = stub.getRecordInfo(rci);
         for (MassBankAPIStub.RecordInfo recInfo : rciR.get_return()) {
             String recInfoDetail = recInfo.getInfo();
