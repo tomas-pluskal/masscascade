@@ -22,6 +22,7 @@
 
 package uk.ac.ebi.masscascade.filter;
 
+import uk.ac.ebi.masscascade.core.PropertyManager;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
@@ -47,6 +48,7 @@ public class ProfileFilter extends CallableTask {
     private Range mzRange;
     private Range profileWidthRange;
     private double minIntensity;
+    private boolean keepIsotopes;
     private ProfileContainer profileContainer;
 
     /**
@@ -77,6 +79,7 @@ public class ProfileFilter extends CallableTask {
         profileWidthRange = params.get(Parameter.PROFILE_RANGE, ExtendableRange.class);
         minIntensity = params.get(Parameter.MIN_PROFILE_INTENSITY, Double.class);
         profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        keepIsotopes = params.get(Parameter.KEEP_ISOTOPES, Boolean.class);
     }
 
     /**
@@ -94,10 +97,11 @@ public class ProfileFilter extends CallableTask {
 
         for (Profile profile : profileContainer) {
 
-            if (timeRange.contains(profile.getRetentionTime()) &&
-                    mzRange.contains(profile.getMz()) &&
-                    profileWidthRange.contains(profile.getData().size() - 2) &&
-                    profile.getIntensity() >= minIntensity) outProfileContainer.addProfile(profile);
+            if (timeRange.contains(profile.getRetentionTime()) && mzRange.contains(profile.getMz()) &&
+                    profileWidthRange.contains(profile.getData().size() - 2)) {
+                if (profile.getIntensity() >= minIntensity || (keepIsotopes && profile.hasProperty(
+                        PropertyManager.TYPE.Isotope))) outProfileContainer.addProfile(profile);
+            }
         }
         outProfileContainer.finaliseFile();
 

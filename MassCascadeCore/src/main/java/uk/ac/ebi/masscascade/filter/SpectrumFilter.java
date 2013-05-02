@@ -22,6 +22,7 @@
 
 package uk.ac.ebi.masscascade.filter;
 
+import uk.ac.ebi.masscascade.core.PropertyManager;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
@@ -51,6 +52,7 @@ public class SpectrumFilter extends CallableTask {
     private Range timeRange;
     private Range mzRange;
     private double minIntensity;
+    private boolean keepIsotopes;
     private SpectrumContainer spectrumContainer;
 
     /**
@@ -79,6 +81,7 @@ public class SpectrumFilter extends CallableTask {
         mzRange = params.get(Parameter.MZ_RANGE, ExtendableRange.class);
         timeRange = params.get(Parameter.TIME_RANGE, ExtendableRange.class);
         minIntensity = params.get(Parameter.MIN_PROFILE_INTENSITY, Double.class);
+        keepIsotopes = params.get(Parameter.KEEP_ISOTOPES, Boolean.class);
         spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
     }
 
@@ -101,11 +104,14 @@ public class SpectrumFilter extends CallableTask {
                 Range rtRange = null;
                 XYList mzIntList = new XYList();
                 for (Profile profile : spectrum) {
-                    if (mzRange.contains(profile.getMz()) && profile.getIntensity() >= minIntensity) {
-                        if (rtRange == null) rtRange = new ExtendableRange(profile.getRetentionTime());
-                        else rtRange.extendRange(profile.getRetentionTime());
-                        outProfiles.add(profile);
-                        mzIntList.add(profile.getMzIntDp());
+                    if (mzRange.contains(profile.getMz())) {
+                        if (profile.getIntensity() >= minIntensity || (keepIsotopes && profile.hasProperty(
+                                PropertyManager.TYPE.Isotope))) {
+                            if (rtRange == null) rtRange = new ExtendableRange(profile.getRetentionTime());
+                            else rtRange.extendRange(profile.getRetentionTime());
+                            outProfiles.add(profile);
+                            mzIntList.add(profile.getMzIntDp());
+                        }
                     }
                 }
 
