@@ -20,49 +20,44 @@
  *   Stephan Beisken - initial API and implementation
  */
 
-package uk.ac.ebi.masscascade.library;
+package uk.ac.ebi.masscascade.interfaces;
 
-import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.CallableSearch;
+import org.apache.log4j.Logger;
+import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
-import uk.ac.ebi.masscascade.reference.ReferenceContainer;
+import uk.ac.ebi.masscascade.parameters.SearchTasks;
 
-public class LibraryGenerator extends CallableSearch {
+public abstract class CallableSearch implements Task {
 
-    private ReferenceContainer referenceContainer;
+    protected final Logger LOGGER;
+    protected final String IDENTIFIER;
 
     /**
-     * Constructs a reference library.
+     * Constructs a callable task class with an assigned identifier. The task class to be constructed must be
+     * registered via its corresponding {@link uk.ac.ebi.masscascade.interfaces.Index}.
      *
-     * @param params the parameter map holding all required task parameters
-     * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *          if the web task fails
+     * @param taskClass the class of the task to be constructed
      */
-    public LibraryGenerator(ParameterMap params) throws MassCascadeException {
+    public CallableSearch(Class<? extends CallableSearch> taskClass) {
 
-        super(LibrarySearch.class);
-        setParameters(params);
+        LOGGER = Logger.getLogger(taskClass);
+        IDENTIFIER = SearchTasks.getEnumFor(taskClass).getIdentifier();
     }
 
     /**
      * Sets the task class variables using the parameter map.
      *
      * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
-     * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *          if the parameter map does not contain all variables required by this class
      */
     @Override
-    public void setParameters(ParameterMap params) throws MassCascadeException {
-        referenceContainer = params.get(LibraryParameter.REFERENCE_LIBRARY, ReferenceContainer.class);
-    }
+    public abstract void setParameters(ParameterMap params);
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .SpectrumContainer} with the processed data.
+     * .Container} with the processed data.
      *
-     * @return the spectrum container with the processed data
+     * @return the container with the processed data
      */
-    public ReferenceContainer call() {
-        return referenceContainer;
-    }
+    @Override
+    public abstract Container call();
 }

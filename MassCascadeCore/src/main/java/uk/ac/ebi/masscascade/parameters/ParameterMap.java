@@ -23,6 +23,7 @@
 package uk.ac.ebi.masscascade.parameters;
 
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
+import uk.ac.ebi.masscascade.interfaces.Option;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +33,7 @@ import java.util.Map;
  */
 public class ParameterMap {
 
-    private final Map<Parameter, Object> parameters;
+    private final Map<Option, Object> parameters;
 
     /**
      * Creates an empty parameter map.
@@ -46,7 +47,7 @@ public class ParameterMap {
      *
      * @param parameters the parameter hash map
      */
-    public ParameterMap(Map<Parameter, Object> parameters) {
+    public ParameterMap(Map<Option, Object> parameters) {
         this.parameters = parameters;
     }
 
@@ -57,7 +58,7 @@ public class ParameterMap {
      * @param instance  the value instance
      * @param <T>       any object that complies with the parameter value type
      */
-    public <T> void put(Parameter parameter, T instance) {
+    public <T> void put(Option parameter, T instance) {
 
         if (parameter == null) throw new MassCascadeException("Parameter is null");
 
@@ -79,7 +80,7 @@ public class ParameterMap {
      * @param <T>       any object that complies with the parameter value type
      * @return the parameter's value
      */
-    public <T> T get(Parameter parameter, Class<T> type) {
+    public <T> T get(Option parameter, Class<T> type) {
 
         if (parameter == null) throw new MassCascadeException("Parameter is null");
 
@@ -101,7 +102,7 @@ public class ParameterMap {
      * @param parameter the parameter
      * @return if the parameter key is in the map
      */
-    public boolean containsKey(Parameter parameter) {
+    public boolean containsKey(Option parameter) {
         return parameters.containsKey(parameter);
     }
 

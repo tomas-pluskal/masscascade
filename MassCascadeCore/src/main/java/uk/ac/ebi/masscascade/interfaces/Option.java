@@ -47,4 +47,11 @@ public interface Option {
      * @return the option's value
      */
     Class<?> getType();
+
+    /**
+     * Returns the option's name.
+     *
+     * @return the name
+     */
+    String name();
 }
