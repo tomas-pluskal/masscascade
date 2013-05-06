@@ -23,6 +23,8 @@
 package uk.ac.ebi.masscascade.core.container.file;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.TreeMultimap;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -209,11 +211,13 @@ public class FileManager implements RunManager, Serializable {
 
         long start = -1L;
         try {
-            ByteBuffer buffer = ByteBuffer.allocate(1024 * 256 * 32);
-            kryo.writeObject(buffer, object);
+            Output output = new Output(1024 * 256 * 32);
+            kryo.writeObject(output, object);
+            output.flush();
+            output.close();
 
-            int length = buffer.position();
-            byte[] data = buffer.array();
+            int length = output.position();
+            byte[] data = output.getBuffer();
             start = randomAccessFile.length();
 
             randomAccessFile.seek(start);
@@ -245,8 +249,9 @@ public class FileManager implements RunManager, Serializable {
 
             byte[] data = new byte[length];
             randomAccessFile.readFully(data);
-            ByteBuffer buffer = ByteBuffer.wrap(data);
-            object = kryo.readObject(buffer, objectClass);
+            Input input = new Input(data);
+            object = kryo.readObject(input, objectClass);
+            input.close();
         } catch (IOException exception) {
             LOGGER.log(Level.ERROR, "File Manager on read: " + exception.getMessage());
         } finally {

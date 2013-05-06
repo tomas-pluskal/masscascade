@@ -23,7 +23,6 @@
 package uk.ac.ebi.masscascade.reference;
 
 import uk.ac.ebi.masscascade.parameters.Constants;
-import uk.ac.ebi.masscascade.utilities.math.MathUtils;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
 import java.util.TreeSet;
@@ -38,7 +37,7 @@ public class ReferenceSpectrum {
     // compound
     private String name;
     private String notation;
-    private String mass;
+    private double mass;
     private String formula;
 
     // instrument
@@ -54,7 +53,7 @@ public class ReferenceSpectrum {
     // meta experimental
     private XYPoint basePeak;
 
-    public ReferenceSpectrum(String id, String title, String source, String name, String notation, String mass,
+    public ReferenceSpectrum(String id, String title, String source, String name, String notation, double mass,
             String formula, String instrument, Constants.ION_MODE ionMode, String precursorType, double precursorMass,
             int collisionEnergy, TreeSet<XYPoint> mzIntList, XYPoint basePeak) {
 
@@ -94,7 +93,7 @@ public class ReferenceSpectrum {
         return notation;
     }
 
-    public String getMass() {
+    public double getMass() {
         return mass;
     }
 
