@@ -39,8 +39,10 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class ReferenceContainer implements Container, Iterable<Map.Entry<Double, List<ReferenceSpectrum>>>,
-        Serializable {
+/**
+ * Reference container for library spectra.
+ */
+public class ReferenceContainer implements Container, Iterable<ReferenceSpectrum>, Serializable {
 
     private static final long serialVersionUID = 7253134509357859535L;
     public static double NO_PRECURSOR = 0;
@@ -52,6 +54,13 @@ public class ReferenceContainer implements Container, Iterable<Map.Entry<Double,
     private Set<String> spectraIds;
     private TreeMap<Double, List<ReferenceSpectrum>> spectra;
 
+    /**
+     * Constructs a reference container.
+     *
+     * @param id     the container identifier
+     * @param source the source of the reference spectra
+     * @param msn    the MSn level of the spectra
+     */
     public ReferenceContainer(String id, String source, Constants.MSN msn) {
 
         this.id = id;
@@ -67,14 +76,30 @@ public class ReferenceContainer implements Container, Iterable<Map.Entry<Double,
         return id;
     }
 
+    /**
+     * Returns the source of this container.
+     *
+     * @return the source
+     */
     public String getSource() {
         return source;
     }
 
+    /**
+     * Returns the MSn level of this container.
+     *
+     * @return the MSn level
+     */
     public Constants.MSN getMsn() {
         return msn;
     }
 
+    /**
+     * Adds a reference spectrum to the container. The spectrum is only added if the spectrum id is not already present
+     * in the container.
+     *
+     * @param spectrum the reference spectrum
+     */
     public void addSpectrum(ReferenceSpectrum spectrum) {
 
         if (spectraIds.contains(spectrum.getId())) return;
@@ -108,8 +133,8 @@ public class ReferenceContainer implements Container, Iterable<Map.Entry<Double,
      * @return an Iterator.
      */
     @Override
-    public Iterator<Map.Entry<Double, List<ReferenceSpectrum>>> iterator() {
-        return spectra.entrySet().iterator();
+    public Iterator<ReferenceSpectrum> iterator() {
+        return spectra.get(0).iterator();
     }
 
     /**

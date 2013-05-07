@@ -25,6 +25,7 @@ package uk.ac.ebi.masscascade.parameters;
 import uk.ac.ebi.masscascade.interfaces.CallableSearch;
 import uk.ac.ebi.masscascade.interfaces.Index;
 import uk.ac.ebi.masscascade.interfaces.Task;
+import uk.ac.ebi.masscascade.library.LibraryBatchSearch;
 import uk.ac.ebi.masscascade.library.LibraryGenerator;
 import uk.ac.ebi.masscascade.library.LibrarySearch;
 
@@ -34,6 +35,7 @@ import uk.ac.ebi.masscascade.library.LibrarySearch;
 public enum SearchTasks implements Index {
 
     LIBRARY_GENERATOR(LibraryGenerator.class, ""),
+    LIBRARY_BATCH_SEARCH(LibraryBatchSearch.class, "LBS"),
     LIBRARY_SEARCH(LibrarySearch.class, "LS");
 
     private final Class<? extends CallableSearch> className;

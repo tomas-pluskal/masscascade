@@ -84,11 +84,21 @@ public class ParameterMap {
 
         if (parameter == null) throw new MassCascadeException("Parameter is null");
 
+        if (type.equals(Double.class) &&
+                (parameter.getType() == type || parameter.getType() == Integer.class)) {
+            T result;
+            try {
+                result = type.cast(parameters.get(parameter));
+            } catch (Exception exception) {
+                double tmp = Integer.class.cast(parameters.get(parameter)).doubleValue();
+                result = type.cast(tmp);
+            }
+            return result;
+        }
+
         if (parameter.getType() != type) {
-            if (!(type.equals(Double.class) && parameter.getType().equals(Integer.class)))
-                throw new MassCascadeException(
-                        "Parameter value " + parameter.name() + " is not of type " + type + ": " + parameter.getType
-                                ().getName());
+            throw new MassCascadeException("Parameter value " + parameter.name() +
+                    " is not of type " + type + ": " + parameter.getType().getName());
         }
 
         if (!parameters.containsKey(parameter)) throw new MassCascadeException(parameter.name() + " is not in the map");

@@ -27,6 +27,9 @@ import uk.ac.ebi.masscascade.interfaces.CallableSearch;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.reference.ReferenceContainer;
 
+/**
+ * Convenience task class to push generated reference container into the execution loop.
+ */
 public class LibraryGenerator extends CallableSearch {
 
     private ReferenceContainer referenceContainer;
@@ -57,10 +60,9 @@ public class LibraryGenerator extends CallableSearch {
     }
 
     /**
-     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .SpectrumContainer} with the processed data.
+     * Executes the task. The <code> Callable </code> returns a ReferenceContainer with the processed data.
      *
-     * @return the spectrum container with the processed data
+     * @return the reference container with the processed data
      */
     public ReferenceContainer call() {
         return referenceContainer;

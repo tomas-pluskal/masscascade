@@ -27,6 +27,9 @@ import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.parameters.SearchTasks;
 
+/**
+ * Abstract class for all task classes in the Reference module.
+ */
 public abstract class CallableSearch implements Task {
 
     protected final Logger LOGGER;

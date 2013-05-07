@@ -28,6 +28,9 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 import java.io.Serializable;
 import java.util.TreeSet;
 
+/**
+ * Class implementing a library or reference spectrum.
+ */
 public class ReferenceSpectrum implements Serializable {
 
     private static final long serialVersionUID = -8616060895807777451L;
@@ -56,6 +59,24 @@ public class ReferenceSpectrum implements Serializable {
     // meta experimental
     private XYPoint basePeak;
 
+    /**
+     * Constructs a fully parameterized reference spectrum.
+     *
+     * @param id the identifier
+     * @param title the title (e.g., as found in the database)
+     * @param source the source
+     * @param name the compound name
+     * @param notation the compound notation
+     * @param mass the compound mass
+     * @param formula the compound molecular formula
+     * @param instrument the MS instrument
+     * @param ionMode the ion mode (pos, neg)
+     * @param precursorType the precursor type (e.g., M-H)
+     * @param precursorMass the precuro
+     * @param collisionEnergy
+     * @param mzIntList
+     * @param basePeak
+     */
     public ReferenceSpectrum(String id, String title, String source, String name, String notation, double mass,
             String formula, String instrument, Constants.ION_MODE ionMode, String precursorType, double precursorMass,
             int collisionEnergy, TreeSet<XYPoint> mzIntList, XYPoint basePeak) {

@@ -36,22 +36,10 @@ import uk.ac.ebi.masscascade.reference.ReferenceSpectrum;
 import uk.ac.ebi.masscascade.score.WeightedScorer;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-/**
- * Task to query custom libraries, matching MSn spectra where indicated.
- * <ul>
- * <li>Parameter <code> MZ WINDOW PPM </code>- The m/z tolerance value for the precursor ions in ppm.</li>
- * <li>Parameter <code> MZ WINDOW AMU </code>- The m/z tolerance value for the MSn signals in dalton.</li>
- * <li>Parameter <code> ION MODE </code>- The ion mode.</li>
- * <li>Parameter <code> MS LEVEL </code>- The MSn level to be queried.</li>
- * <li>Parameter <code> SCORE </code>- The minimum query score (0-1000).</li>
- * <li>Parameter <code> COLLISION ENERGY </code>- The collision energy.</li>
- * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input spectrum container.</li>
- * </ul>
- */
-public class LibrarySearch extends CallableSearch {
+public class LibraryBatchSearch extends CallableSearch {
 
     private double ppmMS1;
     private double amuMSn;
@@ -59,18 +47,18 @@ public class LibrarySearch extends CallableSearch {
     private Constants.MSN msn;
     private Constants.ION_MODE ionMode;
     private SpectrumContainer spectrumContainer;
-    private ReferenceContainer referenceContainer;
+    private List<ReferenceContainer> referenceContainer;
 
     private WeightedScorer weightedScorer;
 
     /**
-     * Constructs a MSn reference search task.
+     * Constructs a MSn reference batch search task.
      *
      * @param params the parameter map holding all required task parameters
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
      *          if the web task fails
      */
-    public LibrarySearch(ParameterMap params) throws MassCascadeException {
+    public LibraryBatchSearch(ParameterMap params) throws MassCascadeException {
 
         super(LibrarySearch.class);
         setParameters(params);
@@ -92,7 +80,8 @@ public class LibrarySearch extends CallableSearch {
         msn = params.get(Parameter.MS_LEVEL, Constants.MSN.class);
         ionMode = params.get(Parameter.ION_MODE, Constants.ION_MODE.class);
         spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
-        referenceContainer = params.get(LibraryParameter.REFERENCE_LIBRARY, ReferenceContainer.class);
+        referenceContainer =
+                params.get(LibraryParameter.REFERENCE_LIBRARY_LIST, new ArrayList<ReferenceContainer>().getClass());
     }
 
     /**
@@ -129,31 +118,34 @@ public class LibrarySearch extends CallableSearch {
 
     private void score(Spectrum spectrum) {
 
-        for (ReferenceSpectrum reference : referenceContainer) {
-            if (reference.getIonMode() != ionMode) continue;
+        for (ReferenceContainer singleRefCont : referenceContainer) {
+            if (singleRefCont.getMsn() != msn) continue;
+            for (ReferenceSpectrum reference : singleRefCont) {
+                if (reference.getIonMode() != ionMode) continue;
 
-            double score = weightedScorer.getScore(spectrum, reference);
-            if (score < minScore) continue;
+                double score = weightedScorer.getScore(spectrum, reference);
+                if (score < minScore) continue;
 
-            Identity identity = new Identity(reference.getId(), reference.getName(), reference.getNotation(), score,
-                    reference.getSource(), msn.name(), reference.getTitle());
+                Identity identity = new Identity(reference.getId(), reference.getName(), reference.getNotation(), score,
+                        singleRefCont.getSource(), msn.name(), reference.getTitle());
 
-            double mass = 0;
+                double mass = 0;
 
-            if (reference.getPrecursorMass() != 0) {
-                XYPoint nearestDp = spectrum.getNearestPoint(reference.getPrecursorMass(), ppmMS1);
-                mass = nearestDp.x;
-            } else if (reference.getMass() != 0) {
-                mass = reference.getMass();
-                if (ionMode == Constants.ION_MODE.POSITIVE) mass += Constants.PARTICLES.PROTON.getMass();
-                else if (ionMode.equals(Constants.ION_MODE.NEGATIVE)) mass -= Constants.PARTICLES.PROTON.getMass();
-            }
+                if (reference.getPrecursorMass() != 0) {
+                    XYPoint nearestDp = spectrum.getNearestPoint(reference.getPrecursorMass(), ppmMS1);
+                    mass = nearestDp.x;
+                } else if (reference.getMass() != 0) {
+                    mass = reference.getMass();
+                    if (ionMode == Constants.ION_MODE.POSITIVE) mass += Constants.PARTICLES.PROTON.getMass();
+                    else if (ionMode.equals(Constants.ION_MODE.NEGATIVE)) mass -= Constants.PARTICLES.PROTON.getMass();
+                }
 
-            XYPoint nearestDp = spectrum.getNearestPoint(mass, ppmMS1);
-            for (Profile profile : spectrum) {
-                if (profile.getMz() == nearestDp.x) {
-                    profile.setProperty(identity);
-                    break;
+                XYPoint nearestDp = spectrum.getNearestPoint(mass, ppmMS1);
+                for (Profile profile : spectrum) {
+                    if (profile.getMz() == nearestDp.x) {
+                        profile.setProperty(identity);
+                        break;
+                    }
                 }
             }
         }
@@ -162,28 +154,32 @@ public class LibrarySearch extends CallableSearch {
     private void score(Profile profile) {
 
         for (Spectrum unknown : profile.getMsnSpectra(msn)) {
-            for (ReferenceSpectrum reference : referenceContainer.getSpectra(unknown.getParentMz(), ppmMS1)) {
+            for (ReferenceContainer singleRefCont : referenceContainer) {
+                if (singleRefCont.getMsn() != msn) continue;
+                for (ReferenceSpectrum reference : singleRefCont.getSpectra(unknown.getParentMz(), ppmMS1)) {
 
-                if (reference.getIonMode() != ionMode) continue;
+                    if (reference.getIonMode() != ionMode) continue;
 
-                double score = weightedScorer.getScore(unknown, reference);
-                if (score < minScore) continue;
+                    double score = weightedScorer.getScore(unknown, reference);
 
-                if (msn == Constants.MSN.MS2) {
-                    Identity identity =
-                            new Identity(reference.getId(), reference.getName(), reference.getNotation(), score,
-                                    reference.getSource(), msn.name(), reference.getTitle());
-                    profile.setProperty(identity);
-                } else {
-                    for (Spectrum msnSpectrum : profile.getMsnSpectra(msn.up())) {
-                        if (msnSpectrum.getProfile(unknown.getParentScan()) != null) {
-                            Profile msnProfile = msnSpectrum.getProfile(unknown.getParentScan());
+                    if (score <= minScore) continue;
 
-                            Identity identity =
-                                    new Identity(reference.getId(), reference.getName(), reference.getNotation(), score,
-                                            reference.getSource(), msn.name(), reference.getTitle());
-                            msnProfile.setProperty(identity);
-                            break;
+                    if (msn == Constants.MSN.MS2) {
+                        Identity identity =
+                                new Identity(reference.getId(), reference.getName(), reference.getNotation(), score,
+                                        singleRefCont.getSource(), msn.name(), reference.getTitle());
+                        profile.setProperty(identity);
+                    } else {
+                        for (Spectrum msnSpectrum : profile.getMsnSpectra(msn.up())) {
+                            if (msnSpectrum.getProfile(unknown.getParentScan()) != null) {
+                                Profile msnProfile = msnSpectrum.getProfile(unknown.getParentScan());
+
+                                Identity identity =
+                                        new Identity(reference.getId(), reference.getName(), reference.getNotation(),
+                                                score, singleRefCont.getSource(), msn.name(), reference.getTitle());
+                                msnProfile.setProperty(identity);
+                                break;
+                            }
                         }
                     }
                 }

@@ -27,27 +27,39 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
+import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.reference.ReferenceSpectrum;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
+/**
+ * Class implementing a matching factor according to Stein (1994), consisting of two terms: the dot product between the
+ * two spectral vectors and a term that describes the similarity between the shapes of two spectra.
+ */
 public class WeightedScorer {
 
     private final Logger LOGGER = Logger.getLogger(WeightedScorer.class);
 
-    private double ppm;
+    private double amu;
 
     private double wIntensity;
     private double wMass;
 
-    public WeightedScorer(double ppm) {
+    public WeightedScorer(double amu) {
 
-        this.ppm = ppm;
+        this.amu = amu;
 
         this.wIntensity = 0.6;
         this.wMass = 1.5;
     }
 
+    /**
+     * Calculates the score between the unknown and reference spectrum.
+     *
+     * @param unknownSpectrum   the unknown spectrum
+     * @param referenceSpectrum the reference spectrum
+     * @return the score (0-1000)
+     */
     public double getScore(Spectrum unknownSpectrum, ReferenceSpectrum referenceSpectrum) {
 
         XYPoint unknownBasePeak = unknownSpectrum.getBasePeak().get(0);
@@ -57,7 +69,9 @@ public class WeightedScorer {
         XYList referenceCommons = new XYList();
 
         for (Profile profile : unknownSpectrum) {
-            XYPoint referenceXY = referenceSpectrum.getMatchingPeak(profile.getMzIntDp(), ppm);
+
+            XYPoint referenceXY = referenceSpectrum.getMatchingPeak(profile.getMzIntDp(),
+                    amu * Constants.PPM / profile.getMzIntDp().x);
             if (referenceXY == null) continue;
 
             unknownCommons.add(new XYPoint(profile.getMz(), profile.getIntensity() / unknownBasePeak.y));
@@ -110,9 +124,9 @@ public class WeightedScorer {
 
         // matching factor
         int nUnknown = unknownSpectrum.size();
-        double mf = (nUnknown * dotProduct) + (nCommons * ratio) / (nUnknown + nCommons);
+        double mf = ((nUnknown * dotProduct) + (nCommons * ratio)) / (nUnknown + nCommons);
 
-        LOGGER.log(Level.INFO, "Score: " + mf + "; Fd: " + dotProduct + "; Fr: " + ratio);
+        LOGGER.log(Level.INFO, "Score: " + mf + "; Fd: " + dotProduct + "; Fr: " + ratio + " SIZE: " + nUnknown + " " + nCommons );
 
         return FastMath.round(mf * 1000);
     }

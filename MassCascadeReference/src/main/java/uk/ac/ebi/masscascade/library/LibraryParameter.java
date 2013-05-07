@@ -25,8 +25,15 @@ package uk.ac.ebi.masscascade.library;
 import uk.ac.ebi.masscascade.interfaces.Option;
 import uk.ac.ebi.masscascade.reference.ReferenceContainer;
 
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Parameters for the Reference module.
+ */
 public enum LibraryParameter implements Option {
 
+    REFERENCE_LIBRARY_LIST("Reference library", null, new ArrayList<ReferenceContainer>().getClass()),
     REFERENCE_LIBRARY("Reference library", null, ReferenceContainer.class);
 
     private String description;
