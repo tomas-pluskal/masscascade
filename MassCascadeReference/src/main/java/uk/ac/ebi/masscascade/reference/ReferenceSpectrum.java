@@ -25,9 +25,12 @@ package uk.ac.ebi.masscascade.reference;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
+import java.io.Serializable;
 import java.util.TreeSet;
 
-public class ReferenceSpectrum {
+public class ReferenceSpectrum implements Serializable {
+
+    private static final long serialVersionUID = -8616060895807777451L;
 
     // meta
     private String id;

@@ -22,8 +22,6 @@
 
 package uk.ac.ebi.masscascade.reference;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
@@ -31,6 +29,7 @@ import uk.ac.ebi.masscascade.interfaces.container.ContainerBuilder;
 import uk.ac.ebi.masscascade.parameters.Constants;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -40,10 +39,10 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class ReferenceContainer implements Container, Iterable<Map.Entry<Double, List<ReferenceSpectrum>>> {
+public class ReferenceContainer implements Container, Iterable<Map.Entry<Double, List<ReferenceSpectrum>>>,
+        Serializable {
 
-    private final Logger LOGGER = Logger.getLogger(ReferenceContainer.class);
-
+    private static final long serialVersionUID = 7253134509357859535L;
     public static double NO_PRECURSOR = 0;
 
     private String id;
@@ -78,10 +77,7 @@ public class ReferenceContainer implements Container, Iterable<Map.Entry<Double,
 
     public void addSpectrum(ReferenceSpectrum spectrum) {
 
-        if (spectraIds.contains(spectrum.getId())) {
-            LOGGER.log(Level.WARN, "Duplicate identifier, cannot add spectrum: " + spectrum.getId());
-            return;
-        }
+        if (spectraIds.contains(spectrum.getId())) return;
 
         spectraIds.add(spectrum.getId());
         double precursorMass = spectrum.getPrecursorMass();
