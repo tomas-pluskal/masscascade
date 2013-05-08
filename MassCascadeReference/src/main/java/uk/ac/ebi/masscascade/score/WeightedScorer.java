@@ -32,6 +32,9 @@ import uk.ac.ebi.masscascade.reference.ReferenceSpectrum;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Class implementing a matching factor according to Stein (1994), consisting of two terms: the dot product between the
  * two spectral vectors and a term that describes the similarity between the shapes of two spectra.
@@ -68,12 +71,14 @@ public class WeightedScorer {
         XYList unknownCommons = new XYList();
         XYList referenceCommons = new XYList();
 
+        Set<Double> addedMz = new HashSet<>();
         for (Profile profile : unknownSpectrum) {
 
             XYPoint referenceXY = referenceSpectrum.getMatchingPeak(profile.getMzIntDp(),
                     amu * Constants.PPM / profile.getMzIntDp().x);
-            if (referenceXY == null) continue;
+            if (referenceXY == null || addedMz.contains(referenceXY.x)) continue;
 
+            addedMz.add(referenceXY.x);
             unknownCommons.add(new XYPoint(profile.getMz(), profile.getIntensity() / unknownBasePeak.y));
             referenceCommons.add(new XYPoint(referenceXY.x, referenceXY.y / referenceBasePeak.y));
         }
@@ -126,7 +131,7 @@ public class WeightedScorer {
         int nUnknown = unknownSpectrum.size();
         double mf = ((nUnknown * dotProduct) + (nCommons * ratio)) / (nUnknown + nCommons);
 
-        LOGGER.log(Level.INFO, "Score: " + mf + "; Fd: " + dotProduct + "; Fr: " + ratio + " SIZE: " + nUnknown + " " + nCommons );
+//        LOGGER.log(Level.INFO, "Score: " + mf + "; Fd: " + dotProduct + "; Fr: " + ratio);
 
         return FastMath.round(mf * 1000);
     }
