@@ -198,7 +198,6 @@ public class SimpleSpectrum extends ZoomableChart {
      * @param painterMap the painter map
      */
     public void setDefaultTracePainter(Map<PAINTERS, Boolean> painterMap) {
-
         this.painterMap = painterMap;
     }
 
@@ -249,7 +248,6 @@ public class SimpleSpectrum extends ZoomableChart {
      * @param dataSetTitle the data set identifier
      */
     public void toogleDisc(String dataSetTitle) {
-
         toogleDisc(new String[]{dataSetTitle});
     }
 
@@ -270,7 +268,6 @@ public class SimpleSpectrum extends ZoomableChart {
      * @param dataSetTitle the data set identifier
      */
     public void toogleLabels(String dataSetTitle) {
-
         toogleLabels(new String[]{dataSetTitle});
     }
 
@@ -291,7 +288,6 @@ public class SimpleSpectrum extends ZoomableChart {
      * @param dataSetTitle the data set identifier
      */
     public void toogleVerticalBar(String dataSetTitle) {
-
         toogleVerticalBar(new String[]{dataSetTitle});
     }
 
@@ -312,7 +308,6 @@ public class SimpleSpectrum extends ZoomableChart {
      * @param dataSetTitle the data set identifier
      */
     public void toogleSplines(String dataSetTitle) {
-
         toogleSplines(new String[]{dataSetTitle});
     }
 
@@ -333,7 +328,6 @@ public class SimpleSpectrum extends ZoomableChart {
      * @param dataSetTitle the data set identifier
      */
     public void tooglePolyline(String dataSetTitle) {
-
         tooglePolyline(new String[]{dataSetTitle});
     }
 
@@ -354,7 +348,6 @@ public class SimpleSpectrum extends ZoomableChart {
      * @param dataSetTitle the data set identifiers
      */
     public void toogleAnnotations(String dataSetTitle) {
-
         toogleAnnotations(new String[]{dataSetTitle});
     }
 
@@ -376,11 +369,8 @@ public class SimpleSpectrum extends ZoomableChart {
      */
     private void switchPainter(PAINTERS painter) {
 
-        if (painterMap.containsKey(painter)) {
-            painterMap.remove(painter);
-        } else {
-            painterMap.put(painter, false);
-        }
+        if (painterMap.containsKey(painter)) painterMap.remove(painter);
+        else painterMap.put(painter, false);
     }
 
     /**

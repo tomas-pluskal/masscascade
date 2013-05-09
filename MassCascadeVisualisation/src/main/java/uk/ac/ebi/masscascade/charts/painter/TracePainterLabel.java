@@ -64,7 +64,7 @@ public class TracePainterLabel extends ATracePainter {
             int previousX = this.getPreviousX();
             int previousY = this.getPreviousY();
             if (previousX != Integer.MIN_VALUE || previousY != Integer.MIN_VALUE) {
-                this.pointPainter.paintPoint(previousX, previousY, 0, Integer.MAX_VALUE, g2d, this.getPreviousPoint());
+                this.pointPainter.paintPoint(previousX, previousY, 0, 0, g2d, this.getPreviousPoint());
             }
         }
         this.pointPainter.endPaintIteration(g2d);

@@ -59,10 +59,6 @@ public class DataSet {
 
             this.xyList = xyList;
             this.title = title;
-
-            if (xyList.size() == 1) {
-                xyList.add(0, new XYPoint(0, 0));
-            }
         }
 
         /**

@@ -42,11 +42,10 @@ public class AnnotationUtils {
      */
     public static Map<XYPoint, String> getAnnotations(Collection<Profile> peakList) {
 
-        Map<XYPoint, String> annotations = new HashMap<XYPoint, String>();
+        Map<XYPoint, String> annotations = new HashMap<>();
 
         String annotation = "";
         for (Profile peak : peakList) {
-
             annotation = ProfUtils.getProfileLabel(peak);
             if (!annotation.isEmpty()) annotations.put(peak.getMzIntDp(), annotation);
         }
