@@ -23,6 +23,7 @@
 package uk.ac.ebi.masscascade.msn;
 
 import org.apache.commons.math3.util.FastMath;
+import uk.ac.ebi.masscascade.core.PropertyManager;
 import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
@@ -197,7 +198,7 @@ public class MSnBuilder extends CallableTask {
             XYZTrace xyzTrace = (XYZTrace) trace;
 
             Range mzRange = new ExtendableRange(xyzTrace.get(0).y);
-            Profile msnProfile = new ProfileImpl(globalMsnId++, xyzTrace.get(0), mzRange, profile.getPropertyManager());
+            Profile msnProfile = new ProfileImpl(globalMsnId++, xyzTrace.get(0), mzRange);
             for (int i = 1; i < trace.size(); i++) msnProfile.addProfilePoint(xyzTrace.get(i));
             msnProfile.closeProfile(((XYZTrace) trace).get(trace.size() - 1).x + 1);
 

@@ -28,6 +28,7 @@ import uk.ac.ebi.masscascade.interfaces.Task;
 import uk.ac.ebi.masscascade.library.LibraryBatchSearch;
 import uk.ac.ebi.masscascade.library.LibraryGenerator;
 import uk.ac.ebi.masscascade.library.LibrarySearch;
+import uk.ac.ebi.masscascade.msn.MsnEnumerator;
 
 /**
  * An index for web tasks. Callable tasks that implement web services are registered here and assigned an identifier.
@@ -36,6 +37,7 @@ public enum SearchTasks implements Index {
 
     LIBRARY_GENERATOR(LibraryGenerator.class, ""),
     LIBRARY_BATCH_SEARCH(LibraryBatchSearch.class, "LBS"),
+    MSN_ENUMERATOR(MsnEnumerator.class, "LEN"),
     LIBRARY_SEARCH(LibrarySearch.class, "LS");
 
     private final Class<? extends CallableSearch> className;

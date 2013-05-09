@@ -39,11 +39,24 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Task to query custom libraries, matching MSn spectra where indicated.
+ * <ul>
+ * <li>Parameter <code> MZ WINDOW PPM </code>- The m/z tolerance value for the precursor ions in ppm.</li>
+ * <li>Parameter <code> MZ WINDOW AMU </code>- The m/z tolerance value for the MSn signals in dalton.</li>
+ * <li>Parameter <code> ION MODE </code>- The ion mode.</li>
+ * <li>Parameter <code> MS LEVEL </code>- The MSn level to be queried.</li>
+ * <li>Parameter <code> SCORE </code>- The minimum query score (0-1000).</li>
+ * <li>Parameter <code> COLLISION ENERGY </code>- The collision energy.</li>
+ * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input spectrum container.</li>
+ * </ul>
+ */
 public class LibraryBatchSearch extends CallableSearch {
 
     private double ppmMS1;
     private double amuMSn;
     private double minScore;
+    private int collisionEnergy;
     private Constants.MSN msn;
     private Constants.ION_MODE ionMode;
     private SpectrumContainer spectrumContainer;
@@ -79,6 +92,7 @@ public class LibraryBatchSearch extends CallableSearch {
         minScore = params.get(Parameter.SCORE, Double.class);
         msn = params.get(Parameter.MS_LEVEL, Constants.MSN.class);
         ionMode = params.get(Parameter.ION_MODE, Constants.ION_MODE.class);
+        collisionEnergy = params.get(Parameter.COLLISION_ENERGY, Integer.class);
         spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
         referenceContainer =
                 params.get(LibraryParameter.REFERENCE_LIBRARY_LIST, new ArrayList<ReferenceContainer>().getClass());
@@ -121,7 +135,8 @@ public class LibraryBatchSearch extends CallableSearch {
         for (ReferenceContainer singleRefCont : referenceContainer) {
             if (singleRefCont.getMsn() != msn) continue;
             for (ReferenceSpectrum reference : singleRefCont) {
-                if (reference.getIonMode() != ionMode) continue;
+                if (reference.getIonMode() != ionMode ||
+                        (reference.getCollisionEnergy() != collisionEnergy && collisionEnergy != 0)) continue;
 
                 double score = weightedScorer.getScore(spectrum, reference);
                 if (score < minScore) continue;

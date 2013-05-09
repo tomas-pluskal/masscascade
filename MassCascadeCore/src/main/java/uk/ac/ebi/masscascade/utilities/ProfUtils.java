@@ -100,7 +100,7 @@ public class ProfUtils {
                     identity = (Identity) prop;
                 }
             }
-            label = identity.getName();
+            if (identity != null) label = identity.getName();
             if (profile.hasProperty(PropertyManager.TYPE.Isotope) || profile.hasProperty(PropertyManager.TYPE.Adduct))
                 label = label + "*";
         } else if (profile.hasProperty(PropertyManager.TYPE.Isotope)) {
@@ -146,9 +146,9 @@ public class ProfUtils {
 
                 String id = existingIdentity.getId() + Constants.DELIMITER + identity.getId();
                 if (existingIdentity.getScore() < identity.getScore()) identity =
-                        new Identity(id, name, identity.getSource(), identity.getScore(), identity.getSource(),
+                        new Identity(id, name, identity.getNotation(), identity.getScore(), identity.getSource(),
                                 identity.getEvidence(), identity.getComments());
-                else identity = new Identity(id, name, existingIdentity.getSource(), existingIdentity.getScore(),
+                else identity = new Identity(id, name, existingIdentity.getNotation(), existingIdentity.getScore(),
                         existingIdentity.getSource(), existingIdentity.getEvidence(), existingIdentity.getComments());
                 nameToIdentity.put(identity.getName(), identity);
             } else {

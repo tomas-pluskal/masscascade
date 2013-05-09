@@ -529,7 +529,6 @@ public class ProfileImpl implements Profile {
                 recoverMSn(oldMap, newMap, msn.down());
             }
         }
-        return;
     }
 
     /**

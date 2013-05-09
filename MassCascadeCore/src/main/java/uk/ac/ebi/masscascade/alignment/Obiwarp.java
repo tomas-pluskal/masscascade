@@ -159,7 +159,7 @@ public class Obiwarp extends CallableTask {
         double[] corrections = new double[nTimeBins];
 
         try {
-            List<String> commands = new ArrayList<String>();
+            List<String> commands = new ArrayList<>();
             commands.add(executable);
             commands.add("-r " + response);
             commands.add("-g " + gapInit + "," + gapExt);

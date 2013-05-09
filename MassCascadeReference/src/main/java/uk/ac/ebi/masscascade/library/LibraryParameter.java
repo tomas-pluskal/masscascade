@@ -33,6 +33,7 @@ import java.util.List;
  */
 public enum LibraryParameter implements Option {
 
+    DEPTH("Fragment depth", 2, Integer.class),
     REFERENCE_LIBRARY_LIST("Reference library", null, new ArrayList<ReferenceContainer>().getClass()),
     REFERENCE_LIBRARY("Reference library", null, ReferenceContainer.class);
 
