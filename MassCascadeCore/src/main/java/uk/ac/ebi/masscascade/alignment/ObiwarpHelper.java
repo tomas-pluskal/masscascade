@@ -29,9 +29,9 @@ import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Trace;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
+import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.utilities.DataUtils;
 import uk.ac.ebi.masscascade.utilities.TextUtils;
-import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYTrace;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
@@ -40,109 +40,60 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * Helper class for the Obiwarp task. The class provides methods to generate mz bins from the list of profiles to be
- * aligned and convert <link> ProfileContainer </link> into lmata files.
+ * Helper class for the Obiwarp task. The class provides methods to generate mz and time bins from the list of profiles
+ * to be aligned and convert <link> ProfileContainer </link> into lmata files.
  */
 public class ObiwarpHelper {
 
     private static Logger LOGGER = Logger.getLogger(ObiwarpHelper.class);
 
-    private Set<Integer> popRows;
-    private TreeSet<Float> times;
-    private TreeMap<Double, Integer> mzBins;
+    private double mzBinSize;
+    private Range mzRange;
+    private double timeBinSize;
+    private Range timeRange;
+    private int nTimeBins;
 
     /**
-     * Constructs an Obiwarp helper and builds the list of mz bins based on the ppm tolerance.
-     *
-     * @param containerList a list of profiles to be aligned
-     * @param ppm           a tolerance in ppm
+     * Constructs an Obiwarp helper.
      */
-    public ObiwarpHelper(List<ProfileContainer> containerList, double ppm) {
-        this.mzBins = instantiate(containerList, ppm);
-    }
+    public ObiwarpHelper(double mzBinSize, Range mzRange, double timeBinSize, Range timeRange) {
 
-    /**
-     * Constructs an Obiwarp helper with a provided map of mz bins.
-     *
-     * @param mzBins a map of mz bins: m/z bins to bin indices
-     */
-    public ObiwarpHelper(TreeMap<Double, Integer> mzBins) {
-        this.mzBins = mzBins;
-    }
+        this.mzBinSize = mzBinSize;
+        this.mzRange = mzRange;
+        this.timeBinSize = timeBinSize;
+        this.timeRange = timeRange;
 
-    /**
-     * Returns the map of mz bins
-     *
-     * @return the map of mz bins: m/z bins to bin indices
-     */
-    public TreeMap<Double, Integer> getMzBins() {
-        return mzBins;
-    }
-
-    /**
-     * Takes a list of profile containers and returns a map of m/z bins to bin indices.
-     *
-     * @param containerList a list of profile containers to be aligned
-     * @param ppm           a m/z tolerance value in ppm
-     * @return the map of m/z bins to bin indices
-     */
-    private TreeMap<Double, Integer> instantiate(List<ProfileContainer> containerList, double ppm) {
-
-        TreeSet<Trace> mzs = new TreeSet<Trace>();
-        for (ProfileContainer container : containerList) {
-            for (Profile profile : container) {
-                Trace trace = new XYTrace(profile.getMzIntDp());
-                XYTrace closestTrace = (XYTrace) DataUtils.getClosestValue(trace, mzs);
-                if (closestTrace == null) mzs.add(trace);
-                else if (new ToleranceRange(closestTrace.getAvg(), ppm).contains(profile.getMz())) {
-                    closestTrace.add(profile.getMzIntDp());
-                    mzs.add(closestTrace);
-                } else mzs.add(trace);
-            }
-        }
-
-        int index = 0;
-        TreeMap<Double, Integer> mzBins = new TreeMap<Double, Integer>();
-        for (Trace trace : mzs) mzBins.put(trace.getAvg(), index++);
-
-        return mzBins;
+        nTimeBins = (int) FastMath.ceil((timeRange.getUpperBounds() - timeRange.getLowerBounds()) / timeBinSize);
     }
 
     /**
      * Builds a lmata file from the profile container.
      *
-     * @param container     the profile container
-     * @param timeWindow the time tolerance in seconds
+     * @param container the profile container
      * @return the lmata file
      */
-    public File buildLmataFile(ProfileContainer container, double timeWindow) {
+    public File buildLmataFile(ProfileContainer container) {
 
-        times = new TreeSet<Float>();
+        int nMzBins = (int) FastMath.ceil((mzRange.getUpperBounds() - mzRange.getLowerBounds()) / mzBinSize);
+
+        double zMax = 0;
+        double[][] lmataArray = new double[nTimeBins][nMzBins];
         for (Profile profile : container) {
+            int mzBin = (int) FastMath.floor((profile.getMz() - mzRange.getLowerBounds()) / mzBinSize);
             for (XYZPoint dp : profile.getData()) {
-                if (!times.contains((float) dp.x)) times.add((float) dp.x);
-            }
-        }
-
-        // calculate the number of bins
-        int nTimeBins = (int) FastMath.ceil((times.last() - times.first()) / timeWindow);
-
-        popRows = new LinkedHashSet<Integer>();
-        double[][] lmataArray = new double[nTimeBins][mzBins.size()];
-        for (Profile profile : container) {
-            Double closestMz = DataUtils.getClosestKey(profile.getMz(), mzBins);
-            for (XYZPoint dp : profile.getData()) {
-                int timeBin = (int) FastMath.floor(((float) dp.x - times.first()) / timeWindow);
-                lmataArray[timeBin][mzBins.get(closestMz)] = dp.z;
-                if (dp.z > 0) popRows.add(timeBin);
+                int timeBin = (int) FastMath.floor((dp.x - timeRange.getLowerBounds()) / timeBinSize);
+                if (timeBin < 0) timeBin = 0;
+                if (timeBin >= nTimeBins) timeBin = nTimeBins - 1;
+                lmataArray[timeBin][mzBin] += dp.z;
+                if (lmataArray[timeBin][mzBin] > zMax) zMax = lmataArray[timeBin][mzBin];
             }
         }
 
@@ -154,27 +105,23 @@ public class ObiwarpHelper {
         try {
 
             BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-            writer.write(popRows.size() + "");
+            writer.write(nTimeBins + "");
             writer.newLine();
-            for (int binIndex = 0; binIndex < nTimeBins; binIndex++) {
-                if (popRows.contains(binIndex)) writer.write(times.first() + (binIndex * timeWindow) + " ");
-            }
+            for (int binIndex = 0; binIndex < nTimeBins; binIndex++)
+                writer.write(timeRange.getLowerBounds() + (binIndex * timeBinSize) + " ");
             writer.newLine();
-            writer.write(mzBins.size() + "");
-            writer.newLine();
-            for (double mz : mzBins.keySet()) writer.write(mz + " ");
 
+            writer.write(nMzBins + "");
             writer.newLine();
-            int row = 0;
-            for (int binIndex = 0; binIndex < nTimeBins; binIndex++) {
-                if (popRows.contains(binIndex)) {
-                    for (int column = 0; column < lmataArray[row].length; column++) {
-                        double intensity = lmataArray[row][column];
-                        writer.write((intensity == 0) ? "0 " : (intensity + " "));
-                    }
-                    writer.newLine();
+            for (int binIndex = 0; binIndex < nMzBins; binIndex++) writer.write(binIndex * mzBinSize + " ");
+            writer.newLine();
+
+            for (int row = 0; row < nTimeBins; row++) {
+                for (int column = 0; column < nMzBins; column++) {
+                    double intensity = lmataArray[row][column] * Constants.MAX_ABUNDANCE / zMax;
+                    writer.write((intensity == 0) ? "0 " : (intensity + " "));
                 }
-                row++;
+                writer.newLine();
             }
 
             writer.flush();
@@ -186,16 +133,19 @@ public class ObiwarpHelper {
         return file;
     }
 
-    /**
-     * Returns a comprehensive set of times established by the lmata file creation method.
-     *
-     * @return the list of times
-     */
-    public Set<Float> getTimes() {
-        return times;
+    public int getMzBin(double mz) {
+        return (int) FastMath.floor((mz - mzRange.getLowerBounds()) / mzBinSize);
     }
 
-    public Set<Integer> getPopRows() {
-        return popRows;
+    public int getTimeBin(double time) {
+        return (int) FastMath.floor((time - timeRange.getLowerBounds()) / timeBinSize);
+    }
+
+    public double getAccurateTimeBin(double time) {
+        return (time - timeRange.getLowerBounds()) / timeBinSize;
+    }
+
+    public int getNTimeBins() {
+        return nTimeBins;
     }
 }

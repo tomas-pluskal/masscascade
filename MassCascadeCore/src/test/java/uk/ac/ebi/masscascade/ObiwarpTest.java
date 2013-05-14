@@ -35,6 +35,7 @@ import uk.ac.ebi.masscascade.io.PsiMzmlReader;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.tracebuilder.ProfileBuilder;
+import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 
 import java.io.File;
 import java.net.URL;
@@ -111,23 +112,22 @@ public class ObiwarpTest {
         chromatogramTask = new ProfileBuilder(params);
         ProfileContainer outContainer32 = (ProfileContainer) chromatogramTask.call();
 
-        List<ProfileContainer> containerList = new ArrayList<ProfileContainer>();
-        containerList.add(outContainer31);
-        containerList.add(outContainer32);
-
-        ObiwarpHelper obiHelper = new ObiwarpHelper(containerList, 10);
-        TreeMap<Double, Integer> mzBins = obiHelper.getMzBins();
-        File refFile = obiHelper.buildLmataFile(outContainer31, 1);
+        ObiwarpHelper obiHelper =
+                new ObiwarpHelper(0.25, new ExtendableRange(0, 1000), 1.5, new ExtendableRange(0, 1000));
+        File refFile = obiHelper.buildLmataFile(outContainer31);
 
         params = new ParameterMap();
         params.put(Parameter.REFERENCE_FILE, refFile);
-        params.put(Parameter.MZ_BINS, mzBins);
         params.put(Parameter.TIME_WINDOW, 1d);
         params.put(Parameter.PROFILE_CONTAINER, outContainer32);
         params.put(Parameter.EXECUTABLE, "C:/Users/stephan/Mass Spectrometry/Obiwarp/obiwarp.exe");
         params.put(Parameter.GAP_INIT, 0.1);
         params.put(Parameter.GAP_EXTEND, 0.5);
         params.put(Parameter.RESPONSE, 100d);
+        params.put(Parameter.BIN_WIDTH_MZ, 0.25);
+        params.put(Parameter.MZ_RANGE, new ExtendableRange(0, 1000));
+        params.put(Parameter.BIN_WIDTH_RT, 1.5);
+        params.put(Parameter.TIME_RANGE, new ExtendableRange(0, 1000));
 
         CallableTask obiwarpTask = new Obiwarp(params);
         ProfileContainer outContainer42 = (ProfileContainer) obiwarpTask.call();

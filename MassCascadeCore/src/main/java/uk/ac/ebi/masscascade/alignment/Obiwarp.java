@@ -22,27 +22,32 @@
 
 package uk.ac.ebi.masscascade.alignment;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.ByteStreams;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Level;
-import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.TextUtils;
+import uk.ac.ebi.masscascade.utilities.math.LinearEquation;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
+import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -59,6 +64,10 @@ import java.util.TreeSet;
  * <li>Parameter <code> GAP_EXTEND </code>- The gap penaly for extending a gap.</li>
  * <li>Parameter <code> RESPONSE </code>- The responsiveness of warping [0 - 100].</li>
  * <li>Parameter <code> EXECUTABLE </code>- The path to the Obiwarp executable.</li>
+ * <li>Parameter <code> BIN_WIDTH_MZ </code>- The width of a m/z bin in amu.</li>
+ * <li>Parameter <code> MZ_RANGE </code>- The global m/z range in amu (ll-ul).</li>
+ * <li>Parameter <code> BIN_WIDTH_RT </code>- The width of a time bin in seconds.</li>
+ * <li>Parameter <code> TIME_RANGE </code>- The global time range in seconds (ll-ul).</li>
  * </ul>
  */
 public class Obiwarp extends CallableTask {
@@ -68,7 +77,6 @@ public class Obiwarp extends CallableTask {
 
     private ObiwarpHelper obiwarpHelper;
 
-    private double timeWindow;
     private double gapInit;
     private double gapExt;
     private double response;
@@ -104,10 +112,13 @@ public class Obiwarp extends CallableTask {
         gapExt = params.get(Parameter.GAP_EXTEND, Double.class);
         response = params.get(Parameter.RESPONSE, Double.class);
         executable = params.get(Parameter.EXECUTABLE, String.class);
-        timeWindow = params.get(Parameter.TIME_WINDOW, Double.class);
 
-        TreeMap<Double, Integer> mzBins = params.get(Parameter.MZ_BINS, TreeMap.class);
-        obiwarpHelper = new ObiwarpHelper(mzBins);
+        double mzBinSize = params.get(Parameter.BIN_WIDTH_MZ, Double.class);
+        Range mzRange = params.get(Parameter.MZ_RANGE, ExtendableRange.class);
+        double timeBinSize = params.get(Parameter.BIN_WIDTH_RT, Double.class);
+        Range timeRange = params.get(Parameter.TIME_RANGE, ExtendableRange.class);
+
+        obiwarpHelper = new ObiwarpHelper(mzBinSize, mzRange, timeBinSize, timeRange);
     }
 
     /**
@@ -123,25 +134,28 @@ public class Obiwarp extends CallableTask {
         ProfileContainer outProfileContainer = profileContainer.getBuilder().newInstance(ProfileContainer.class, id,
                 profileContainer.getWorkingDirectory());
 
-        File profFile = obiwarpHelper.buildLmataFile(profileContainer, timeWindow);
-        TreeSet<Float> times = (TreeSet<Float>) obiwarpHelper.getTimes();
-        double[] corrections = align(profFile, times);
+        File profFile = obiwarpHelper.buildLmataFile(profileContainer);
+        double[] alignedTimes = align(profFile);
 
         for (Profile profile : profileContainer) {
-            Iterator<XYZPoint> dpIter = profile.getData().iterator();
-            XYZPoint dp = dpIter.next();
-            int timeBin = (int) FastMath.floor(((float) dp.x - times.first()) / timeWindow);
-            Profile alignedProfile = profile.copy(dp.x + corrections[timeBin]);
-            while (dpIter.hasNext()) {
-                dp = dpIter.next();
-                timeBin = (int) FastMath.floor(((float) dp.x - times.first()) / timeWindow);
-                alignedProfile.addProfilePoint(new XYZPoint(dp.x + corrections[timeBin], dp.y, dp.z));
+
+            Iterator<XYZPoint> iterator = profile.getData().iterator();
+            XYZPoint dp = iterator.next();
+            Profile alignedProfile = profile.copy(getInterpolatedTimeValue(dp.x, alignedTimes));
+
+            while (iterator.hasNext()) {
+                dp = iterator.next();
+                double time = getInterpolatedTimeValue(dp.x, alignedTimes);
+                alignedProfile.addProfilePoint(new XYZPoint(time, dp.y, dp.z));
             }
             alignedProfile.closeProfile();
             outProfileContainer.addProfile(alignedProfile);
         }
 
         outProfileContainer.finaliseFile();
+
+        obiwarpHelper.buildLmataFile(outProfileContainer);
+
         return outProfileContainer;
     }
 
@@ -151,18 +165,18 @@ public class Obiwarp extends CallableTask {
      * @param file the Obiwarp binary
      * @return the old to aligned times data map
      */
-    private double[] align(File file, TreeSet<Float> times) {
+    private double[] align(File file) {
 
         BufferedInputStream bufStream = null;
-        int nTimeBins = (int) FastMath.ceil((times.last() - times.first()) / timeWindow);
-
-        double[] corrections = new double[nTimeBins];
+        double[] alignedTimes = new double[obiwarpHelper.getNTimeBins()];
 
         try {
             List<String> commands = new ArrayList<>();
             commands.add(executable);
-            commands.add("-r " + response);
-            commands.add("-g " + gapInit + "," + gapExt);
+            commands.add("-r");
+            commands.add(response + "");
+            commands.add("-g");
+            commands.add(gapInit + "," + gapExt);
             commands.add(referenceFile.getAbsolutePath());
             commands.add(file.getAbsolutePath());
             ProcessBuilder pb = new ProcessBuilder(commands);
@@ -171,13 +185,16 @@ public class Obiwarp extends CallableTask {
             InputStream inputStream = process.getInputStream();
             bufStream = new BufferedInputStream(inputStream);
 
+            TextUtils tx = new TextUtils();
             Float number;
             int index = 0;
-            Iterator<Integer> popRowsIter = obiwarpHelper.getPopRows().iterator();
-            TextUtils tx = new TextUtils();
-            while ((number = tx.readNumberFromStream(bufStream)) != null) {
-                corrections[index] = number - popRowsIter.next() * timeWindow;
-                index++;
+            while ((number = tx.readNumberFromStream(bufStream)) != null) alignedTimes[index++] = number;
+
+            try {
+                process.waitFor();
+                process.destroy();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         } catch (IOException exception) {
             LOGGER.log(Level.ERROR, "Obiwarp process error: " + exception.getMessage());
@@ -186,6 +203,25 @@ public class Obiwarp extends CallableTask {
             file.delete();
         }
 
-        return corrections;
+        return alignedTimes;
+    }
+
+    /**
+     * Performs linear interpolation in between the ceiling and flooring bin that corresponds to the time value.
+     *
+     * @param time         the aligned time value
+     * @param alignedTimes the array of aligned times
+     * @return the interpolates time value
+     */
+    private double getInterpolatedTimeValue(double time, double[] alignedTimes) {
+
+        double accTimeBin = obiwarpHelper.getAccurateTimeBin(time);
+        double floorTimeBin = FastMath.floor(accTimeBin);
+        double ceilTimeBin = FastMath.ceil(accTimeBin);
+
+        LinearEquation lq = new LinearEquation(new XYPoint(floorTimeBin, alignedTimes[(int) floorTimeBin]),
+                new XYPoint(ceilTimeBin, alignedTimes[(int) ceilTimeBin]));
+
+        return lq.getY(accTimeBin);
     }
 }

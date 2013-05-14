@@ -56,6 +56,7 @@ public enum Parameter implements Option {
     REFERENCE_RAW_CONTAINER("Reference raw file", null, RawContainer.class),
     REFERENCE_RAW_MAP("Reference raw map", null, TreeMultimap.class),
     PROFILE_CONTAINER("Profile file", null, ProfileContainer.class),
+    REFERENCE_PROFILE_CONTAINER("Reference profile file", null, ProfileContainer.class),
     SPECTRUM_CONTAINER("Spectrum file", null, SpectrumContainer.class),
 
     /*
@@ -173,6 +174,8 @@ public enum Parameter implements Option {
      */
     BINS("Number of bins", 10),
     BIN_WIDTH("Bin width", 1.5),
+    BIN_WIDTH_MZ("m/z bin width", 0.5),
+    BIN_WIDTH_RT("Time bin width", 1.5),
     AGGREGATION("Aggregation", MzBinning.BinningType.AVG.name());
 
     private String description;

@@ -98,6 +98,8 @@ public class PointPainterLabel extends APointPainter<PointPainterLabel> {
     }
 
     private ITracePoint2D lowestOriginal;
+    private Integer pX;
+    private Integer pY;
 
     /**
      * @see info.monitorenter.gui.chart.IPointPainter#paintPoint(int, int, int,
@@ -108,6 +110,17 @@ public class PointPainterLabel extends APointPainter<PointPainterLabel> {
 
         if (nextY < absoluteY) {
             lowestOriginal = original;
+            pX = absoluteX;
+            pY = absoluteY;
+        } else if (nextY == absoluteY && pX != null && lowestOriginal != null) {
+            if (lowestOriginal.getScaledY() >= 0.3) {
+                g.setFont(font);
+                String value = MathUtils.roundToThreeDecimals(lowestOriginal.getX()) + "";
+                int stringWidth = g.getFontMetrics(font).stringWidth(value);
+                g.drawString(value, pX - (stringWidth / 2), pY - OFFSET_Y);
+            }
+            pX = null;
+            pY = null;
         } else if (lowestOriginal != null) {
             if (lowestOriginal.getScaledY() >= 0.3) {
                 g.setFont(font);
