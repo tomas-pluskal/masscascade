@@ -20,31 +20,26 @@
  *   Stephan Beisken - initial API and implementation
  */
 
-package uk.ac.ebi.masscascade.chartsthreed.axis;
+package uk.ac.ebi.masscascade.threed;
 
-import javax.media.j3d.Node;
-import javax.media.j3d.Transform3D;
-import javax.media.j3d.TransformGroup;
-import javax.vecmath.Vector3f;
+import org.jzy3d.plot3d.builder.Mapper;
+import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
-public class YAxisBuilder extends AxisBuilder {
+import java.util.Map;
 
-    public YAxisBuilder(String label, String[] tickLabels, double[] tickLocations) {
+public class ThreeDMapper extends Mapper {
 
-        setLabel(label);
-        setTickLabels(tickLabels);
-        setTickLocations(tickLocations);
+    private Map<XYPoint, Double> coordinates;
+
+    public ThreeDMapper(Map<XYPoint, Double> coordinates) {
+
+        super();
+        this.coordinates = coordinates;
     }
 
-    public Node getNode() {
-
-        Transform3D t3d = new Transform3D();
-        t3d.set(1 / scale, new Vector3f(-0.5f, +0.5f, 0));
-        Transform3D rot = new Transform3D();
-        rot.rotZ(-Math.PI / 2);
-        t3d.mul(rot);
-        TransformGroup tg = new TransformGroup(t3d);
-        tg.addChild(super.getNode());
-        return tg;
+    @Override
+    public double f(double v, double v2) {
+        XYPoint xy = new XYPoint(v, v2);
+        return coordinates.containsKey(xy) ? coordinates.get(xy) : 0d;
     }
 }
