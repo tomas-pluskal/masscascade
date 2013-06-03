@@ -38,7 +38,9 @@ import uk.ac.ebi.masscascade.properties.Adduct;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -99,27 +101,31 @@ public class IsotopeKeeper extends CallableTask {
 
         for (Spectrum spectrum : spectrumContainer) {
 
-            Set<Integer> idSet = new HashSet<Integer>();
+            Set<Integer> idSet = new HashSet<>();
+            List<Integer> adductParentIds = new ArrayList<>();
 
             for (Profile profile : ((PseudoSpectrum) spectrum).getProfileList()) {
 
                 if (profile.hasProperty(PropertyManager.TYPE.Isotope)) {
                     idSet.add(profile.getId());
                     for (Property propI : profile.getProperty(PropertyManager.TYPE.Isotope)) {
-                        if (propI.getValue(Integer.class) == 0) {
-                            if (profile.hasProperty(PropertyManager.TYPE.Adduct)) {
-                                for (Property propA : profile.getProperty(PropertyManager.TYPE.Adduct)) {
-                                    idSet.add(((Adduct) propA).getChildId());
-                                }
-                            }
-                        }
+                        if (propI.getValue(Integer.class) == 0 && profile.hasProperty(PropertyManager.TYPE.Adduct))
+                            adductParentIds.add(profile.getId());
                     }
+                }
+            }
+
+            for (Profile profile : ((PseudoSpectrum) spectrum).getProfileList()) {
+
+                if (profile.hasProperty(PropertyManager.TYPE.Adduct)) {
+                    for (Property propA : profile.getProperty(PropertyManager.TYPE.Adduct))
+                        if (adductParentIds.contains(((Adduct) propA).getParentId())) idSet.add(profile.getId());
                 }
             }
 
             rtRange = new ExtendableRange();
             xyList = new XYList();
-            profileSet = new HashSet<Profile>();
+            profileSet = new HashSet<>();
 
             for (int profileId : idSet) {
 

@@ -40,12 +40,11 @@ import uk.ac.ebi.masscascade.charts.painter.TracePainterAnnotation;
 import uk.ac.ebi.masscascade.charts.painter.TracePainterLabel;
 import uk.ac.ebi.masscascade.charts.painter.TracePainterSpline;
 import uk.ac.ebi.masscascade.utilities.DataSet;
+import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
-import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 
-import java.awt.Color;
-import java.awt.PopupMenu;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -63,6 +62,7 @@ public class SimpleSpectrum extends ZoomableChart {
 
     private static final int BAR_SIZE = 2;
     private static final int DISC_SIZE = 5;
+    private static final int DISC_SIZE_POINT = 1;
     private static final int FONT_SIZE = 10;
     private static final int SCALE = 1000;
     private static final int PRECISION = 2;
@@ -72,7 +72,7 @@ public class SimpleSpectrum extends ZoomableChart {
 
     private Map<String, ITrace2D> traces;
 
-    public static enum PAINTERS {LABEL, DISC, ANNO, POLY, SPLINE, BAR, DISC_ONLY}
+    public static enum PAINTERS {LABEL, DISC, ANNO, POLY, SPLINE, BAR, DISC_ONLY, POINT_ONLY}
 
     private Map<PAINTERS, Boolean> painterMap = new HashMap<PAINTERS, Boolean>() {{
         this.put(PAINTERS.POLY, true);
@@ -121,12 +121,8 @@ public class SimpleSpectrum extends ZoomableChart {
         trace.setPhysicalUnits(dataSet.getxLabel(), dataSet.getyLabel());
 
         if (dataSet.getColor().equals(Color.BLACK)) {
-            if (traces.containsKey(dataSet.getTitle())) {
-                trace.setColor(traces.get(dataSet.getTitle()).getColor());
-            }
-        } else {
-            trace.setColor(dataSet.getColor());
-        }
+            if (traces.containsKey(dataSet.getTitle())) trace.setColor(traces.get(dataSet.getTitle()).getColor());
+        } else trace.setColor(dataSet.getColor());
 
         traces.put(dataSet.getTitle(), trace);
         this.addTrace(trace);
@@ -397,6 +393,8 @@ public class SimpleSpectrum extends ZoomableChart {
                 force = true;
             } else if (painterMap.containsKey(PAINTERS.DISC_ONLY)) {
                 traces.get(dataSetTitle).setTracePainter(new TracePainterDisc(DISC_SIZE));
+            } else if (painterMap.containsKey(PAINTERS.POINT_ONLY)) {
+                traces.get(dataSetTitle).setTracePainter(new TracePainterDisc(DISC_SIZE_POINT));
             } else if (painterMap.containsKey(PAINTERS.SPLINE)) {
                 traces.get(dataSetTitle).setTracePainter(new TracePainterSpline(PRECISION));
                 force = true;
