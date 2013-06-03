@@ -134,7 +134,7 @@ public class ReferenceContainer implements Container, Iterable<ReferenceSpectrum
      */
     @Override
     public Iterator<ReferenceSpectrum> iterator() {
-        return spectra.get(0).iterator();
+        return spectra.get(0d).iterator();
     }
 
     /**

@@ -22,6 +22,7 @@
 
 package uk.ac.ebi.masscascade.library;
 
+import org.apache.commons.math3.util.FastMath;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableSearch;
 import uk.ac.ebi.masscascade.interfaces.Profile;
@@ -33,11 +34,13 @@ import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.properties.Identity;
 import uk.ac.ebi.masscascade.reference.ReferenceContainer;
 import uk.ac.ebi.masscascade.reference.ReferenceSpectrum;
+import uk.ac.ebi.masscascade.score.MzScorer;
 import uk.ac.ebi.masscascade.score.WeightedScorer;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 /**
  * Task to query custom libraries, matching MSn spectra where indicated.
@@ -62,6 +65,7 @@ public class LibraryBatchSearch extends CallableSearch {
     private SpectrumContainer spectrumContainer;
     private List<ReferenceContainer> referenceContainer;
 
+    private MzScorer mzScorer;
     private WeightedScorer weightedScorer;
 
     /**
@@ -110,6 +114,7 @@ public class LibraryBatchSearch extends CallableSearch {
         SpectrumContainer outContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
                 spectrumContainer.getWorkingDirectory());
 
+        mzScorer = new MzScorer(ppmMS1);
         weightedScorer = new WeightedScorer(amuMSn);
 
         if (msn == Constants.MSN.MS1) {
@@ -135,14 +140,9 @@ public class LibraryBatchSearch extends CallableSearch {
         for (ReferenceContainer singleRefCont : referenceContainer) {
             if (singleRefCont.getMsn() != msn) continue;
             for (ReferenceSpectrum reference : singleRefCont) {
-                if (reference.getIonMode() != ionMode ||
-                        (reference.getCollisionEnergy() != collisionEnergy && collisionEnergy != 0)) continue;
-
-                double score = weightedScorer.getScore(spectrum, reference);
-                if (score < minScore) continue;
-
-                Identity identity = new Identity(reference.getId(), reference.getName(), reference.getNotation(), score,
-                        singleRefCont.getSource(), msn.name(), reference.getTitle());
+                if (reference.getIonMode() != ionMode || (reference.getCollisionEnergy() != collisionEnergy &&
+                        collisionEnergy != 0))
+                    continue;
 
                 double mass = 0;
 
@@ -155,11 +155,31 @@ public class LibraryBatchSearch extends CallableSearch {
                     else if (ionMode.equals(Constants.ION_MODE.NEGATIVE)) mass -= Constants.PARTICLES.PROTON.getMass();
                 }
 
-                XYPoint nearestDp = spectrum.getNearestPoint(mass, ppmMS1);
-                for (Profile profile : spectrum) {
-                    if (profile.getMz() == nearestDp.x) {
+                // simple m/z match
+                if (reference.getMzIntList().size() == 1) {
+                    for (Profile profile : spectrum) {
+                        double score = mzScorer.score(profile, reference);
+                        if (score < minScore) continue;
+                        Identity identity =
+                                new Identity(reference.getId(), reference.getName(), reference.getNotation(), score,
+                                        singleRefCont.getSource(), msn.name(), reference.getTitle());
                         profile.setProperty(identity);
-                        break;
+                    }
+                } else { // spectrum match
+                    double score = weightedScorer.getScore(spectrum, reference);
+                    if (score < minScore) continue;
+
+                    Identity identity =
+                            new Identity(reference.getId(), reference.getName(), reference.getNotation(), score,
+                                    singleRefCont.getSource(), msn.name(), reference.getTitle());
+
+                    XYPoint nearestDp = spectrum.getNearestPoint(mass, ppmMS1);
+                    if (nearestDp == null) continue;
+                    for (Profile profile : spectrum) {
+                        if (profile.getMz() == nearestDp.x) {
+                            profile.setProperty(identity);
+                            break;
+                        }
                     }
                 }
             }

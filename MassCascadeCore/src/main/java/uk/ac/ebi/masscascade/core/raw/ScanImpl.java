@@ -129,7 +129,6 @@ public class ScanImpl implements Scan, Comparable<Scan> {
 
             this.mzRange = new ExtendableRange(0);
             this.totalIonCurrent = 0;
-
         } else {
 
             int baseIndex = 0;
@@ -294,10 +293,10 @@ public class ScanImpl implements Scan, Comparable<Scan> {
 
         int ip = low;
         if (low == xyList.size()) ip = low - 1;
+        else if (low == 0) ip = low;
         else if (low == xyList.size() - 1) {
             if (xyList.get(ip).x - mz > xyList.get(ip - 1).x - mz) ip--;
-        } else if (low == 0) ip = low;
-        else {
+        } else {
             if (xyList.get(ip).x - mz > xyList.get(ip + 1).x - mz) ip++;
             else if (xyList.get(ip).x - mz > xyList.get(ip - 1).x - mz) ip--;
         }
