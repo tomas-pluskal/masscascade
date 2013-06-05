@@ -1,6 +1,6 @@
 package uk.ac.ebi.masscascade.bless.table;
 
-import uk.ac.ebi.masscascade.commons.compound.CompoundSpectrum;
+import uk.ac.ebi.masscascade.compound.CompoundSpectrum;
 import uk.ac.ebi.masscascade.commons.Evidence;
 import uk.ac.ebi.masscascade.commons.Status;
 

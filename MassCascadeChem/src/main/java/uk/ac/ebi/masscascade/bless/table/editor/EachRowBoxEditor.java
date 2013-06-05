@@ -23,7 +23,7 @@
 package uk.ac.ebi.masscascade.bless.table.editor;
 
 import uk.ac.ebi.masscascade.bless.table.BlessTableModel;
-import uk.ac.ebi.masscascade.commons.compound.CompoundEntity;
+import uk.ac.ebi.masscascade.compound.CompoundEntity;
 
 import javax.swing.*;
 import java.awt.*;

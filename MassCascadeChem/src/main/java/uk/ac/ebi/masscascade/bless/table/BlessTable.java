@@ -1,19 +1,13 @@
 package uk.ac.ebi.masscascade.bless.table;
 
 import uk.ac.ebi.masscascade.bless.table.editor.EachRowBoxEditor;
-import uk.ac.ebi.masscascade.bless.table.renderer.CompoundRenderer;
 import uk.ac.ebi.masscascade.bless.table.renderer.DeleteRenderer;
 import uk.ac.ebi.masscascade.bless.table.renderer.MsRenderer;
-import uk.ac.ebi.masscascade.bless.table.renderer.MsnRenderer;
 import uk.ac.ebi.masscascade.bless.table.renderer.StatusRenderer;
-import uk.ac.ebi.masscascade.commons.compound.CompoundSpectrum;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
+import uk.ac.ebi.masscascade.compound.CompoundSpectrum;
 
 import javax.swing.*;
 import javax.swing.plaf.ColorUIResource;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;

@@ -20,7 +20,7 @@
  *   Stephan Beisken - initial API and implementation
  */
 
-package uk.ac.ebi.masscascade.commons.compound;
+package uk.ac.ebi.masscascade.compound;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;

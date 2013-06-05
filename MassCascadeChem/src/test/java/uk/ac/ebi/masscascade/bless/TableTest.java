@@ -5,17 +5,13 @@ import uk.ac.ebi.masscascade.bless.table.BlessPane;
 import uk.ac.ebi.masscascade.bless.table.BlessTable;
 import uk.ac.ebi.masscascade.commons.Evidence;
 import uk.ac.ebi.masscascade.commons.Status;
-import uk.ac.ebi.masscascade.commons.compound.CompoundEntity;
-import uk.ac.ebi.masscascade.commons.compound.CompoundSpectrum;
-import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
+import uk.ac.ebi.masscascade.compound.CompoundEntity;
+import uk.ac.ebi.masscascade.compound.CompoundSpectrum;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
 import javax.swing.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class TableTest {
 
