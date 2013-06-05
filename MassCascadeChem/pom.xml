@@ -1,0 +1,91 @@
+<!--
+  ~ Copyright (C) 2013 EMBL - European Bioinformatics Institute
+  ~
+  ~ This file is part of MassCascade.
+  ~
+  ~ MassCascade is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ MassCascade is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with MassCascade. If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~ Contributors:
+  ~   Stephan Beisken - initial API and implementation
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>masscascade-chem</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>MassCascadeChem</name>
+    <description>Suite for mass spectrometry data processing</description>
+    <parent>
+        <artifactId>masscascade</artifactId>
+        <groupId>uk.ac.ebi</groupId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <cdkVersion>1.5.2</cdkVersion>
+    </properties>
+    <dependencies>
+        <dependency>
+            <artifactId>masscascade-core</artifactId>
+            <groupId>uk.ac.ebi</groupId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <artifactId>cdk-core</artifactId>
+            <groupId>org.openscience.cdk</groupId>
+            <version>${cdkVersion}</version>
+        </dependency>
+        <dependency>
+            <artifactId>cdk-render</artifactId>
+            <groupId>org.openscience.cdk</groupId>
+            <version>${cdkVersion}</version>
+        </dependency>
+        <dependency>
+            <artifactId>cdk-renderbasic</artifactId>
+            <groupId>org.openscience.cdk</groupId>
+            <version>${cdkVersion}</version>
+        </dependency>
+        <dependency>
+            <artifactId>cdk-renderextra</artifactId>
+            <groupId>org.openscience.cdk</groupId>
+            <version>${cdkVersion}</version>
+        </dependency>
+        <dependency>
+            <artifactId>cdk-renderawt</artifactId>
+            <groupId>org.openscience.cdk</groupId>
+            <version>${cdkVersion}</version>
+        </dependency>
+        <dependency>
+            <artifactId>cdk-extra</artifactId>
+            <groupId>org.openscience.cdk</groupId>
+            <version>${cdkVersion}</version>
+        </dependency>
+        <dependency>
+            <artifactId>cdk-sdg</artifactId>
+            <groupId>org.openscience.cdk</groupId>
+            <version>${cdkVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.13</version>
+        </dependency>
+
+    </dependencies>
+</project>
