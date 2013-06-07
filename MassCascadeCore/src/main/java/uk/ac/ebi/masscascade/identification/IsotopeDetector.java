@@ -105,26 +105,25 @@ public class IsotopeDetector {
      */
     public void findIsotopes(final Spectrum pseudoSpectrum) {
 
-        final List<Profile> profileList = ((PseudoSpectrum) pseudoSpectrum).getProfileList();
+        List<Profile> profileList = ((PseudoSpectrum) pseudoSpectrum).getProfileList();
         Collections.sort(profileList, new ProfileMassComparator());
         double[][] profileDeltas = getProfileMassDeltas(profileList);
 
-        List<DirectedMultigraph<Profile, DefaultEdge>> graphs =
-                new ArrayList<DirectedMultigraph<Profile, DefaultEdge>>();
+        DirectedMultigraph<Profile, DefaultEdge>[] graphs = new DirectedMultigraph[charge];
         for (int i = 0; i < charge; i++)
-            graphs.add(new DirectedMultigraph<Profile, DefaultEdge>(DefaultEdge.class));
+            graphs[i] = new DirectedMultigraph<>(DefaultEdge.class);
 
         for (int row = 0; row < profileDeltas.length; row++) {
+            Range[] protonDeltas = getProtonDeltas(charge, profileList.get(row).getMz());
             for (int col = 0; col < profileDeltas.length; col++) {
 
                 double profileDelta = profileDeltas[row][col];
                 if (profileDelta == 0) break;
 
-                List<Range> protonDeltas = getProtonDeltas(charge, profileList.get(row).getMzIntDp().x);
                 int chargeCount = 0;
                 for (Range protonDelta : protonDeltas) {
                     if (protonDelta.contains(profileDelta))
-                        JGraphTSync.addEdgeWithVertices(graphs.get(chargeCount), profileList.get(row),
+                        JGraphTSync.addEdgeWithVertices(graphs[chargeCount], profileList.get(row),
                                 profileList.get(col));
                     chargeCount++;
                 }
@@ -132,6 +131,10 @@ public class IsotopeDetector {
         }
 
         adjustIsotopeLabels(graphs);
+
+        graphs = null;
+        profileList = null;
+        profileDeltas = null;
     }
 
     /**
@@ -140,13 +143,13 @@ public class IsotopeDetector {
      * @param charge the charge range
      * @return the list of proton differences
      */
-    private List<Range> getProtonDeltas(int charge, double mz) {
+    private Range[] getProtonDeltas(int charge, double mz) {
 
-        List<Range> protonDeltas = new ArrayList<>();
+        Range[] protonDeltas = new Range[charge];
         for (int curCharge = 1; curCharge <= charge; curCharge++) {
             double sigma = mz * massTolerance / Constants.PPM;
-            protonDeltas.add(new ExtendableRange((ISOTOPE_DIFFERENCE - sigma) / curCharge,
-                    (ISOTOPE_DIFFERENCE + sigma) / curCharge));
+            protonDeltas[curCharge - 1] = new ExtendableRange((ISOTOPE_DIFFERENCE - sigma) / curCharge,
+                    (ISOTOPE_DIFFERENCE + sigma) / curCharge);
         }
         return protonDeltas;
     }
@@ -155,14 +158,14 @@ public class IsotopeDetector {
      * Takes all isotope-detected profiles and sets the nominal isotope positions from the main M profile (0, 1,
      * 2, ..).
      */
-    private void adjustIsotopeLabels(List<DirectedMultigraph<Profile, DefaultEdge>> graphs) {
+    private void adjustIsotopeLabels(DirectedMultigraph<Profile, DefaultEdge>[] graphs) {
 
         for (DirectedMultigraph<Profile, DefaultEdge> graph : graphs) {
 
-            final List<Set<Profile>> connectedSets = JGraphTSync.getConnectedSets(graph);
+            List<Set<Profile>> connectedSets = JGraphTSync.getConnectedSets(graph);
 
-            List<Profile> rootV = new ArrayList<Profile>();
-            List<Profile> leafV = new ArrayList<Profile>();
+            List<Profile> rootV = new ArrayList<>();
+            List<Profile> leafV = new ArrayList<>();
 
             Profile vertex;
             for (Set<Profile> profileSet : connectedSets) {
@@ -172,11 +175,13 @@ public class IsotopeDetector {
                     else if (graph.outDegreeOf(profile) == 0) leafV.add(profile);
                 }
 
-                for (final Profile root : rootV) {
-                    KShortestPaths<Profile, DefaultEdge> pathFinder =
-                            new KShortestPaths<>(graph, root, MAX_PATH);
-                    for (final Profile leaf : leafV) {
-                        List<GraphPath<Profile, DefaultEdge>> paths = pathFinder.getPaths(leaf);
+                KShortestPaths<Profile, DefaultEdge> pathFinder;
+                List<GraphPath<Profile, DefaultEdge>> paths;
+
+                for (Profile root : rootV) {
+                    pathFinder = new KShortestPaths<>(graph, root, MAX_PATH);
+                    for (Profile leaf : leafV) {
+                        paths = pathFinder.getPaths(leaf);
                         if (paths == null) continue;
                         for (GraphPath<Profile, DefaultEdge> path : paths) {
                             int mainId = 0;
@@ -214,9 +219,15 @@ public class IsotopeDetector {
                             for (Map.Entry<Integer, Isotope> entry : idToIsotope.entrySet())
                                 pathVertices.get(entry.getKey()).setProperty(entry.getValue());
                         }
+                        paths = null;
                     }
+                    pathFinder = null;
                 }
             }
+
+            rootV = null;
+            leafV = null;
+            connectedSets = null;
         }
     }
 
@@ -240,12 +251,12 @@ public class IsotopeDetector {
         int row = 0;
         Iterator<Profile> itRow = peakList.iterator();
         while (itRow.hasNext()) {
-            double rowMass = itRow.next().getMzIntDp().x;
+            double rowMass = itRow.next().getMz();
 
             int col = 0;
             Iterator<Profile> itCol = peakList.iterator();
             while (itCol.hasNext()) {
-                double colMass = itCol.next().getMzIntDp().x;
+                double colMass = itCol.next().getMz();
 
                 double delta = rowMass - colMass;
                 if (delta == 0) break;

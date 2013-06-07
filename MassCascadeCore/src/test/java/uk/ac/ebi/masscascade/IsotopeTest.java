@@ -25,15 +25,26 @@ package uk.ac.ebi.masscascade;
 import junit.framework.Assert;
 import org.junit.Test;
 import uk.ac.ebi.masscascade.commons.FileLoader;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
+import uk.ac.ebi.masscascade.core.PropertyManager;
+import uk.ac.ebi.masscascade.identification.IsotopeFinder;
+import uk.ac.ebi.masscascade.interfaces.CallableTask;
+import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.parameters.Parameter;
+import uk.ac.ebi.masscascade.parameters.ParameterMap;
 
-public class ProfileBuilderTest {
+public class IsotopeTest {
 
     @Test
-    public void testBuilder() {
+    public void testFinder() throws Exception {
 
-        ProfileContainer container = FileLoader.getProfileContainer(FileLoader.TESTFILE.SAMPLE);
+        ParameterMap params = new ParameterMap();
+        params.put(Parameter.MZ_WINDOW_PPM, 20);
+        params.put(Parameter.SPECTRUM_CONTAINER, FileLoader.getSpectrumContainer(FileLoader.TESTFILE.QC2));
 
-        Assert.assertEquals(137, container.size());
+        CallableTask task = new IsotopeFinder(params);
+        SpectrumContainer container = (SpectrumContainer) task.call();
+
+        Assert.assertTrue(container.getSpectrum(3).getProfile(245).hasProperty(PropertyManager.TYPE.Isotope));
+        Assert.assertTrue(container.getSpectrum(3).getProfile(246).hasProperty(PropertyManager.TYPE.Isotope));
     }
 }

@@ -22,6 +22,44 @@
 
 package uk.ac.ebi.masscascade.compound;
 
+import uk.ac.ebi.masscascade.interfaces.Spectrum;
+import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class CompoundSpectrumGenerator {
 
+    private double missingness;
+    private List<SpectrumContainer> spectraContainer;
+
+    public CompoundSpectrumGenerator() {
+        missingness = 0;
+    }
+
+    public void setMissingness(double missingness) {
+        this.missingness = missingness;
+    }
+
+    public double getMissingness() {
+        return missingness;
+    }
+
+    public List<CompoundSpectrum> getSpectra(List<SpectrumContainer> spectraContainer) {
+
+        List<CompoundSpectrum> compoundSpectra = new ArrayList<>();
+
+        for (SpectrumContainer spectrumContainer : spectraContainer) {
+            for (Spectrum spectrum : spectrumContainer) {
+                resolveCompoundSpectra(spectrum);
+            }
+        }
+
+        return compoundSpectra;
+    }
+
+    private void resolveCompoundSpectra(Spectrum spectrum) {
+
+
+    }
 }

@@ -25,15 +25,16 @@ package uk.ac.ebi.masscascade;
 import junit.framework.Assert;
 import org.junit.Test;
 import uk.ac.ebi.masscascade.commons.FileLoader;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
+import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 
-public class ProfileBuilderTest {
+public class CosineTest {
 
     @Test
-    public void testBuilder() {
+    public void testTasks() {
 
-        ProfileContainer container = FileLoader.getProfileContainer(FileLoader.TESTFILE.SAMPLE);
+        SpectrumContainer container = FileLoader.getSpectrumContainer(FileLoader.TESTFILE.SAMPLE);
 
-        Assert.assertEquals(137, container.size());
+        Assert.assertEquals(11, container.size());
+        Assert.assertEquals(4, container.getSpectrum(6).size());
     }
 }

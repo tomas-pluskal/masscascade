@@ -72,9 +72,11 @@ public class TableTest {
         spectrum3.setCompounds(es2);
 
         List<CompoundSpectrum> spectra = new ArrayList<>();
-        spectra.add(spectrum1);
-        spectra.add(spectrum2);
-        spectra.add(spectrum3);
+        for (int i = 0; i < 5000; i++) {
+            spectra.add(spectrum1);
+            spectra.add(spectrum2);
+            spectra.add(spectrum3);
+        }
 
         JTable table = new BlessTable(spectra);
         JScrollPane pane = new BlessPane(table);

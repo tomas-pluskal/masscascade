@@ -101,6 +101,8 @@ public class IsotopeFinder extends CallableTask {
         for (Spectrum spectrum : spectrumContainer) {
             isotopeDetector.findIsotopes(spectrum);
             outSpectrumContainer.addSpectrum(spectrum);
+
+            spectrum = null;
         }
 
         outSpectrumContainer.finaliseFile();
