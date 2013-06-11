@@ -22,7 +22,6 @@
 
 package uk.ac.ebi.masscascade.identification;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.KShortestPaths;
@@ -51,7 +50,7 @@ import java.util.Set;
  */
 public class IsotopeDetector {
 
-    private static final Logger LOGGER = Logger.getLogger(AdductDetector.class);
+    private static final Logger LOGGER = Logger.getLogger(IsotopeDetector.class);
 
     private static final int MAX_PATH = 50;
 

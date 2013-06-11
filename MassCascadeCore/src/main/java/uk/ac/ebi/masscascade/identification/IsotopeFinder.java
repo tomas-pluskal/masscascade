@@ -96,13 +96,12 @@ public class IsotopeFinder extends CallableTask {
         SpectrumContainer outSpectrumContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
                 spectrumContainer.getWorkingDirectory());
 
-        IsotopeDetector isotopeDetector = new IsotopeDetector(CHARGE, massTolerance);
+//        IsotopeDetector isotopeDetector = new IsotopeDetector(CHARGE, massTolerance);
+        IsotopeDetectorRec isotopeDetector = new IsotopeDetectorRec(CHARGE, massTolerance);
 
         for (Spectrum spectrum : spectrumContainer) {
             isotopeDetector.findIsotopes(spectrum);
             outSpectrumContainer.addSpectrum(spectrum);
-
-            spectrum = null;
         }
 
         outSpectrumContainer.finaliseFile();
