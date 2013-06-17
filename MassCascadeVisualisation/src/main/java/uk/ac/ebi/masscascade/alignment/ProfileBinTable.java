@@ -22,6 +22,7 @@
 
 package uk.ac.ebi.masscascade.alignment;
 
+import uk.ac.ebi.masscascade.alignment.profilebins.ProfileBin;
 import uk.ac.ebi.masscascade.alignment.renderer.PrettyFileRenderer;
 import uk.ac.ebi.masscascade.alignment.renderer.PrettyPpmRenderer;
 import uk.ac.ebi.masscascade.alignment.renderer.PrettySecRenderer;

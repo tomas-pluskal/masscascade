@@ -20,7 +20,7 @@
  *   Stephan Beisken - initial API and implementation
  */
 
-package uk.ac.ebi.masscascade.alignment;
+package uk.ac.ebi.masscascade.alignment.profilebins;
 
 import uk.ac.ebi.masscascade.core.chromatogram.MassChromatogram;
 import uk.ac.ebi.masscascade.interfaces.Chromatogram;
@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A binned row for use with the {@link ProfileBinTableModel}. This row keeps track of the average value of its core
+ * A binned profile row across samples. This row keeps track of the average value of its core
  * values and collects profile - profile container associations for profiles that fall into this bin.
  */
 public class ProfileBin extends NumberAdapter {
@@ -67,7 +67,7 @@ public class ProfileBin extends NumberAdapter {
         chromatogram = new MassChromatogram();
         present = new double[fileColumns];
 
-        containerIndexToProfileId = new HashMap<Integer, Integer>();
+        containerIndexToProfileId = new HashMap<>();
         nProfiles = 1;
     }
 
@@ -180,6 +180,15 @@ public class ProfileBin extends NumberAdapter {
      */
     public double isPresent(int index) {
         return present[index];
+    }
+
+    /**
+     * Returns the number of container in which this trace is present.
+     *
+     * @return the number of profiles
+     */
+    public int getnProfiles() {
+        return containerIndexToProfileId.size();
     }
 
     /**

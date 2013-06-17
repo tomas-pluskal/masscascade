@@ -132,7 +132,7 @@ public class ProfUtils {
      * @param properties the set of identities
      * @return the grouped list
      */
-    public static List<Identity> getGroupedIdentities(Set<Property> properties) {
+    public static List<Identity> getGroupedIdentities(Set<? extends Property> properties) {
 
         Map<String, Identity> nameToIdentity = new HashMap<>();
 

@@ -23,6 +23,7 @@
 package uk.ac.ebi.masscascade.compound;
 
 import com.google.common.collect.HashMultimap;
+import uk.ac.ebi.masscascade.alignment.profilebins.ProfileBinGenerator;
 import uk.ac.ebi.masscascade.commons.Evidence;
 import uk.ac.ebi.masscascade.commons.Status;
 import uk.ac.ebi.masscascade.core.PropertyType;
@@ -67,16 +68,36 @@ public class CompoundSpectrumAdapter {
 
         List<CompoundSpectrum> compoundSpectra = new ArrayList<>();
 
+        int i = 0;
         for (SpectrumContainer spectrumContainer : spectraContainer) {
             for (Spectrum spectrum : spectrumContainer) {
-                generateCompoundSpectra(spectrum, compoundSpectra);
+                generateCompoundSpectra(spectrum, i++, compoundSpectra);
             }
         }
 
         return compoundSpectra;
     }
 
-    private void generateCompoundSpectra(Spectrum spectrum, List<CompoundSpectrum> compoundSpectra) {
+    public List<CompoundSpectrum> getSpectra(HashMultimap<Integer, Integer> cToPIdMap, int index,
+            SpectrumContainer... spectraContainer) {
+
+        List<CompoundSpectrum> compoundSpectra = new ArrayList<>();
+
+        for (SpectrumContainer spectrumContainer : spectraContainer) {
+            for (Spectrum spectrum : spectrumContainer) {
+                generateCompoundSpectra(spectrum, index, compoundSpectra, cToPIdMap);
+            }
+        }
+
+        return compoundSpectra;
+    }
+
+    private void generateCompoundSpectra(Spectrum spectrum, int spectrumI, List<CompoundSpectrum> compoundSpectra) {
+        generateCompoundSpectra(spectrum, spectrumI, compoundSpectra, null);
+    }
+
+    private void generateCompoundSpectra(Spectrum spectrum, int spectrumI, List<CompoundSpectrum> compoundSpectra,
+            HashMultimap<Integer, Integer> cToPIdMap) {
 
         List<Profile> profiles = new ArrayList<>(spectrum.getProfileMap().values());
         Collections.sort(profiles, new ProfileMassComparator());
@@ -93,6 +114,10 @@ public class CompoundSpectrumAdapter {
         mainPeak = 1;
 
         for (Profile profile : profiles) {
+
+            if (cToPIdMap != null) {
+                if (!cToPIdMap.containsKey(spectrumI) || !cToPIdMap.get(spectrumI).contains(profile.getId())) continue;
+            }
 
             if (profile.hasProperty(PropertyType.Identity)) {
                 CompoundSpectrum compoundSpectrum = new CompoundSpectrum(gid++);
@@ -127,7 +152,7 @@ public class CompoundSpectrumAdapter {
                     compoundSpectrum.setIndexToAdduct(adductMap);
                 }
 
-                if (profile.hasProperty(PropertyType.Isotope)){
+                if (profile.hasProperty(PropertyType.Isotope)) {
                     Map<Integer, Isotope> isoMap = new HashMap<>();
                     Set<Integer> parentIds = new HashSet<>();
                     for (Isotope isotope : profile.getProperty(PropertyType.Isotope, Isotope.class)) {
@@ -143,7 +168,8 @@ public class CompoundSpectrumAdapter {
                 }
 
                 compoundSpectra.add(compoundSpectrum);
-            } mainPeak++;
+            }
+            mainPeak++;
         }
     }
 }

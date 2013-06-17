@@ -20,8 +20,9 @@
  *   Stephan Beisken - initial API and implementation
  */
 
-package uk.ac.ebi.masscascade.alignment;
+package uk.ac.ebi.masscascade.alignment.profilebins;
 
+import uk.ac.ebi.masscascade.alignment.profilebins.ProfileBin;
 import uk.ac.ebi.masscascade.interfaces.Trace;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 import uk.ac.ebi.masscascade.utilities.xyz.XYTrace;
@@ -65,7 +66,7 @@ public class ProfileMap extends TreeMap<Trace, List<ProfileBin>> {
             bins.add(value);
             super.put(key, bins);
         } else {
-            List<ProfileBin> bins = new ArrayList<ProfileBin>();
+            List<ProfileBin> bins = new ArrayList<>();
             bins.add(value);
             super.put(key, bins);
         }

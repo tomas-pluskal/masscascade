@@ -23,6 +23,8 @@
 package uk.ac.ebi.masscascade.alignment;
 
 import com.google.common.collect.Lists;
+import uk.ac.ebi.masscascade.alignment.profilebins.ProfileBin;
+import uk.ac.ebi.masscascade.alignment.profilebins.ProfileBinGenerator;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Trace;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
@@ -61,14 +63,15 @@ public class ProfileBinTableModel extends AbstractTableModel implements Iterable
      * @param profileContainers the list of profile containers
      * @param ppm               the m/z tolerance value in ppm
      * @param sec               the time tolerance value in seconds
+     * @param missing           the percentage of max. allowed missing profiles
      */
-    public ProfileBinTableModel(List<Container> profileContainers, double ppm, double sec) {
+    public ProfileBinTableModel(List<Container> profileContainers, double ppm, double sec, double missing) {
 
         this.profileContainers = profileContainers;
         this.ppm = ppm;
         this.sec = sec / 2d;
 
-        init();
+        profileBins = ProfileBinGenerator.createBins(this.profileContainers, this.ppm, this.sec, missing);
     }
 
     /**
@@ -194,54 +197,6 @@ public class ProfileBinTableModel extends AbstractTableModel implements Iterable
     @Override
     public Class getColumnClass(int c) {
         return getValueAt(0, c).getClass();
-    }
-
-    /**
-     * Initiates the table model by grouping all profiles of all profile containers into m/z and rt bins based on the
-     * given m/z and time tolerance values.
-     */
-    private void init() {
-
-        int index = -1;
-        ProfileMap timeBins = new ProfileMap();
-        for (Container container : profileContainers) {
-            List<Profile> profiles = Lists.newArrayList(container.profileIterator());
-            Collections.sort(profiles, new ProfileMassComparator());
-            index++;
-            for (Profile profile : profiles) {
-                double rt = profile.getRetentionTime();
-                XYTrace mzTrace = new XYTrace(profile.getMzIntDp());
-                Trace closestMzTrace = DataUtils.getClosestKey(mzTrace, timeBins);
-
-                ProfileBin timeBin = new ProfileBin(index, profile, profileContainers.size());
-                if (closestMzTrace != null && timeBins.containsKey(closestMzTrace)) {
-
-                    if (new ToleranceRange(closestMzTrace.getAvg(), ppm).contains(profile.getMz())) {
-
-                        int cIndex = 0;
-                        List<ProfileBin> mzTimeBins = timeBins.get(closestMzTrace);
-                        ProfileBin cTimeBin = mzTimeBins.get(cIndex);
-                        for (int i = 1; i < mzTimeBins.size(); i++) {
-                            ProfileBin nTimeBin = mzTimeBins.get(i);
-                            if (Math.abs(nTimeBin.getRt() - rt) < Math.abs(cTimeBin.getRt() - rt)) {
-                                cTimeBin = nTimeBin;
-                                cIndex = i;
-                            }
-                        }
-                        if (cTimeBin.getRt() - sec <= rt && cTimeBin.getRt() + sec > rt) {
-                            cTimeBin.add(index, profile);
-                            timeBins.add(closestMzTrace, cTimeBin, cIndex);
-                        } else timeBins.put(closestMzTrace, timeBin);
-
-                        continue;
-                    }
-                }
-                timeBins.put(mzTrace, timeBin);
-            }
-        }
-
-        profileBins = new ArrayList<ProfileBin>();
-        for (List<ProfileBin> bin : timeBins.values()) profileBins.addAll(bin);
     }
 
     /**
