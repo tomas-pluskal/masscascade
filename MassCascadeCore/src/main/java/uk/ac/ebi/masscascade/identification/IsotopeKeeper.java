@@ -22,8 +22,7 @@
 
 package uk.ac.ebi.masscascade.identification;
 
-import uk.ac.ebi.masscascade.core.PropertyManager;
-import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
+import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
@@ -35,6 +34,7 @@ import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.properties.Adduct;
+import uk.ac.ebi.masscascade.properties.Isotope;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 
@@ -106,10 +106,11 @@ public class IsotopeKeeper extends CallableTask {
 
             for (Profile profile : ((PseudoSpectrum) spectrum).getProfileList()) {
 
-                if (profile.hasProperty(PropertyManager.TYPE.Isotope)) {
+                if (profile.hasProperty(PropertyType.Isotope)) {
                     idSet.add(profile.getId());
-                    for (Property propI : profile.getProperty(PropertyManager.TYPE.Isotope)) {
-                        if (propI.getValue(Integer.class) == 0 && profile.hasProperty(PropertyManager.TYPE.Adduct))
+                    for (Isotope propI : profile.getProperty(PropertyType.Isotope, Isotope.class)) {
+                        if (propI.getValue(Integer.class) == 0 && profile.hasProperty(
+                                PropertyType.Adduct))
                             adductParentIds.add(profile.getId());
                     }
                 }
@@ -117,8 +118,8 @@ public class IsotopeKeeper extends CallableTask {
 
             for (Profile profile : ((PseudoSpectrum) spectrum).getProfileList()) {
 
-                if (profile.hasProperty(PropertyManager.TYPE.Adduct)) {
-                    for (Property propA : profile.getProperty(PropertyManager.TYPE.Adduct))
+                if (profile.hasProperty(PropertyType.Adduct)) {
+                    for (Adduct propA : profile.getProperty(PropertyType.Adduct, Adduct.class))
                         if (adductParentIds.contains(((Adduct) propA).getParentId())) idSet.add(profile.getId());
                 }
             }

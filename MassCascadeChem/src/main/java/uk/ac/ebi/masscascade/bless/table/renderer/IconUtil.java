@@ -3,6 +3,7 @@ package uk.ac.ebi.masscascade.bless.table.renderer;
 import uk.ac.ebi.masscascade.commons.Status;
 
 import javax.swing.*;
+import java.awt.image.BufferedImage;
 import java.net.URL;
 
 public class IconUtil {

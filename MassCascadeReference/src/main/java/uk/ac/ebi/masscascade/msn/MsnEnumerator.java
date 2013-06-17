@@ -23,7 +23,7 @@
 package uk.ac.ebi.masscascade.msn;
 
 import org.apache.log4j.Level;
-import uk.ac.ebi.masscascade.core.PropertyManager;
+import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.interfaces.CallableSearch;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Property;
@@ -107,12 +107,11 @@ public class MsnEnumerator extends CallableSearch {
         for (Spectrum spectrum : spectrumContainer) {
             int msnId = 0;
             for (Profile profile : spectrum) {
-                if (!(profile.hasProperty(PropertyManager.TYPE.Identity) && profile.hasMsnSpectra(Constants.MSN.MS2)))
+                if (!(profile.hasProperty(PropertyType.Identity) && profile.hasMsnSpectra(Constants.MSN.MS2)))
                     continue;
 
                 Spectrum msnSpectrum = profile.getMsnSpectra(Constants.MSN.MS2).get(0);
-                for (Property property : profile.getProperty(PropertyManager.TYPE.Identity)) {
-                    Identity identity = (Identity) property;
+                for (Identity identity : profile.getProperty(PropertyType.Identity, Identity.class)) {
                     String notation = identity.getNotation();
                     if (notation == null || notation.isEmpty()) continue;
 

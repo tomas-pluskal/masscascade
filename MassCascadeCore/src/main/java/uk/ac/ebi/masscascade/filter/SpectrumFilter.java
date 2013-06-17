@@ -22,7 +22,7 @@
 
 package uk.ac.ebi.masscascade.filter;
 
-import uk.ac.ebi.masscascade.core.PropertyManager;
+import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
@@ -106,7 +106,7 @@ public class SpectrumFilter extends CallableTask {
                 for (Profile profile : spectrum) {
                     if (mzRange.contains(profile.getMz())) {
                         if (profile.getIntensity() >= minIntensity || (keepIsotopes && profile.hasProperty(
-                                PropertyManager.TYPE.Isotope))) {
+                                PropertyType.Isotope))) {
                             if (rtRange == null) rtRange = new ExtendableRange(profile.getRetentionTime());
                             else rtRange.extendRange(profile.getRetentionTime());
                             outProfiles.add(profile);

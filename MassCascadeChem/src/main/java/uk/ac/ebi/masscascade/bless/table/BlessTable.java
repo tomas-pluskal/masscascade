@@ -1,8 +1,11 @@
 package uk.ac.ebi.masscascade.bless.table;
 
 import uk.ac.ebi.masscascade.bless.table.editor.EachRowBoxEditor;
+import uk.ac.ebi.masscascade.bless.table.editor.AnnotationEditor;
+import uk.ac.ebi.masscascade.bless.table.renderer.CompoundRenderer;
 import uk.ac.ebi.masscascade.bless.table.renderer.DeleteRenderer;
 import uk.ac.ebi.masscascade.bless.table.renderer.MsRenderer;
+import uk.ac.ebi.masscascade.bless.table.renderer.MsnRenderer;
 import uk.ac.ebi.masscascade.bless.table.renderer.StatusRenderer;
 import uk.ac.ebi.masscascade.compound.CompoundSpectrum;
 
@@ -51,10 +54,9 @@ public class BlessTable extends JTable {
         getColumnModel().getColumn(BlessTableModel.MS_COLUMN).setPreferredWidth(120);
         getColumnModel().getColumn(BlessTableModel.MS_COLUMN).setMinWidth(120);
 
-        getColumnModel().getColumn(BlessTableModel.COMPOUNDS_COLUMN).setCellEditor(new EachRowBoxEditor());
-//        getColumnModel().getColumn(BlessTableModel.COMPOUNDS_COLUMN).setCellRenderer(new CompoundRenderer());
+        getColumnModel().getColumn(BlessTableModel.MOLECULE_COLUMN).setCellRenderer(new CompoundRenderer());
 
-        getColumnModel().getColumn(BlessTableModel.MSN_COLUMN).setCellRenderer(new MsRenderer());
+        getColumnModel().getColumn(BlessTableModel.MSN_COLUMN).setCellRenderer(new MsnRenderer());
         getColumnModel().getColumn(BlessTableModel.MSN_COLUMN).setPreferredWidth(120);
         getColumnModel().getColumn(BlessTableModel.MSN_COLUMN).setMinWidth(120);
 
@@ -65,10 +67,13 @@ public class BlessTable extends JTable {
         getColumnModel().getColumn(BlessTableModel.DELETE_COLUMN).setCellRenderer(new DeleteRenderer());
         getColumnModel().getColumn(BlessTableModel.DELETE_COLUMN).setPreferredWidth(40);
         getColumnModel().getColumn(BlessTableModel.DELETE_COLUMN).setMinWidth(40);
+
+        getColumnModel().getColumn(BlessTableModel.COMPOUNDS_COLUMN).setCellEditor(new EachRowBoxEditor());
+        getColumnModel().getColumn(BlessTableModel.ANNOTATIONS_COLUMN).setCellEditor(new AnnotationEditor());
     }
 
     @Override
     public boolean isCellEditable(int row, int col) {
-        return (col == BlessTableModel.COMPOUNDS_COLUMN);
+        return (col == BlessTableModel.COMPOUNDS_COLUMN || col == BlessTableModel.ANNOTATIONS_COLUMN);
     }
 }

@@ -27,6 +27,7 @@ import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.core.MsnManager;
 import uk.ac.ebi.masscascade.core.PropertyManager;
+import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.core.chromatogram.MassChromatogram;
 import uk.ac.ebi.masscascade.interfaces.Chromatogram;
 import uk.ac.ebi.masscascade.interfaces.Profile;
@@ -433,7 +434,7 @@ public class ProfileImpl implements Profile {
     @Override
     public void setProperty(Property property) {
 
-        if (property.getType() == PropertyManager.TYPE.Label) propertyManager.setProperty(property);
+        if (property.getType() == PropertyType.Label) propertyManager.setProperty(property);
         else propertyManager.addProperty(property);
     }
 
@@ -444,8 +445,8 @@ public class ProfileImpl implements Profile {
      * @return the property list
      */
     @Override
-    public Set<Property> getProperty(PropertyManager.TYPE type) {
-        return propertyManager.getProperty(type);
+    public <T> Set<T> getProperty(PropertyType type, Class<T> typeClass) {
+        return propertyManager.getProperty(type, typeClass);
     }
 
     /**
@@ -455,7 +456,7 @@ public class ProfileImpl implements Profile {
      * @return whether property is set
      */
     @Override
-    public boolean hasProperty(PropertyManager.TYPE type) {
+    public boolean hasProperty(PropertyType type) {
         return propertyManager.hasProperty(type);
     }
 

@@ -80,6 +80,16 @@
             <groupId>org.openscience.cdk</groupId>
             <version>${cdkVersion}</version>
         </dependency>
+        <dependency>
+            <artifactId>cdk-silent</artifactId>
+            <groupId>org.openscience.cdk</groupId>
+            <version>${cdkVersion}</version>
+        </dependency>
+        <dependency>
+            <artifactId>cdk-inchi</artifactId>
+            <groupId>org.openscience.cdk</groupId>
+            <version>${cdkVersion}</version>
+        </dependency>
 
         <dependency>
             <groupId>log4j</groupId>

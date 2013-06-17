@@ -23,6 +23,7 @@
 package uk.ac.ebi.masscascade.core.spectrum;
 
 import uk.ac.ebi.masscascade.core.PropertyManager;
+import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.core.raw.ScanImpl;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Property;
@@ -149,8 +150,8 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      * @return the property value
      */
     @Override
-    public Set<Property> getProperty(PropertyManager.TYPE type) {
-        return propertyManager.getProperty(type);
+    public <T> Set<T> getProperty(PropertyType type, Class<T> typeClass) {
+        return propertyManager.getProperty(type, typeClass);
     }
 
     /**
@@ -159,7 +160,7 @@ public class PseudoSpectrum extends ScanImpl implements Spectrum {
      * @return boolean if property set
      */
     @Override
-    public boolean hasProperty(PropertyManager.TYPE type) {
+    public boolean hasProperty(PropertyType type) {
         return propertyManager.hasProperty(type);
     }
 

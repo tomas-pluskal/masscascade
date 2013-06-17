@@ -7,6 +7,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/resources" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
@@ -78,6 +79,11 @@
     <orderEntry type="library" name="Maven: org.openscience.cdk:cdk-smiles:1.5.2" level="project" />
     <orderEntry type="library" name="Maven: org.openscience.cdk:cdk-valencycheck:1.5.2" level="project" />
     <orderEntry type="library" name="Maven: org.openscience.cdk:cdk-sdg:1.5.2" level="project" />
+    <orderEntry type="library" name="Maven: org.openscience.cdk:cdk-silent:1.5.2" level="project" />
+    <orderEntry type="library" name="Maven: org.openscience.cdk:cdk-inchi:1.5.2" level="project" />
+    <orderEntry type="library" name="Maven: net.sf.jni-inchi:jni-inchi:0.8" level="project" />
+    <orderEntry type="library" name="Maven: net.sf.jnati:jnati-deploy:0.4" level="project" />
+    <orderEntry type="library" name="Maven: net.sf.jnati:jnati-core:0.4" level="project" />
   </component>
 </module>
 

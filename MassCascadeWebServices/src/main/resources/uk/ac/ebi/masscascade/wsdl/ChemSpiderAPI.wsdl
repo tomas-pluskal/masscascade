@@ -467,7 +467,9 @@
       <wsdl:output message="tns:SearchByFormula2SoapOut" />
     </wsdl:operation>
     <wsdl:operation name="GetRecordMol">
-      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Returns ChemSpider record in MOL format or empty string in case of failure. cacl3d parameter specifies if 3D coordinates should be calculated before returning record data. Security token is required.</wsdl:documentation>
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Returns ChemSpider record in MOL format or empty
+          string in case of failure. cacl3d parameter specifies if 3D coordinates should be calculated before returning
+          record uk.ac.ebi.masscascade.data. Security token is required.</wsdl:documentation>
       <wsdl:input message="tns:GetRecordMolSoapIn" />
       <wsdl:output message="tns:GetRecordMolSoapOut" />
     </wsdl:operation>
@@ -519,7 +521,9 @@
       <wsdl:output message="tns:SearchByFormula2HttpGetOut" />
     </wsdl:operation>
     <wsdl:operation name="GetRecordMol">
-      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Returns ChemSpider record in MOL format or empty string in case of failure. cacl3d parameter specifies if 3D coordinates should be calculated before returning record data. Security token is required.</wsdl:documentation>
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Returns ChemSpider record in MOL format or empty
+          string in case of failure. cacl3d parameter specifies if 3D coordinates should be calculated before returning
+          record uk.ac.ebi.masscascade.data. Security token is required.</wsdl:documentation>
       <wsdl:input message="tns:GetRecordMolHttpGetIn" />
       <wsdl:output message="tns:GetRecordMolHttpGetOut" />
     </wsdl:operation>
@@ -561,7 +565,9 @@
       <wsdl:output message="tns:SearchByFormula2HttpPostOut" />
     </wsdl:operation>
     <wsdl:operation name="GetRecordMol">
-      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Returns ChemSpider record in MOL format or empty string in case of failure. cacl3d parameter specifies if 3D coordinates should be calculated before returning record data. Security token is required.</wsdl:documentation>
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Returns ChemSpider record in MOL format or empty
+          string in case of failure. cacl3d parameter specifies if 3D coordinates should be calculated before returning
+          record uk.ac.ebi.masscascade.data. Security token is required.</wsdl:documentation>
       <wsdl:input message="tns:GetRecordMolHttpPostIn" />
       <wsdl:output message="tns:GetRecordMolHttpPostOut" />
     </wsdl:operation>

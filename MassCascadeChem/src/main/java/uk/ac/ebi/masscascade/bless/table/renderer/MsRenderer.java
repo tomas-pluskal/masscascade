@@ -3,17 +3,19 @@ package uk.ac.ebi.masscascade.bless.table.renderer;
 import uk.ac.ebi.masscascade.bless.table.BlessTableModel;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.utilities.math.LinearEquation;
+import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.range.SimpleRange;
-import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.util.ArrayList;
 
 public class MsRenderer extends DefaultTableCellRenderer {
 
-    private XYList dp;
+    private int mainPeak;
+    private ArrayList<XYPoint> dps;
     private Range mzR;
     private Range inR;
 
@@ -27,16 +29,17 @@ public class MsRenderer extends DefaultTableCellRenderer {
 
         JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-        if (column == BlessTableModel.MS_COLUMN || column == BlessTableModel.MSN_COLUMN) {
+        if (column == BlessTableModel.MS_COLUMN) {
             label.setText("");
-            dp = new XYList();
-            dp.add(new XYPoint(5, 100));
-            dp.add(new XYPoint(10, 1000));
-            dp.add(new XYPoint(15, 10000));
-            dp.add(new XYPoint(50, 500));
 
-            mzR = new SimpleRange(5, 50);
-            inR = new SimpleRange(100, 10000);
+            mainPeak = (int) ((Object[]) value)[0];
+            dps = (ArrayList) ((Object[]) value)[1];
+            mzR = new ExtendableRange(dps.get(0).x);
+            inR = new ExtendableRange(dps.get(0).y);
+            for (XYPoint dp : dps) {
+                mzR.extendRange(dp.x);
+                inR.extendRange(dp.y);
+            }
         }
 
         return label;
@@ -54,10 +57,22 @@ public class MsRenderer extends DefaultTableCellRenderer {
 
         g.setColor(Color.BLUE);
 
-        int ubx = (int) mzR.getUpperBounds();
-        int lbx = (int) mzR.getLowerBounds();
-        int uby = (int) inR.getUpperBounds();
-        int lby = (int) inR.getLowerBounds();
+        int ubx;
+        int lbx;
+        int uby;
+        int lby;
+
+        if (dps.size() == 1) {
+            ubx = (int) mzR.getUpperBounds() + 1;
+            lbx = (int) mzR.getLowerBounds();
+            uby = (int) inR.getUpperBounds();
+            lby = (int) inR.getLowerBounds() + 1;
+        } else {
+            ubx = (int) mzR.getUpperBounds();
+            lbx = (int) mzR.getLowerBounds();
+            uby = (int) inR.getUpperBounds();
+            lby = (int) inR.getLowerBounds();
+        }
 
         LinearEquation eqX = new LinearEquation(new XYPoint(lbx, lpp), new XYPoint(ubx, w - lpp * d));
         LinearEquation eqY = new LinearEquation(new XYPoint(lby, h - lpp), new XYPoint(uby, lpp + f));
@@ -65,9 +80,13 @@ public class MsRenderer extends DefaultTableCellRenderer {
         g.setFont(new Font("Monospaced", Font.PLAIN, 11));
 
         int i = 1;
-        for (XYPoint xy : dp) {
+        for (XYPoint xy : dps) {
             g.drawString("" + i++, (int) eqX.getY(xy.x) - 3, (int) eqY.getY(xy.y) - d);
             g.drawLine((int) eqX.getY(xy.x), h - lp, (int) eqX.getY(xy.x), (int) eqY.getY(xy.y));
         }
+
+        g.setColor(Color.RED);
+        XYPoint xy = dps.get(mainPeak - 1);
+        g.drawLine((int) eqX.getY(xy.x), h - lp, (int) eqX.getY(xy.x), (int) eqY.getY(xy.y));
     }
 }

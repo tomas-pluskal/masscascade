@@ -259,6 +259,7 @@ public class IsotopeDetectorRec {
 
         for (Integer pi : path) {
             if (pi == null) break;
+            profiles.get(p).setProperty(new Isotope("M+" + depth, depth, pid, profiles.get(pi).getId()));
             profiles.get(pi).setProperty(new Isotope("M+" + depth, depth++, pid, profiles.get(pi).getId()));
             skipSet.add(pi);
         }

@@ -243,7 +243,7 @@ public class AdductDetector {
         Property[] props = new Property[2];
         int parentId = profileList.get(parent).getId();
         props[0] = new Adduct(adduct.getMass(), adduct.getName(), parentId, profileList.get(child).getId());
-        props[1] = new Adduct(Constants.PARTICLES.PROTON.getMass(), MH, parentId, parentId);
+        props[1] = new Adduct(adduct.getMass(), adduct.getName(), parentId, profileList.get(child).getId());
         return props;
     }
 

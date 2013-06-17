@@ -24,7 +24,7 @@ package uk.ac.ebi.masscascade.io;
 
 import com.google.common.collect.Lists;
 import org.apache.log4j.Level;
-import uk.ac.ebi.masscascade.core.PropertyManager;
+import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
@@ -38,7 +38,6 @@ import uk.ac.ebi.masscascade.properties.Identity;
 import uk.ac.ebi.masscascade.utilities.TextUtils;
 import uk.ac.ebi.pride.jmztab.MzTabFile;
 import uk.ac.ebi.pride.jmztab.model.SmallMolecule;
-import uk.ac.ebi.pride.jmztab.model.SpecRef;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -103,16 +102,15 @@ public class MzTabWriter extends CallableTask {
 
             for (Profile profile : container.profileIterator()) {
 
-                if (!profile.hasProperty(PropertyManager.TYPE.Identity)) continue;
+                if (!profile.hasProperty(PropertyType.Identity)) continue;
 
                 SmallMolecule molecule = new SmallMolecule();
                 molecule.setMassToCharge(profile.getMz());
                 molecule.setRetentionTime(Lists.newArrayList(profile.getRetentionTime()));
                 molecule.setReliability(2);
 
-                Set<Property> identities = profile.getProperty(PropertyManager.TYPE.Identity);
-                for (Property id : identities) {
-                    Identity identity = (Identity) id;
+                Set<Identity> identities = profile.getProperty(PropertyType.Identity, Identity.class);
+                for (Identity identity : identities) {
                     molecule.setDescription(identity.getName());
                     molecule.setIdentifier(Lists.newArrayList(identity.getId()));
                     String notation = identity.getNotation();

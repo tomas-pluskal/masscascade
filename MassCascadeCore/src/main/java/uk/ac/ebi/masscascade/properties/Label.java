@@ -22,7 +22,7 @@
 
 package uk.ac.ebi.masscascade.properties;
 
-import uk.ac.ebi.masscascade.core.PropertyManager;
+import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.Property;
 
@@ -89,8 +89,8 @@ public class Label implements Property {
      *
      * @return the property type
      */
-    public PropertyManager.TYPE getType() {
-
-        return PropertyManager.TYPE.Label;
+    @Override
+    public PropertyType getType() {
+        return PropertyType.Label;
     }
 }

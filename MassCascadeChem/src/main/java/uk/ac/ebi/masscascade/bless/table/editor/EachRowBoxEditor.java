@@ -39,7 +39,6 @@ public class EachRowBoxEditor extends DefaultCellEditor {
     public Component getTableCellEditorComponent(final JTable table, Object value, final boolean isSelected, final int row,
             int column) {
 
-//        final JComboBox combo = (JComboBox) super.getTableCellEditorComponent(table, value, isSelected, row, column);
         final JComboBox combo = new JComboBox();
         combo.removeAllItems();
         combo.addMouseListener(new MouseAdapter() {

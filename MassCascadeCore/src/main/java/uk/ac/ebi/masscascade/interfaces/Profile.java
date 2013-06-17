@@ -23,6 +23,7 @@
 package uk.ac.ebi.masscascade.interfaces;
 
 import uk.ac.ebi.masscascade.core.PropertyManager;
+import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
@@ -154,7 +155,7 @@ public interface Profile {
      * @param type the property name
      * @return the property list
      */
-    Set<Property> getProperty(PropertyManager.TYPE type);
+    <T> Set<T> getProperty(PropertyType type, Class<T> typeClass);
 
     /**
      * Whether a particular property is set.
@@ -162,7 +163,7 @@ public interface Profile {
      * @param type the property title
      * @return whether property is set
      */
-    boolean hasProperty(PropertyManager.TYPE type);
+    boolean hasProperty(PropertyType type);
 
     /**
      * Returns the extracted ion chromatogram.

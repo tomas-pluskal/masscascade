@@ -22,9 +22,8 @@
 
 package uk.ac.ebi.masscascade.utilities;
 
-import uk.ac.ebi.masscascade.core.PropertyManager;
+import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
 import uk.ac.ebi.masscascade.interfaces.Property;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.properties.Adduct;
@@ -36,7 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * Class providing utility functions for profile operations.
@@ -52,15 +50,15 @@ public class ProfUtils {
     public static String[] getProfileInfo(Profile profile) {
 
         String[] info = new String[]{"", "", ""};
-        if (profile.hasProperty(PropertyManager.TYPE.Identity)) {
+        if (profile.hasProperty(PropertyType.Identity)) {
 
-            for (Property prop : profile.getProperty(PropertyManager.TYPE.Identity)) {
+            for (Identity prop : profile.getProperty(PropertyType.Identity, Identity.class)) {
                 info[0] += prop.toString() + " | ";
             }
         }
 
-        if (profile.hasProperty(PropertyManager.TYPE.Isotope)) {
-            Set<Property> isotopeProperties = profile.getProperty(PropertyManager.TYPE.Isotope);
+        if (profile.hasProperty(PropertyType.Isotope)) {
+            Set<Isotope> isotopeProperties = profile.getProperty(PropertyType.Isotope, Isotope.class);
 
             for (Property prop : isotopeProperties) {
                 Isotope isoProp = (Isotope) prop;
@@ -68,8 +66,8 @@ public class ProfUtils {
             }
         }
 
-        if (profile.hasProperty(PropertyManager.TYPE.Adduct)) {
-            Set<Property> adductProperties = profile.getProperty(PropertyManager.TYPE.Adduct);
+        if (profile.hasProperty(PropertyType.Adduct)) {
+            Set<Adduct> adductProperties = profile.getProperty(PropertyType.Adduct, Adduct.class);
 
             for (Property prop : adductProperties) {
                 Adduct adduct = (Adduct) prop;
@@ -90,33 +88,35 @@ public class ProfUtils {
 
         String label = "";
 
-        if (profile.hasProperty(PropertyManager.TYPE.Identity)) {
+        if (profile.hasProperty(PropertyType.Identity)) {
 
             double score = 0;
             Identity identity = null;
-            for (Property prop : profile.getProperty(PropertyManager.TYPE.Identity)) {
+            for (Identity prop : profile.getProperty(PropertyType.Identity, Identity.class)) {
                 if (score < prop.getValue(Double.class)) {
                     score = prop.getValue(Double.class);
                     identity = (Identity) prop;
                 }
             }
             if (identity != null) label = identity.getName();
-            if (profile.hasProperty(PropertyManager.TYPE.Isotope) || profile.hasProperty(PropertyManager.TYPE.Adduct))
+            if (profile.hasProperty(PropertyType.Isotope) || profile.hasProperty(
+                    PropertyType.Adduct))
                 label = label + "*";
-        } else if (profile.hasProperty(PropertyManager.TYPE.Isotope)) {
-            Set<Property> isotopeProperties = profile.getProperty(PropertyManager.TYPE.Isotope);
+        } else if (profile.hasProperty(PropertyType.Isotope)) {
+            Set<Isotope> isotopeProperties = profile.getProperty(PropertyType.Isotope, Isotope.class);
 
             for (Property prop : isotopeProperties) {
                 Isotope isoProp = (Isotope) prop;
                 label += isoProp.getName() + " | ";
             }
-            if (profile.hasProperty(PropertyManager.TYPE.Adduct)) label = label + "*";
-        } else if (profile.hasProperty(PropertyManager.TYPE.Adduct)) {
-            Set<Property> adductProperties = profile.getProperty(PropertyManager.TYPE.Adduct);
+            if (profile.hasProperty(PropertyType.Adduct)) label = label + "*";
+        } else if (profile.hasProperty(PropertyType.Adduct)) {
+            Set<Adduct> adductProperties = profile.getProperty(PropertyType.Adduct, Adduct.class);
 
             for (Property prop : adductProperties) {
                 Adduct adduct = (Adduct) prop;
-                label += adduct.getName() + " | ";
+                if (!adduct.getParentId().equals(profile.getId()))
+                    label += adduct.getName() + " | ";
             }
         }
 

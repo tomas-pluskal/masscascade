@@ -128,6 +128,10 @@ public class CompoundSpectrum {
         this.compounds = compounds;
     }
 
+    public void addCompound(CompoundEntity compound) {
+        compounds.add(compound);
+    }
+
     public CompoundEntity getCompound(int compoundIndex) {
         return compounds.get(compoundIndex);
     }

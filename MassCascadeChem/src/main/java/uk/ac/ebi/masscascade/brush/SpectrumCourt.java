@@ -20,35 +20,9 @@
  *   Stephan Beisken - initial API and implementation
  */
 
-package uk.ac.ebi.masscascade.interfaces;
+package uk.ac.ebi.masscascade.brush;
 
-import uk.ac.ebi.masscascade.core.PropertyType;
+public class SpectrumCourt {
 
-/**
- * This is a property that characterises objects.
- */
-public interface Property {
 
-    /**
-     * Returns the property name.
-     */
-    String getName();
-
-    /**
-     * Returns the property value.
-     */
-    <T> T getValue(Class<T> type);
-
-    /**
-     * Returns the property string.
-     */
-    @Override
-    String toString();
-
-    /**
-     * Returns the property type.
-     *
-     * @return the property type
-     */
-    PropertyType getType();
 }

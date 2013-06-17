@@ -34,15 +34,13 @@ import java.util.Set;
  */
 public class PropertyManager {
 
-    public static enum TYPE {Identity, Adduct, Isotope, Label, Score}
-
-    private final Map<TYPE, LinkedHashSet<Property>> properties;
+    private final Map<PropertyType, LinkedHashSet<Property>> properties;
 
     /**
      * Default constructor.
      */
     public PropertyManager() {
-        properties = new HashMap<TYPE, LinkedHashSet<Property>>();
+        properties = new HashMap<>();
     }
 
     /**
@@ -74,11 +72,8 @@ public class PropertyManager {
      * @param type the property type
      * @return the property list
      */
-    public Set<Property> getProperty(TYPE type) {
-
-        if (properties.containsKey(type)) return properties.get(type);
-
-        return new LinkedHashSet<Property>();
+    public <T> Set<T> getProperty(PropertyType type, Class<T> typeClass) {
+        return properties.containsKey(type) ? (Set<T>) properties.get(type) : (Set<T>) new LinkedHashSet<Property>();
     }
 
     /**
@@ -87,7 +82,7 @@ public class PropertyManager {
      * @param type the property type
      * @return whether property is set
      */
-    public boolean hasProperty(TYPE type) {
+    public boolean hasProperty(PropertyType type) {
         return properties.containsKey(type);
     }
 }

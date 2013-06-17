@@ -22,10 +22,14 @@
 
 package uk.ac.ebi.masscascade.compound;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import uk.ac.ebi.masscascade.commons.Evidence;
 import uk.ac.ebi.masscascade.commons.Status;
 import uk.ac.ebi.masscascade.properties.Identity;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class CompoundEntity {
 
@@ -37,13 +41,13 @@ public class CompoundEntity {
     private final Evidence evidence;
 
     // MS 1
-    private final Multimap<Integer, Identity> indexToIdentity;
+    private final Map<Integer, Identity> indexToIdentity;
 
     // MSn 2
     private final Multimap<Integer, Identity> indexToIdentity2;
 
     public CompoundEntity(int id, int score, String name, Status status, Evidence evidence,
-            Multimap<Integer, Identity> indexToIdentity, Multimap<Integer, Identity> indexToIdentity2) {
+            Map<Integer, Identity> indexToIdentity, Multimap<Integer, Identity> indexToIdentity2) {
 
         this.id = id;
         this.name = name;
@@ -52,6 +56,17 @@ public class CompoundEntity {
         this.evidence = evidence;
         this.indexToIdentity = indexToIdentity;
         this.indexToIdentity2 = indexToIdentity2;
+    }
+
+    public CompoundEntity(int id, int score, String name, Status status, Evidence evidence) {
+
+        this.id = id;
+        this.name = name;
+        this.score = score;
+        this.status = status;
+        this.evidence = evidence;
+        this.indexToIdentity = new HashMap<>();
+        this.indexToIdentity2 = HashMultimap.create();
     }
 
     public int getId() {
@@ -74,9 +89,16 @@ public class CompoundEntity {
         return evidence;
     }
 
-    public Multimap<Integer, Identity> getIndexToIdentity() {
+    public Map<Integer, Identity> getIndexToIdentity() {
         return indexToIdentity;
     }
+
+   public String getNotation(int id) {
+       if (indexToIdentity.containsKey(id))
+           return indexToIdentity.get(id).getNotation();
+       else
+           return null;
+   }
 
     public Multimap<Integer, Identity> getIndexToIdentity2() {
         return indexToIdentity2;

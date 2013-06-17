@@ -25,12 +25,15 @@ package uk.ac.ebi.masscascade;
 import junit.framework.Assert;
 import org.junit.Test;
 import uk.ac.ebi.masscascade.commons.FileLoader;
-import uk.ac.ebi.masscascade.core.PropertyManager;
+import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.identification.IsotopeFinder;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
+import uk.ac.ebi.masscascade.properties.Isotope;
+
+import java.util.Set;
 
 public class IsotopeTest {
 
@@ -44,7 +47,7 @@ public class IsotopeTest {
         CallableTask task = new IsotopeFinder(params);
         SpectrumContainer container = (SpectrumContainer) task.call();
 
-        Assert.assertTrue(container.getSpectrum(3).getProfile(245).hasProperty(PropertyManager.TYPE.Isotope));
-        Assert.assertTrue(container.getSpectrum(3).getProfile(246).hasProperty(PropertyManager.TYPE.Isotope));
+        Assert.assertTrue(container.getSpectrum(3).getProfile(245).hasProperty(PropertyType.Isotope));
+        Assert.assertTrue(container.getSpectrum(3).getProfile(246).hasProperty(PropertyType.Isotope));
     }
 }

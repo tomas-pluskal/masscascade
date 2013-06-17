@@ -22,7 +22,7 @@
 
 package uk.ac.ebi.masscascade.filter;
 
-import uk.ac.ebi.masscascade.core.PropertyManager;
+import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
@@ -100,7 +100,7 @@ public class ProfileFilter extends CallableTask {
             if (timeRange.contains(profile.getRetentionTime()) && mzRange.contains(profile.getMz()) &&
                     profileWidthRange.contains(profile.getData().size() - 2)) {
                 if (profile.getIntensity() >= minIntensity || (keepIsotopes && profile.hasProperty(
-                        PropertyManager.TYPE.Isotope))) outProfileContainer.addProfile(profile);
+                        PropertyType.Isotope))) outProfileContainer.addProfile(profile);
             }
         }
         outProfileContainer.finaliseFile();

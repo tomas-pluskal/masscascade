@@ -20,35 +20,8 @@
  *   Stephan Beisken - initial API and implementation
  */
 
-package uk.ac.ebi.masscascade.interfaces;
+package uk.ac.ebi.masscascade.core;
 
-import uk.ac.ebi.masscascade.core.PropertyType;
-
-/**
- * This is a property that characterises objects.
- */
-public interface Property {
-
-    /**
-     * Returns the property name.
-     */
-    String getName();
-
-    /**
-     * Returns the property value.
-     */
-    <T> T getValue(Class<T> type);
-
-    /**
-     * Returns the property string.
-     */
-    @Override
-    String toString();
-
-    /**
-     * Returns the property type.
-     *
-     * @return the property type
-     */
-    PropertyType getType();
+public enum PropertyType {
+    Identity, Adduct, Isotope, Label, Score
 }

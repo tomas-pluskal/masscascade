@@ -22,9 +22,8 @@
 
 package uk.ac.ebi.masscascade.interfaces;
 
-import uk.ac.ebi.masscascade.core.PropertyManager;
+import uk.ac.ebi.masscascade.core.PropertyType;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -76,14 +75,14 @@ public interface Spectrum extends Scan, Iterable<Profile> {
      *
      * @return the property value
      */
-    Set<Property> getProperty(PropertyManager.TYPE type);
+    <T> Set<T> getProperty(PropertyType type, Class<T> typeClass);
 
     /**
      * Whether the property is set.
      *
      * @return boolean if property set
      */
-    boolean hasProperty(PropertyManager.TYPE type);
+    boolean hasProperty(PropertyType type);
 
     /**
      * Sets a spectrum property.

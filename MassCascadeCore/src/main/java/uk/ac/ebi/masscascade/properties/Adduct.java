@@ -22,8 +22,7 @@
 
 package uk.ac.ebi.masscascade.properties;
 
-import org.apache.commons.math3.util.FastMath;
-import uk.ac.ebi.masscascade.core.PropertyManager;
+import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.Property;
 
@@ -114,8 +113,8 @@ public class Adduct implements Property {
      *
      * @return the property type
      */
-    public PropertyManager.TYPE getType() {
-        return PropertyManager.TYPE.Adduct;
+    public PropertyType getType() {
+        return PropertyType.Adduct;
     }
 
     @Override
