@@ -46,8 +46,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -81,6 +83,8 @@ public class Obiwarp extends CallableTask {
     private double gapExt;
     private double response;
     private String executable;
+
+    private Map<Integer, Double[]> idToTimeDiff;
 
     /**
      * Constructs an Obiwarp alignment task.
@@ -119,6 +123,7 @@ public class Obiwarp extends CallableTask {
         Range timeRange = params.get(Parameter.TIME_RANGE, ExtendableRange.class);
 
         obiwarpHelper = new ObiwarpHelper(mzBinSize, mzRange, timeBinSize, timeRange);
+        idToTimeDiff = new HashMap<>();
     }
 
     /**
@@ -149,6 +154,9 @@ public class Obiwarp extends CallableTask {
                 alignedProfile.addProfilePoint(new XYZPoint(time, dp.y, dp.z));
             }
             alignedProfile.closeProfile();
+            idToTimeDiff.put(profile.getId(),
+                    new Double[]{alignedProfile.getRetentionTime() - profile.getRetentionTime(),
+                                 alignedProfile.getRetentionTime()});
             outProfileContainer.addProfile(alignedProfile);
         }
 
@@ -223,5 +231,14 @@ public class Obiwarp extends CallableTask {
                 new XYPoint(ceilTimeBin, alignedTimes[(int) ceilTimeBin]));
 
         return lq.getY(accTimeBin);
+    }
+
+    /**
+     * Returns the profile id to time difference map to allow mapping between the raw container and aligned profiles.
+     *
+     * @return the profile id to time difference map
+     */
+    public Map<Integer, Double[]> getTimeDiffMap() {
+        return idToTimeDiff;
     }
 }

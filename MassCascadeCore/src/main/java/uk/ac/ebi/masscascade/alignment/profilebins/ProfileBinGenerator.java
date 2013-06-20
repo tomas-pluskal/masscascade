@@ -60,6 +60,15 @@ public class ProfileBinGenerator {
         return profileBins;
     }
 
+    /**
+     * Returns a multi map containing container id to profile id relation for a list of profile containers.
+     *
+     * @param profileContainers the profile containers
+     * @param ppm               the ppm tolerance value
+     * @param sec               the time tolerance value
+     * @param missing           the percentage of max. missing profiles [0-100]
+     * @return the container id to profile id multi map
+     */
     public static HashMultimap<Integer, Integer> createContainerToProfileMap(
             List<? extends Container> profileContainers, double ppm, double sec, double missing) {
 

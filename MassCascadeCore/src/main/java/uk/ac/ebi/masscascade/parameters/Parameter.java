@@ -161,6 +161,7 @@ public enum Parameter implements Option {
     MIN_PROFILES("Minimum no. of profiles", 3),
     GAP_FILL("Fill gaps", false),
     MISSINGNESS("Missingness [%]", 25),
+    DEFAULT("Default Intensity", 10000),
 
     /*
      * Obiwarp parameters.

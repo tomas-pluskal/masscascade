@@ -22,7 +22,6 @@
 
 package uk.ac.ebi.masscascade.alignment.profilebins;
 
-import uk.ac.ebi.masscascade.alignment.profilebins.ProfileBin;
 import uk.ac.ebi.masscascade.interfaces.Trace;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 import uk.ac.ebi.masscascade.utilities.xyz.XYTrace;

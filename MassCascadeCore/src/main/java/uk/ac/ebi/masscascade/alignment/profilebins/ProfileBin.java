@@ -22,12 +22,21 @@
 
 package uk.ac.ebi.masscascade.alignment.profilebins;
 
+import org.apache.commons.math3.util.FastMath;
 import uk.ac.ebi.masscascade.core.chromatogram.MassChromatogram;
 import uk.ac.ebi.masscascade.interfaces.Chromatogram;
 import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Range;
+import uk.ac.ebi.masscascade.interfaces.Scan;
+import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
+import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.utilities.NumberAdapter;
+import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
+import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -110,6 +119,17 @@ public class ProfileBin extends NumberAdapter {
     }
 
     /**
+     * Convenience method for reverse intensity lookups. Sets the intensity presence of a particular sample at position
+     * i.
+     *
+     * @param i         the container index
+     * @param intensity the intensity value
+     */
+    public void setPresent(int i, double intensity) {
+        present[i] = intensity;
+    }
+
+    /**
      * Returns the average m/z value.
      *
      * @return the m/z value
@@ -173,6 +193,15 @@ public class ProfileBin extends NumberAdapter {
     }
 
     /**
+     * Returns the profile id for the container.
+     * @param containerIndex the container index
+     * @return the profile id
+     */
+    public int getProfileId(int containerIndex) {
+        return containerIndexToProfileId.get(containerIndex);
+    }
+
+    /**
      * Tests if a profile is present in the bin that belongs to the profile container at the specified index.
      *
      * @param index the profile container index
@@ -199,5 +228,36 @@ public class ProfileBin extends NumberAdapter {
     @Override
     public double doubleValue() {
         return mz;
+    }
+
+    /**
+     * Returns a mz-intensity value pair containing the looked up intensity value in the raw container.
+     *
+     * @param rawContainer the raw container
+     * @param deltaPpm     the m/z tolerance in ppm
+     * @param deltaRt      the time tolerance in seconds
+     * @return the mz-intensity value pair
+     */
+    public XYPoint reverseFill(RawContainer rawContainer, double deltaPpm, double deltaRt) {
+
+        Range rtRange = new ExtendableRange(rt - deltaRt, rt + deltaRt);
+
+        XYPoint absNearestPoint = null;
+        double absNearestRt = Double.MAX_VALUE;
+        for (Scan scan : rawContainer) {
+            if (rtRange.contains(scan.getRetentionTime())) {
+                XYPoint nearestPoint = scan.getNearestPoint(mz, deltaPpm);
+                if (nearestPoint == null) continue;
+                else if (absNearestPoint == null) {
+                    absNearestPoint = nearestPoint;
+                    absNearestRt = FastMath.abs(scan.getRetentionTime() - rt);
+                } else if (FastMath.abs(scan.getRetentionTime()) - rt < absNearestRt) {
+                    absNearestPoint = nearestPoint;
+                    absNearestRt = FastMath.abs(scan.getRetentionTime() - rt);
+                }
+            } else if (scan.getRetentionTime() > rtRange.getUpperBounds()) break;
+        }
+
+        return absNearestPoint;
     }
 }

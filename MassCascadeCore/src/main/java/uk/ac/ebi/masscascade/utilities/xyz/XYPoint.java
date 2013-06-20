@@ -108,4 +108,9 @@ public class XYPoint implements Comparable<XYPoint>, Serializable {
 
         return EQUAL;
     }
+
+    @Override
+    public String toString() {
+        return "(" + x + "-" + y + ")";
+    }
 }
