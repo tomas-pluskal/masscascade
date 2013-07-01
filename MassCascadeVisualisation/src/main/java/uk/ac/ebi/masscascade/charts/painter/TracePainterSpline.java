@@ -129,24 +129,30 @@ public class TracePainterSpline extends ATracePainter {
             solveTridiag(sub, diag, sup, a, np - 2);
 
             // note that a[0]=a[np-1]=0, draw
-            int[] g2dXPoints = new int[(np * precision) - precision + 1];
-            int[] g2dYPoints = new int[(np * precision) - precision + 1];
+            int[] g2dXPoints = new int[(np * precision) - precision * 3 + 1]; // padding
+            int[] g2dYPoints = new int[(np * precision) - precision * 3 + 1]; // padding
             int g2dI = 1;
             g2dXPoints[0] = Math.round(x[0]);
             g2dYPoints[0] = Math.round(d[0]);
             for (int i = 1; i < np; i++) {
-                // loop over intervals between nodes
-                for (int j = 1; j <= precision; j++) {
-                    t1 = (h[i] * j) / precision;
-                    t2 = h[i] - t1;
-                    y =
-                            ((-a[i - 1] / 6 * (t2 + h[i]) * t1 + d[i - 1]) * t2 + (-a[i] / 6 * (t1 + h[i]) * t2 +
-                                    d[i]) * t1) / h[i];
-                    t = x[i - 1] + t1;
-
-                    g2dXPoints[g2dI] = Math.round(t);
-                    g2dYPoints[g2dI] = (Math.round(y) > yMax) ? yMax : Math.round(y);
+                if (i < 3 || i >= np - 2) { // padding
+                    g2dXPoints[g2dI] = xPoints.get(i);
+                    g2dYPoints[g2dI] = yPoints.get(i);
                     g2dI++;
+                } else {
+                    // loop over intervals between nodes
+                    for (int j = 1; j <= precision; j++) {
+                        t1 = (h[i] * j) / precision;
+                        t2 = h[i] - t1;
+                        y =
+                                ((-a[i - 1] / 6 * (t2 + h[i]) * t1 + d[i - 1]) * t2 + (-a[i] / 6 * (t1 + h[i]) * t2 +
+                                        d[i]) * t1) / h[i];
+                        t = x[i - 1] + t1;
+
+                        g2dXPoints[g2dI] = Math.round(t);
+                        g2dYPoints[g2dI] = (Math.round(y) > yMax) ? yMax : Math.round(y);
+                        g2dI++;
+                    }
                 }
             }
             g2d.drawPolyline(g2dXPoints, g2dYPoints, g2dXPoints.length);

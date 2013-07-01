@@ -122,7 +122,7 @@ public class BiehmanDeconvolution extends CallableTask {
         for (Profile profile : profileContainer) {
 
             if (profile.getMzData().size() < MIN_SIZE) continue;
-            if (isNoise(profile.getTrace().getData())) continue;
+            if (isNoise(profile.getTrace(2).getData())) continue;
 
             noiseEstimate = noiseEstimation.getNoiseEstimate(profile);
 
