@@ -75,7 +75,6 @@ public class IsotopeRemover extends CallableTask {
      */
     @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
-
         spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
     }
 

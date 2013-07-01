@@ -77,7 +77,6 @@ public class IsotopeKeeper extends CallableTask {
      */
     @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
-
         spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
     }
 
@@ -120,7 +119,7 @@ public class IsotopeKeeper extends CallableTask {
 
                 if (profile.hasProperty(PropertyType.Adduct)) {
                     for (Adduct propA : profile.getProperty(PropertyType.Adduct, Adduct.class))
-                        if (adductParentIds.contains(((Adduct) propA).getParentId())) idSet.add(profile.getId());
+                        if (adductParentIds.contains((propA).getParentId())) idSet.add(profile.getId());
                 }
             }
 

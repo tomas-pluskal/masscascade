@@ -145,8 +145,6 @@ public class IsotopeDetectorRec {
      */
     private void build(List<Profile> profiles, List<Integer[]> paths, int p, int d, int pi, int c) {
 
-        if (paths.size() == pi) paths.add(new Integer[NUM_ISOTOPES]);
-
         for (int cp = p + 1; cp < profiles.size(); cp++) {
 
             double nmz = profiles.get(cp).getMz();
@@ -161,11 +159,15 @@ public class IsotopeDetectorRec {
             if (nmz >= ul) {
                 break;
             } else if (isPotentialIsotope(ll, ul, nmz, r, c)) {
+
+                if (paths.size() == pi) paths.add(new Integer[NUM_ISOTOPES]);
+
                 if (d == paths.get(pi).length) paths.set(pi, Arrays.copyOf(paths.get(pi), d * 2)); // grow isotope array
                 if (d != 0 && paths.get(pi)[0] == null)
                     paths.set(pi, paths.get(pi - 1).clone()); // copy and add isotope array if path branches
                 paths.get(pi)[d] = cp;
                 build(profiles, paths, cp, ++d, pi++, c); // continue to build isotopic envelope
+                d--;
             }
         }
     }
@@ -201,7 +203,7 @@ public class IsotopeDetectorRec {
      */
     private void resolve(List<Profile> profiles, List<Integer[]> paths, int p, int c, Set<Integer> skipSet) {
 
-        if (paths.get(0)[0] == null) return; // no isotopes found
+        if (paths.size() == 0 || paths.get(0)[0] == null) return; // no isotopes found
         else if (paths.size() == 1) annotate(profiles, paths.get(0), p, skipSet); // only one isotopic envelope
         else { // multiple isotopic envelopes
             int max = 0;
