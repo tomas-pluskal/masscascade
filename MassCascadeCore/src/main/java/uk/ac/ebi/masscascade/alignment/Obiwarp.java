@@ -196,7 +196,9 @@ public class Obiwarp extends CallableTask {
             TextUtils tx = new TextUtils();
             Float number;
             int index = 0;
-            while ((number = tx.readNumberFromStream(bufStream)) != null) alignedTimes[index++] = number;
+            while ((number = tx.readNumberFromStream(bufStream)) != null) {
+                alignedTimes[index++] = number;
+            }
 
             try {
                 process.waitFor();

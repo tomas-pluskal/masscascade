@@ -22,6 +22,7 @@
         <module>MassCascadeWebServices</module>
         <module>MassCascadeReference</module>
         <module>MassCascadeChem</module>
+        <module>MassCascadeServer</module>
     </modules>
     <repositories>
         <repository>

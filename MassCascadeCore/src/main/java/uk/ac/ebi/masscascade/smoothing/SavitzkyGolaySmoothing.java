@@ -22,12 +22,10 @@
 
 package uk.ac.ebi.masscascade.smoothing;
 
-import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
-import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
@@ -37,7 +35,6 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
  * <ul>
  * <li>Parameter <code> POLYNOMIAL ORDER </code>- The order of the polynomial function.</li>
  * <li>Parameter <code> DATA WINDOW </code>- The number of data points in the m/z domain.</li>
- * <li>Parameter <code> MS LEVEL </code>- The MSn level.</li>
  * <li>Parameter <code> PROFILE FILE </code>- The input profile container.</li>
  * </ul>
  */
@@ -46,7 +43,6 @@ public class SavitzkyGolaySmoothing extends CallableTask {
     private ProfileContainer profileContainer;
     private int order;
     private int mzWindow;
-    private Constants.MSN msn;
 
     /**
      * Constructs a Savitzky Golay smoothing task.
@@ -73,7 +69,6 @@ public class SavitzkyGolaySmoothing extends CallableTask {
 
         order = params.get(Parameter.POLYNOMIAL_ORDER, Integer.class);
         mzWindow = params.get(Parameter.DATA_WINDOW, Integer.class);
-        msn = params.get(Parameter.MS_LEVEL, Constants.MSN.class);
         profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
     }
 

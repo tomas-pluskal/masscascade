@@ -22,21 +22,13 @@
 
 package uk.ac.ebi.masscascade.alignment;
 
-import com.google.common.collect.Lists;
 import uk.ac.ebi.masscascade.alignment.profilebins.ProfileBin;
 import uk.ac.ebi.masscascade.alignment.profilebins.ProfileBinGenerator;
 import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.Trace;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
-import uk.ac.ebi.masscascade.utilities.DataUtils;
-import uk.ac.ebi.masscascade.utilities.comparator.ProfileMassComparator;
-import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
-import uk.ac.ebi.masscascade.utilities.xyz.XYTrace;
 
 import javax.swing.table.AbstractTableModel;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
