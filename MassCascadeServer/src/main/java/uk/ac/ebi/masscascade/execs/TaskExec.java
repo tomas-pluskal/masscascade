@@ -166,7 +166,7 @@ public class TaskExec extends CommandLineMain {
         params.put(Parameter.BIN_WIDTH_RT, 1.5);
         params.put(Parameter.MZ_RANGE, new ExtendableRange(60, 900));
         params.put(Parameter.TIME_RANGE, new ExtendableRange(0, 900));
-        params.put(Parameter.EXECUTABLE, "./obiwarp.exe");
+        params.put(Parameter.EXECUTABLE, "./obiwarp-x86_64-linux");
         runner.add(Obiwarp.class, params);
 
         params = new ParameterMap();

@@ -101,6 +101,9 @@ public class ObiwarpHelper {
         if (container.getWorkingDirectory().isEmpty()) path = System.getProperty("java.io.tmpdir");
         else path = container.getWorkingDirectory();
         File file = new File(path + File.separator + container.getId() + ".lmata");
+        file.deleteOnExit();
+
+        LOGGER.log(Level.INFO, "Lmata file at: " + file.getAbsolutePath());
 
         try {
 
