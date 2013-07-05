@@ -203,7 +203,7 @@ public class IsotopeDetectorRec {
      */
     private void resolve(List<Profile> profiles, List<Integer[]> paths, int p, int c, Set<Integer> skipSet) {
 
-        if (paths.size() == 0 || paths.get(0)[0] == null) return; // no isotopes found
+        if (paths.size() == 0 || paths.get(0)[0] == null) {}
         else if (paths.size() == 1) annotate(profiles, paths.get(0), p, skipSet); // only one isotopic envelope
         else { // multiple isotopic envelopes
             int max = 0;
@@ -216,7 +216,7 @@ public class IsotopeDetectorRec {
                 Integer[] path = iter.next();
                 for (Integer i : path) {
                     if (i == null) break;
-                    else if (iter.next().length < max) iter.remove();
+                    else if (path.length < max) iter.remove();
                 }
             }
             // if only one path left: annotate

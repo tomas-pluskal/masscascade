@@ -103,8 +103,6 @@ public class ObiwarpHelper {
         File file = new File(path + File.separator + container.getId() + ".lmata");
         file.deleteOnExit();
 
-        LOGGER.log(Level.INFO, "Lmata file at: " + file.getAbsolutePath());
-
         try {
 
             BufferedWriter writer = new BufferedWriter(new FileWriter(file));

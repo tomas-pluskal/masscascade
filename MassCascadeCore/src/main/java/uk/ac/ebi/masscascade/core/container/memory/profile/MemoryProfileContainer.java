@@ -26,7 +26,6 @@ import com.google.common.collect.TreeMultimap;
 import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.core.container.file.FileManager;
 import uk.ac.ebi.masscascade.core.container.memory.MemoryContainer;
-import uk.ac.ebi.masscascade.core.profile.ProfileIterator;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;

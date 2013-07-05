@@ -22,6 +22,7 @@
 
 package uk.ac.ebi.masscascade.distance;
 
+import org.apache.log4j.Level;
 import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
@@ -112,7 +113,7 @@ public class BiehmanSimilarity extends CallableTask {
         int noOfBins = (int) (rtRange.getSize() / binWidth) + 1;
         Bin[] bins = new Bin[noOfBins];
 
-        Set<Integer> allProfileIds = new HashSet<Integer>();
+        Set<Integer> allProfileIds = new HashSet<>();
 
         for (Profile profile : profileContainer) {
             allProfileIds.add(profile.getId());
@@ -200,13 +201,13 @@ public class BiehmanSimilarity extends CallableTask {
             }
 
             if (isComponent) {
-                Set<Profile> profileSet = new HashSet<Profile>();
+                Set<Profile> profileSet = new HashSet<>();
 
                 Range specRange = new ExtendableRange();
                 XYList spectrumData = new XYList();
                 double rt = 0;
 
-                List<Integer> tmpIds = new ArrayList<Integer>();
+                List<Integer> tmpIds = new ArrayList<>();
                 tmpIds.addAll(bins[i].getProfileIds());
                 if (bins[i - 1] != null) tmpIds.addAll(bins[i - 1].getProfileIds());
                 if (bins[i + 1] != null) tmpIds.addAll(bins[i + 1].getProfileIds());

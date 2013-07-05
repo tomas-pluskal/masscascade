@@ -59,12 +59,15 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * The task runner simplifies running MassCascade on command line. It takes a set of task classes and parameter maps
@@ -81,7 +84,6 @@ public class TaskRunner {
     private File tmpDirectory;
     private int nThreads;
 
-    private File refFile;
     private List<Container> results;
 
     /**
@@ -159,111 +161,25 @@ public class TaskRunner {
      */
     public List<Container> run() {
 
-        ListeningExecutorService threadPool = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(nThreads));
+        ExecutorService threadPool = Executors.newFixedThreadPool(nThreads);
+        List<Future<Container>> futures = new ArrayList<>();
 
-        List<ListenableFuture<Container>> resultList = new ArrayList<>();
-
-        File[] files = new File[0];
-        Class<? extends CallableTask> taskClass = tasks.keySet().iterator().next();
-        if (taskClass.equals(XCaliburReader.class))
-            files = inDirectory.listFiles(new Filter(Constants.FILE_FORMATS.RAW));
-        else if (taskClass.equals(PsiMzmlReader.class))
-            files = inDirectory.listFiles(new Filter(Constants.FILE_FORMATS.MZML));
+        File[] files = inDirectory.listFiles(new Filter(Constants.FILE_FORMATS.MZML));
+        Arrays.sort(files);
 
         try {
 
             for (File file : files) {
-                String name = file.getName().substring(0, file.getName().lastIndexOf("."));
-
-                ParameterMap params = new ParameterMap();
-                params.put(Parameter.DATA_FILE, file);
-                if (tmpDirectory == null) params.put(Parameter.RAW_CONTAINER,
-                        MemoryContainerBuilder.getInstance().newInstance(RawContainer.class, name + Constants.DELIMITER));
-                else params.put(Parameter.RAW_CONTAINER,
-                        FileContainerBuilder.getInstance().newInstance(RawContainer.class, name + Constants.DELIMITER,
-                                tmpDirectory.getAbsolutePath()));
-
-                Constructor<?> cstr = taskClass.getConstructor(ParameterMap.class);
-                CallableTask task = (CallableTask) cstr.newInstance(params);
-
-                ListenableFuture<Container> future = threadPool.submit(task);
-                Futures.addCallback(future, new FutureCallback<Container>() {
-
-                    private Iterator<Map.Entry<Class<? extends CallableTask>, ParameterMap>> iter;
-                    private List<File> tmpFiles;
-                    private Container reference;
-
-                    @Override
-                    public void onSuccess(Container container) {
-
-                        if (iter == null) {
-                            iter = tasks.entrySet().iterator();
-                            iter.next();
-
-                            tmpFiles = new ArrayList<>();
-                        }
-
-                        if (tmpDirectory != null) tmpFiles.add(container.getDataFile());
-
-                        if (!iter.hasNext()) {
-                            if (tmpDirectory != null) for (File tmpFile : tmpFiles) tmpFile.delete();
-                            results.add(container);
-                            return;
-                        }
-
-                        try {
-                            Map.Entry<Class<? extends CallableTask>, ParameterMap> entry = iter.next();
-                            ParameterMap params = entry.getValue();
-                            if (container instanceof RawContainer) {
-                                reference = container;
-                                params.put(Parameter.RAW_CONTAINER, container);
-                            } else if (container instanceof ProfileContainer)
-                                params.put(Parameter.PROFILE_CONTAINER, container);
-                            else if (container instanceof SpectrumContainer)
-                                params.put(Parameter.SPECTRUM_CONTAINER, container);
-
-                            Constructor<?> cstr = entry.getKey().getConstructor(ParameterMap.class);
-
-                            if (entry.getKey() == BiehmanDeconvolution.class || entry.getKey() ==
-                                    SavitzkyGolayDeconvolution.class) {
-                                params.put(Parameter.RAW_CONTAINER, reference);
-                            }
-
-                            if (entry.getKey() == Obiwarp.class) {
-                                if (TextUtils.cleanId(container.getId()).equals("20100917_Tomato_Standard_02-1759")) {
-                                    ObiwarpHelper obiHelper =
-                                            new ObiwarpHelper(params.get(Parameter.BIN_WIDTH_MZ, Double.class),
-                                                    params.get(Parameter.MZ_RANGE, ExtendableRange.class),
-                                                    params.get(Parameter.BIN_WIDTH_RT, Double.class),
-                                                    params.get(Parameter.TIME_RANGE, ExtendableRange.class));
-                                    refFile = obiHelper.buildLmataFile((ProfileContainer) container);
-                                    refFile.deleteOnExit();
-                                } else {
-                                    while (refFile == null) {
-                                        Thread.sleep(2000);
-                                    }
-                                }
-                                params.put(Parameter.REFERENCE_FILE, refFile);
-                            }
-
-                            CallableTask task = (CallableTask) cstr.newInstance(params);
-
-                            onSuccess(task.call());
-                        } catch (Exception exception) {
-                            LOGGER.log(Level.ERROR, "File could not be processed.", exception);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Throwable throwable) {
-                        LOGGER.log(Level.ERROR, "File could not be read.", throwable);
-                    }
-                });
-                resultList.add(future);
+                TaskChain executionChain = new TaskChain(file, new LinkedHashMap<>(tasks), tmpDirectory);
+                futures.add(threadPool.submit(executionChain));
             }
 
             threadPool.shutdown();
-            Futures.allAsList(resultList).get(); // only first raw containers
+
+            for (Future<Container> future : futures) {
+                results.add(future.get());
+            }
+
         } catch (Exception exception) {
             LOGGER.log(Level.ERROR, "File could not be read: " + exception.getMessage());
         } finally {

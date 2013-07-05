@@ -26,6 +26,7 @@ import org.apache.commons.cli.Option;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.alignment.Obiwarp;
+import uk.ac.ebi.masscascade.alignment.ObiwarpHelper;
 import uk.ac.ebi.masscascade.background.DurbinWatsonFilter;
 import uk.ac.ebi.masscascade.background.NoiseReduction;
 import uk.ac.ebi.masscascade.deconvolution.BiehmanDeconvolution;
@@ -166,6 +167,7 @@ public class TaskExec extends CommandLineMain {
         params.put(Parameter.BIN_WIDTH_RT, 1.5);
         params.put(Parameter.MZ_RANGE, new ExtendableRange(60, 900));
         params.put(Parameter.TIME_RANGE, new ExtendableRange(0, 900));
+        params.put(Parameter.REFERENCE_FILE, new File("./20100921_Tomato_Standard_61-0904.lmata"));
         params.put(Parameter.EXECUTABLE, "./obiwarp-x86_64-linux");
         runner.add(Obiwarp.class, params);
 
@@ -175,7 +177,7 @@ public class TaskExec extends CommandLineMain {
         runner.add(MzFilter.class, params);
 
         params = new ParameterMap();
-        params.put(Parameter.TIME_WINDOW, 5);
+        params.put(Parameter.TIME_WINDOW, 10);
         params.put(Parameter.BINS, 15);
         runner.add(BiehmanSimilarity.class, params);
 

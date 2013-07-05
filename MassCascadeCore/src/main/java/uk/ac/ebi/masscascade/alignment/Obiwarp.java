@@ -22,8 +22,6 @@
 
 package uk.ac.ebi.masscascade.alignment;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.ByteStreams;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Level;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
@@ -40,18 +38,14 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * Class for profile aligning using Obiwarp. The class executes the Obiwarp binary with the given parameters and
@@ -232,7 +226,8 @@ public class Obiwarp extends CallableTask {
         LinearEquation lq = new LinearEquation(new XYPoint(floorTimeBin, alignedTimes[(int) floorTimeBin]),
                 new XYPoint(ceilTimeBin, alignedTimes[(int) ceilTimeBin]));
 
-        return lq.getY(accTimeBin);
+        double interpolatedTime = lq.getY(accTimeBin);
+        return Double.isNaN(interpolatedTime) ? time : interpolatedTime;
     }
 
     /**

@@ -25,6 +25,8 @@ package uk.ac.ebi.masscascade.distance;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
@@ -32,6 +34,8 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
  * Calculates the cosine angle between two profiles.
  */
 public class CosineSimilarity {
+
+    private static Logger LOGGER = Logger.getLogger(CosineSimilarity.class);
 
     private int numBins;
 
@@ -87,7 +91,11 @@ public class CosineSimilarity {
             RealVector vecA = new ArrayRealVector(dataA);
             RealVector vecB = new ArrayRealVector(dataB);
 
-            distance = vecA.cosine(vecB);
+            try {
+                distance = vecA.cosine(vecB);
+            } catch (Exception e) {
+                distance = -1;
+            }
         }
 
         return distance;
