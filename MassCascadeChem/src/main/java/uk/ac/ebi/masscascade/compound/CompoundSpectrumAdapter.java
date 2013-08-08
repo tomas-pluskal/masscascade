@@ -23,12 +23,10 @@
 package uk.ac.ebi.masscascade.compound;
 
 import com.google.common.collect.HashMultimap;
-import uk.ac.ebi.masscascade.alignment.profilebins.ProfileBinGenerator;
 import uk.ac.ebi.masscascade.commons.Evidence;
 import uk.ac.ebi.masscascade.commons.Status;
 import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.Property;
 import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
@@ -49,19 +47,9 @@ import java.util.Set;
 public class CompoundSpectrumAdapter {
 
     private int gid;
-    private double missingness;
 
     public CompoundSpectrumAdapter() {
         gid = 1;
-        missingness = 0;
-    }
-
-    public void setMissingness(double missingness) {
-        this.missingness = missingness;
-    }
-
-    public double getMissingness() {
-        return missingness;
     }
 
     public List<CompoundSpectrum> getSpectra(SpectrumContainer... spectraContainer) {

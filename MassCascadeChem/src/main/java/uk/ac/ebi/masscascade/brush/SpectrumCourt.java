@@ -22,11 +22,80 @@
 
 package uk.ac.ebi.masscascade.brush;
 
-public class SpectrumCourt {
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import uk.ac.ebi.masscascade.brush.judge.ElementJudge;
+import uk.ac.ebi.masscascade.brush.judge.FragmentationJudge;
+import uk.ac.ebi.masscascade.brush.judge.IdentityRelationJudge;
+import uk.ac.ebi.masscascade.brush.judge.IsotopeJudge;
+import uk.ac.ebi.masscascade.brush.judge.Judge;
+import uk.ac.ebi.masscascade.compound.CompoundSpectrum;
+import uk.ac.ebi.masscascade.parameters.Parameter;
+import uk.ac.ebi.masscascade.parameters.ParameterMap;
 
-    public SpectrumCourt() {
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.Callable;
 
+public class SpectrumCourt implements Callable<List<CompoundSpectrum>> {
+
+    private static final Logger LOGGER = Logger.getLogger(SpectrumCourt.class);
+
+    private List<CompoundSpectrum> compoundSpectra;
+    private final List<Judge> judges;
+
+    public SpectrumCourt(List<CompoundSpectrum> compoundSpectra) {
+
+        this.compoundSpectra = compoundSpectra;
+        judges = new ArrayList<>();
     }
 
+    /**
+     * Sets the task class variables using the parameter map.
+     *
+     * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
+     */
+    public void setParameters(ParameterMap params) {
 
+        if (params.get(Parameter.ELEMENT_FILTER, Boolean.class)) judges.add(new ElementJudge());
+        if (params.get(Parameter.ISOTOPE_FILTER, Boolean.class)) judges.add(new IsotopeJudge());
+        if (params.get(Parameter.FRAGMENTATION_FILTER, Boolean.class)) judges.add(new FragmentationJudge());
+        if (params.get(Parameter.RELATION_FILTER, Boolean.class)) judges.add(new IdentityRelationJudge());
+    }
+
+    /**
+     * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
+     * .Container}
+     * with the processed data.
+     *
+     * @return the container with the processed data
+     */
+    @Override
+    public List<CompoundSpectrum> call() {
+
+        if (compoundSpectra == null || compoundSpectra.isEmpty()) {
+            LOGGER.log(Level.DEBUG, "Empty compound spectra array -- return.");
+            return compoundSpectra;
+        }
+
+        Iterator<Judge> iter = judges.iterator();
+        do {
+            Judge judge = iter.next();
+            compoundSpectra = judge.judge(compoundSpectra);
+        } while (iter.hasNext());
+
+        return compoundSpectra;
+    }
+
+    public int[] getRemoved() {
+
+        int[] removed = new int[judges.size()];
+        int i = 0;
+        for (Judge judge : judges) {
+            removed[i++] = judge.removed();
+        }
+
+        return removed;
+    }
 }

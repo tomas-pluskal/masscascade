@@ -88,7 +88,24 @@ public class ProfileBinGenerator {
         return cToPIdMap;
     }
 
-    private static ProfileMap group(List<? extends Container> profileContainers, double ppm, double sec) {
+    /**
+     * Groups profile container by their m/z and time proximity. The resulting map contains averaged m/z to cross-sample
+     * m/z associations for specific times.
+     *
+     *                  s_1   s_2   s_3
+     * avg mz_1 - rt_a   x     x     x
+     *            rt_b   x           x
+     *            rt_c   x     x
+     * avg mz_2 - rt_a   x           x
+     *            rt_b   x     x     x
+     * avg mz_3 - rt_a   x     x     x
+     *
+     * @param profileContainers the profile containers
+     * @param ppm               the ppm tolerance value
+     * @param sec               the time tolerance value
+     * @return
+     */
+    public static ProfileMap group(List<? extends Container> profileContainers, double ppm, double sec) {
 
         int index = -1;
         ProfileMap timeBins = new ProfileMap();

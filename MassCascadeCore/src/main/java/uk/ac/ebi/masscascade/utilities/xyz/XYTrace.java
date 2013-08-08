@@ -22,9 +22,7 @@
 
 package uk.ac.ebi.masscascade.utilities.xyz;
 
-import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.Trace;
-import uk.ac.ebi.masscascade.utilities.NumberAdapter;
 
 import java.util.ArrayList;
 import java.util.Iterator;

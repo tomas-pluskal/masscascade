@@ -22,6 +22,19 @@
 
 package uk.ac.ebi.masscascade.brush.judge;
 
-public class IdentityRelationJudge {
+import uk.ac.ebi.masscascade.compound.CompoundSpectrum;
 
+import java.util.List;
+
+public class IdentityRelationJudge implements Judge {
+
+    @Override
+    public List<CompoundSpectrum> judge(List<CompoundSpectrum> compoundSpectra) {
+        return null;
+    }
+
+    @Override
+    public int removed() {
+        return 0;
+    }
 }
