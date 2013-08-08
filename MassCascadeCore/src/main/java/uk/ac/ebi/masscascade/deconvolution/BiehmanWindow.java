@@ -34,7 +34,6 @@ public class BiehmanWindow {
     private int maxDpIndex;
 
     private XYList xicData;
-    private int scanWindow;
     private int oriLeftBoundary;
     private int oriRightBoundary;
     private double noiseEstimate;
@@ -55,11 +54,9 @@ public class BiehmanWindow {
      * @param xicData          the data from the extracted ion chromatogram
      * @param oriLeftBoundary  the left bound
      * @param oriRightBoundary the right bound
-     * @param scanWindow       the maximum scan window
      * @param noiseEstimate    the noise estimate
      */
-    public BiehmanWindow(XYList xicData, int oriLeftBoundary, int oriRightBoundary, int scanWindow,
-            double noiseEstimate) {
+    public BiehmanWindow(XYList xicData, int oriLeftBoundary, int oriRightBoundary, double noiseEstimate) {
 
         this.xicData = xicData;
 
@@ -71,7 +68,6 @@ public class BiehmanWindow {
 
         findMaximumDp();
 
-        this.scanWindow = scanWindow;
         this.noiseEstimate = noiseEstimate;
 
         rightMinDp = maxDp;
@@ -107,8 +103,7 @@ public class BiehmanWindow {
 
         XYPoint curDp;
 
-        int scanWindowData = oriRightBoundary - maxDpIndex;
-        int windowLength = (scanWindowData < scanWindow) ? scanWindowData : scanWindow;
+        int windowLength = oriRightBoundary - maxDpIndex;
         for (int i = maxDpIndex + 1; i <= (maxDpIndex + windowLength); i++) {
 
             curDp = xicData.get(i);
@@ -127,7 +122,7 @@ public class BiehmanWindow {
             rightBoundary = i;
         }
 
-        windowLength = (maxDpIndex < scanWindow) ? oriLeftBoundary : maxDpIndex - scanWindow - 1;
+        windowLength = oriLeftBoundary;
         for (int i = maxDpIndex - 1; i >= windowLength; i--) {
 
             curDp = xicData.get(i);

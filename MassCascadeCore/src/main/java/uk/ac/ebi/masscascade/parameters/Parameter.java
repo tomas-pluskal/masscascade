@@ -70,6 +70,7 @@ public enum Parameter implements Option {
      */
     NOISE_INTENSITY("Noise intensity [units]", 1000d),
     MIN_PROFILE_INTENSITY("Min. profile intensity [units]", 1000d),
+    DIF_PROFILE_INTENSITY("Min. profile intensity [units]", 1000d),
 
     /*
      * Parameters for the m/z domain.
@@ -179,7 +180,15 @@ public enum Parameter implements Option {
     BIN_WIDTH("Bin width", 1.5),
     BIN_WIDTH_MZ("m/z bin width", 0.5),
     BIN_WIDTH_RT("Time bin width", 1.5),
-    AGGREGATION("Aggregation", MzBinning.BinningType.AVG.name());
+    AGGREGATION("Aggregation", MzBinning.BinningType.AVG.name()),
+
+    /*
+     * Parameters for identification
+     */
+    ELEMENT_FILTER("Element Filter", true),
+    ISOTOPE_FILTER("Isotope Filter", true),
+    FRAGMENTATION_FILTER("Fragmentation Filter", true),
+    RELATION_FILTER("Relation Filter", true);
 
     private String description;
     private Object defaultValue;

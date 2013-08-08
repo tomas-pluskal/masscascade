@@ -24,5 +24,9 @@ package uk.ac.ebi.masscascade.brush;
 
 public class SpectrumCourt {
 
+    public SpectrumCourt() {
+
+    }
+
 
 }

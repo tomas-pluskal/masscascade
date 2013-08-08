@@ -99,7 +99,7 @@ public class ProfileFilter extends CallableTask {
 
             if (timeRange.contains(profile.getRetentionTime()) && mzRange.contains(profile.getMz()) &&
                     profileWidthRange.contains(profile.getData().size() - 2)) {
-                if (profile.getIntensity() >= minIntensity || (keepIsotopes && profile.hasProperty(
+                if (profile.getDifIntensity() >= minIntensity || (keepIsotopes && profile.hasProperty(
                         PropertyType.Isotope))) outProfileContainer.addProfile(profile);
             }
         }

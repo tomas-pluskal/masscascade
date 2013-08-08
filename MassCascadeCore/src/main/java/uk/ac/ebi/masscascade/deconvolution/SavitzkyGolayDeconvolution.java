@@ -146,7 +146,7 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
             // Apply final filter of detected peaks, according with setup parameters.
             for (final Profile p : resolvedOriginalPeaks) {
 
-                if (p.getData().size() >= width && p.getIntensity() - p.getMinIntensity() >= intensity)
+                if (p.getData().size() >= width && p.getDifIntensity() - p.getMinIntensity() >= intensity)
                     outProfileContainer.addProfile(p);
             }
         }

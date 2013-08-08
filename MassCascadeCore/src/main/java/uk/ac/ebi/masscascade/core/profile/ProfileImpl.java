@@ -228,6 +228,16 @@ public class ProfileImpl implements Profile {
     }
 
     /**
+     * Returns the intensity span.
+     *
+     * @return the intensity span
+     */
+    @Override
+    public double getDifIntensity() {
+        return getIntensity() - getMinIntensity();
+    }
+
+    /**
      * Closes the profile and adds a final data point with the minimum intensity.
      *
      * @param mzIntDp   the last mz intensity data pair

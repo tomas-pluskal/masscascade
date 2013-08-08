@@ -101,6 +101,13 @@ public interface Profile {
     double getMinIntensity();
 
     /**
+     * Returns the intensity span.
+     *
+     * @return the intensity span
+     */
+    double getDifIntensity();
+
+    /**
      * Returns the rt-mz-intensity data list.
      *
      * @return the data list

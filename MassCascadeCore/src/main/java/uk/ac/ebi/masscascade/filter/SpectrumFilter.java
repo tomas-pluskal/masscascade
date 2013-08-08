@@ -80,7 +80,7 @@ public class SpectrumFilter extends CallableTask {
 
         mzRange = params.get(Parameter.MZ_RANGE, ExtendableRange.class);
         timeRange = params.get(Parameter.TIME_RANGE, ExtendableRange.class);
-        minIntensity = params.get(Parameter.MIN_PROFILE_INTENSITY, Double.class);
+        minIntensity = params.get(Parameter.DIF_PROFILE_INTENSITY, Double.class);
         keepIsotopes = params.get(Parameter.KEEP_ISOTOPES, Boolean.class);
         spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
     }
@@ -105,7 +105,7 @@ public class SpectrumFilter extends CallableTask {
                 XYList mzIntList = new XYList();
                 for (Profile profile : spectrum) {
                     if (mzRange.contains(profile.getMz())) {
-                        if (profile.getIntensity() >= minIntensity || (keepIsotopes && profile.hasProperty(
+                        if (profile.getDifIntensity() >= minIntensity || (keepIsotopes && profile.hasProperty(
                                 PropertyType.Isotope))) {
                             if (rtRange == null) rtRange = new ExtendableRange(profile.getRetentionTime());
                             else rtRange.extendRange(profile.getRetentionTime());

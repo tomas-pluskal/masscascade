@@ -63,7 +63,6 @@ public class BiehmanDeconvolution extends CallableTask {
 
     private static final int MIN_SIZE = 5;
 
-    private int scanWindow;
     private boolean center;
     private double noiseEstimate;
 
@@ -96,7 +95,6 @@ public class BiehmanDeconvolution extends CallableTask {
      */
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        scanWindow = (params.get(Parameter.SCAN_WINDOW, Integer.class)) / 2;
         center = params.get(Parameter.CENTER, Boolean.class);
         noiseFactor = params.get(Parameter.NOISE_FACTOR, Integer.class);
         rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
@@ -164,50 +162,55 @@ public class BiehmanDeconvolution extends CallableTask {
      * @param oriRightBoundary the right bound
      * @param profiles         the profile list containing perceived putative peaks
      */
-    private void perceiveAll(Profile profile, int oriLeftBoundary, int oriRightBoundary, List<Profile> profiles, int pBoundary) {
+    private void perceiveAll(Profile profile, int oriLeftBoundary, int oriRightBoundary, List<Profile> profiles,
+            int pBoundary) {
 
         // define deconvolution window
         XYList xicData = profile.getTrace().getData();
-        BiehmanWindow window = new BiehmanWindow(xicData, oriLeftBoundary, oriRightBoundary, scanWindow, noiseEstimate * noiseFactor);
+        BiehmanWindow window =
+                new BiehmanWindow(xicData, oriLeftBoundary, oriRightBoundary, noiseEstimate * noiseFactor);
 
         XYPoint maxDp = window.getMaxDp();
         int leftBoundary = window.getLeftBoundary();
         int rightBoundary = window.getRightBoundary();
 
-        // linear background estimation
-        LinearEquation background = new LinearEquation(window.getLeftMinDp(), window.getRightMinDp());
+        // if the maximum data point is at the boundary: ignore artifcat of previous deconvolution
+        if (window.getMaxDpIndex() > leftBoundary && window.getMaxDpIndex() < rightBoundary) {
+            // linear background estimation
+            LinearEquation background = new LinearEquation(window.getLeftMinDp(), window.getRightMinDp());
 
-        // get deviation from background and sort by intensity
-        TreeSet<XYPoint> dpDevs = new TreeSet<>(new PointIntensityComparator());
-        for (int i = leftBoundary; i <= rightBoundary; i++) {
-            double corY = FastMath.abs(xicData.get(i).y - background.getY(xicData.get(i).x));
-            dpDevs.add(new XYPoint(i, corY));
-        }
+            // get deviation from background and sort by intensity
+            TreeSet<XYPoint> dpDevs = new TreeSet<>(new PointIntensityComparator());
+            for (int i = leftBoundary; i <= rightBoundary; i++) {
+                double corY = FastMath.abs(xicData.get(i).y - background.getY(xicData.get(i).x));
+                dpDevs.add(new XYPoint(i, corY));
+            }
 
-        // least squares background estimation from the lower half of the deviation array
-        int half = 0;
-        XYList xicDataHalf = new XYList();
-        for (XYPoint dp : dpDevs) {
-            xicDataHalf.add(xicData.get((int) dp.x));
-            if (half == (dpDevs.size() / 2)) break;
-            half++;
-        }
-        LinearEquation backgroundSq = MathUtils.getLeastSquares(xicDataHalf);
+            // least squares background estimation from the lower half of the deviation array
+            int half = 0;
+            XYList xicDataHalf = new XYList();
+            for (XYPoint dp : dpDevs) {
+                xicDataHalf.add(xicData.get((int) dp.x));
+                if (half == (dpDevs.size() / 2)) break;
+                half++;
+            }
+            LinearEquation backgroundSq = MathUtils.getLeastSquares(xicDataHalf);
 
-        // check height of maximum data point
-        double maxHeight = maxDp.y - backgroundSq.getY(maxDp.x);
-        if (maxHeight >= noiseFactor * noiseEstimate * Math.sqrt(maxDp.y)) {
+            // check height of maximum data point
+            double maxHeight = maxDp.y - backgroundSq.getY(maxDp.x);
+            if (maxHeight >= noiseFactor * noiseEstimate * Math.sqrt(maxDp.y)) {
 
-            // calculate precise retention time via three-point parabola
-            XYPoint dpL = xicData.get(window.getMaxDpIndex() - 1);
-            XYPoint dpR = xicData.get(window.getMaxDpIndex() + 1);
-            XYPoint apex = MathUtils.getParabolaVertex(dpL, maxDp, dpR);
+                // calculate precise retention time via three-point parabola
+                XYPoint dpL = xicData.get(window.getMaxDpIndex() - 1);
+                XYPoint dpR = xicData.get(window.getMaxDpIndex() + 1);
+                XYPoint apex = MathUtils.getParabolaVertex(dpL, maxDp, dpR);
 
-            Profile deconProfile =
-                    center ? buildCenteredProfile(profile, xicData, apex, window) : buildProfile(profile, xicData,
-                            window);
-            deconProfile.setMsnScans(profile.getMsnScans(rawContainer, deconProfile.getRtRange()));
-            profiles.add(deconProfile);
+                Profile deconProfile =
+                        center ? buildCenteredProfile(profile, xicData, apex, window) : buildProfile(profile, xicData,
+                                window);
+                deconProfile.setMsnScans(profile.getMsnScans(rawContainer, deconProfile.getRtRange()));
+                profiles.add(deconProfile);
+            }
         }
 
         // moving forward
