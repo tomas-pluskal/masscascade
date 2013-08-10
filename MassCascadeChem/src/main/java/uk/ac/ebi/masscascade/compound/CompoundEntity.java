@@ -35,10 +35,11 @@ public class CompoundEntity {
 
     // meta
     private final int id;
-    private final int score;
     private final String name;
-    private final Status status;
-    private final Evidence evidence;
+
+    private int score;
+    private Status status;
+    private Evidence evidence;
 
     // MS 1
     private final Map<Integer, Identity> indexToIdentity;
@@ -85,8 +86,16 @@ public class CompoundEntity {
         return status;
     }
 
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
     public Evidence getEvidence() {
         return evidence;
+    }
+
+    public void setEvidence(Evidence evidence) {
+        this.evidence = evidence;
     }
 
     public Map<Integer, Identity> getIndexToIdentity() {

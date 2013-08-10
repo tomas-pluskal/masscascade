@@ -23,6 +23,8 @@
 package uk.ac.ebi.masscascade.brush.judge;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.openscience.cdk.formula.IsotopeContainer;
 import org.openscience.cdk.formula.IsotopePattern;
 import org.openscience.cdk.formula.IsotopePatternGenerator;
@@ -30,8 +32,11 @@ import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IMolecularFormula;
 import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 import uk.ac.ebi.masscascade.commons.Converter;
+import uk.ac.ebi.masscascade.commons.Evidence;
+import uk.ac.ebi.masscascade.commons.Status;
 import uk.ac.ebi.masscascade.compound.CompoundEntity;
 import uk.ac.ebi.masscascade.compound.CompoundSpectrum;
+import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
 
 import java.util.ArrayList;
@@ -42,7 +47,10 @@ import java.util.Set;
 
 public class IsotopeJudge implements Judge {
 
+    private static final Logger LOGGER = Logger.getLogger(IsotopeJudge.class);
+
     private final double TOLERANCE_PPM = 100000.0; // 10%
+    private final double STEPSIZE_PPM = 50000.0;  //  5%
 
     private int removed = 0;
 
@@ -62,14 +70,15 @@ public class IsotopeJudge implements Judge {
             double[] intensities = new double[isotopes.size()];
             int i = 0;
             for (int isotope : isotopes) {
-                intensities[i++] = cs.getPeakList().get(isotope).y;
+                intensities[i++] = cs.getPeakList().get(isotope - 1).y;
             }
             // ascending numerical order and reversed (or use comparator...)
             Arrays.sort(intensities);
             ArrayUtils.reverse(intensities);
             // normalise to 1
+            double maxIntensity = intensities[0];
             for (int j = 0; j < intensities.length; j++) {
-                intensities[j] = intensities[j] / intensities[0];
+                intensities[j] = intensities[j] / maxIntensity;
             }
 
             Iterator<CompoundEntity> iter = cs.getCompounds().iterator();
@@ -80,34 +89,26 @@ public class IsotopeJudge implements Judge {
                 IAtomContainer molecule = Converter.lineNotationToCDK(notation);
                 IMolecularFormula mf = MolecularFormulaManipulator.getMolecularFormula(molecule);
 
-                IsotopePatternGenerator ipg = new IsotopePatternGenerator(0);
-                IsotopePattern ip = ipg.getIsotopes(mf);
-                IsotopeContainer pIsotope = null;
-                double pMass = 0;
-                int isoIndex = 0;
-                double[] isoIntensities = new double[ip.getNumberOfIsotopes()];
-                for (IsotopeContainer isotope : ip.getIsotopes()) {
-                    if (isotope.getMass() - pMass < 0.5) {
-                        if (pIsotope == null || isotope.getIntensity() > pIsotope.getIntensity()) {
-                            isoIntensities[isoIndex] = isotope.getIntensity();
-                            pIsotope = isotope;
-                        }
-                    } else {
-                        isoIntensities[isoIndex++] = isotope.getIntensity();
-                        pIsotope = isotope;
-                    }
-                }
+                double[] isoIntensities = getIsoIntensities(mf);
 
+                String isoLog = "";
                 for (int j = 0; j < intensities.length; j++) {
-                    if (!(new ToleranceRange(intensities[j], TOLERANCE_PPM)).contains(isoIntensities[j])) {
+                    isoLog += isoIntensities[j] + " \\ " + new ToleranceRange(intensities[j],
+                            TOLERANCE_PPM).toString() + "\n";
+                    if (!(new ToleranceRange(intensities[j], TOLERANCE_PPM + STEPSIZE_PPM * j)).contains(
+                            isoIntensities[j])) {
                         filter = true;
                         break;
                     }
                 }
 
                 if (filter) {
+                    LOGGER.log(Level.DEBUG, "Removed " + notation + ":\n" + isoLog);
                     iter.remove();
                     removed++;
+                } else {
+                    ce.setStatus(Status.INTERMEDIATE);
+                    ce.setEvidence(Evidence.MSI_3);
                 }
             }
 
@@ -117,6 +118,32 @@ public class IsotopeJudge implements Judge {
         }
 
         return filteredCS;
+    }
+
+    private double[] getIsoIntensities(IMolecularFormula mf) {
+
+        IsotopePatternGenerator ipg = new IsotopePatternGenerator(0);
+        IsotopePattern ip = ipg.getIsotopes(mf);
+        double halfedProton = Constants.PARTICLES.PROTON.getMass() / 2d;
+
+        int isoIndex = 0;
+        IsotopeContainer pIsotope = null;
+        double[] isoIntensities = new double[ip.getNumberOfIsotopes()];
+
+        for (IsotopeContainer isotope : ip.getIsotopes()) {
+            if (pIsotope == null) {
+                isoIntensities[isoIndex] = isotope.getIntensity();
+            } else if (isotope.getMass() - pIsotope.getMass() < halfedProton) {
+                if (isotope.getIntensity() >= isoIntensities[isoIndex]) {
+                    isoIntensities[isoIndex] = isotope.getIntensity();
+                }
+            } else {
+                isoIntensities[++isoIndex] = isotope.getIntensity();
+            }
+            pIsotope = isotope;
+        }
+
+        return isoIntensities;
     }
 
     @Override

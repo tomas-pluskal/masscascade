@@ -22,6 +22,8 @@
 
 package uk.ac.ebi.masscascade.brush.judge;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
@@ -36,6 +38,8 @@ import java.util.List;
 import java.util.Set;
 
 public class ElementJudge implements Judge {
+
+    private static final Logger LOGGER = Logger.getLogger(ElementJudge.class);
 
     private final Set<String> elements = new HashSet<>();
 
@@ -73,6 +77,7 @@ public class ElementJudge implements Judge {
                     }
                 }
                 if (filter) {
+                    LOGGER.log(Level.DEBUG, "Removed " + notation);
                     iter.remove();
                     removed++;
                 }
