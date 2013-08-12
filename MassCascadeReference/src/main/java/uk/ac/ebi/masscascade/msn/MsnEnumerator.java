@@ -153,6 +153,7 @@ public class MsnEnumerator extends CallableSearch {
             commands.add(executable);
             commands.add(notation);
             commands.add(depth + "");
+            commands.add("fragonly");
             ProcessBuilder pb = new ProcessBuilder(commands);
             Process process = pb.start();
 
@@ -162,9 +163,9 @@ public class MsnEnumerator extends CallableSearch {
             String line;
             TextUtils tx = new TextUtils();
             while ((line = tx.readLineFromStream(bufStream)) != null) {
-                String[] elements = line.split(":");
-                double mass = Double.parseDouble(elements[2]);
-                String fragment = elements[3];
+                String[] elements = line.split("\\s");
+                double mass = Double.parseDouble(elements[1]);
+                String fragment = elements[2];
 
                 if (massToSmiles.containsKey(mass)) {
                     massToSmiles.get(mass).add(fragment);
@@ -174,7 +175,7 @@ public class MsnEnumerator extends CallableSearch {
                     massToSmiles.put(mass, smiles);
                 }
             }
-        } catch (IOException exception) {
+        } catch (Exception exception) {
             LOGGER.log(Level.ERROR, "MSnEnumerator process error: ", exception);
         } finally {
             TextUtils.close(bufStream);
