@@ -23,6 +23,7 @@
 package uk.ac.ebi.masscascade.compound;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import uk.ac.ebi.masscascade.commons.Evidence;
 import uk.ac.ebi.masscascade.commons.Status;
 import uk.ac.ebi.masscascade.core.PropertyType;
@@ -67,7 +68,7 @@ public class CompoundSpectrumAdapter {
     }
 
     public List<CompoundSpectrum> getSpectra(HashMultimap<Integer, Integer> cToPIdMap, int index,
-            SpectrumContainer... spectraContainer) {
+                                             SpectrumContainer... spectraContainer) {
 
         List<CompoundSpectrum> compoundSpectra = new ArrayList<>();
 
@@ -85,7 +86,7 @@ public class CompoundSpectrumAdapter {
     }
 
     private void generateCompoundSpectra(Spectrum spectrum, int spectrumI, List<CompoundSpectrum> compoundSpectra,
-            HashMultimap<Integer, Integer> cToPIdMap) {
+                                         HashMultimap<Integer, Integer> cToPIdMap) {
 
         List<Profile> profiles = new ArrayList<>(spectrum.getProfileMap().values());
         Collections.sort(profiles, new ProfileMassComparator());
@@ -113,10 +114,25 @@ public class CompoundSpectrumAdapter {
                 compoundSpectrum.setPeakList(data);
                 compoundSpectrum.setRetentionTime(profile.getRetentionTime());
 
+                Map<String, Multimap<Integer, Identity>> msnAssociations = new HashMap<>();
                 if (profile.hasMsnSpectra(Constants.MSN.MS2)) {
+                    int msnIndex = 1;
                     XYList msnData = new XYList();
                     for (Profile msnProfile : profile.getMsnSpectra(Constants.MSN.MS2).get(0)) {
                         msnData.add(msnProfile.getMzIntDp());
+                        if (msnProfile.hasProperty(PropertyType.Identity)) {
+                            for (Identity msnIdentity : msnProfile.getProperty(PropertyType.Identity, Identity.class)) {
+                                String parentId = msnIdentity.getSource();
+                                if (msnAssociations.containsKey(parentId)) {
+                                    msnAssociations.get(parentId).put(msnIndex, msnIdentity);
+                                } else {
+                                    Multimap<Integer, Identity> msnIdToIdent = HashMultimap.create();
+                                    msnIdToIdent.put(msnIndex, msnIdentity);
+                                    msnAssociations.put(parentId, msnIdToIdent);
+                                }
+                            }
+                        }
+                        msnIndex++;
                     }
                     compoundSpectrum.setPeakList2(msnData);
                 }
@@ -125,8 +141,8 @@ public class CompoundSpectrumAdapter {
                     Map<Integer, Identity> identMap = new HashMap<>();
                     identMap.put(mainPeak, identity);
                     CompoundEntity ce =
-                            new CompoundEntity(mainPeak, (int) identity.getScore(), identity.getName(), Status.WEAK,
-                                    Evidence.MSI_4, identMap, null);
+                            new CompoundEntity(mainPeak, 0, identity.getName(), Status.WEAK,
+                                    Evidence.MSI_3, identMap, msnAssociations.get(identity.getId()));
                     compoundSpectrum.addCompound(ce);
                 }
 

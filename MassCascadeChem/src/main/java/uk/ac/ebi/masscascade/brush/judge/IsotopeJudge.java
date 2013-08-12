@@ -109,6 +109,7 @@ public class IsotopeJudge implements Judge {
                 } else {
                     ce.setStatus(Status.INTERMEDIATE);
                     ce.setEvidence(Evidence.MSI_3);
+                    ce.addScore(200);
                 }
             }
 

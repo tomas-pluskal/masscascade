@@ -31,9 +31,12 @@ import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.reference.ReferenceSpectrum;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
+import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Class implementing a matching factor according to Stein (1994), consisting of two terms: the dot product between the
@@ -129,6 +132,115 @@ public class WeightedScorer {
 
         // matching factor
         int nUnknown = unknownSpectrum.size();
+        double mf = ((nUnknown * dotProduct) + (nCommons * ratio)) / (nUnknown + nCommons);
+
+//        LOGGER.log(Level.INFO, "Score: " + mf + "; Fd: " + dotProduct + "; Fr: " + ratio);
+
+        return FastMath.round(mf * 1000);
+    }
+
+    /**
+     * Calculates the score between the unknown and reference spectrum.
+     *
+     * @param unknown   the unknown data point list
+     * @param reference the reference data point list
+     * @return the score (0-1000)
+     */
+    public double getScore(List<XYPoint> unknown, List<XYPoint> reference) {
+
+        XYPoint unknownBasePeak = unknown.get(0);
+        for (XYPoint dp : unknown) {
+            if (dp.y > unknownBasePeak.y) {
+                unknownBasePeak = dp;
+            }
+        }
+
+        XYPoint referenceBasePeak = reference.get(0);
+        for (XYPoint dp : reference) {
+            if (dp.y > referenceBasePeak.y) {
+                referenceBasePeak = dp;
+            }
+        }
+        TreeSet<XYPoint> treeReference = new TreeSet<>(reference);
+
+        XYList unknownCommons = new XYList();
+        XYList referenceCommons = new XYList();
+
+        Set<Double> addedMz = new HashSet<>();
+        for (XYPoint dp : unknown) {
+
+            XYPoint referenceXY = null;
+            if (treeReference.contains(dp)) {
+                referenceXY = treeReference.floor(dp);
+            } else {
+                double ppm = amu * Constants.PPM / dp.x;
+                XYPoint floor = treeReference.floor(dp);
+                XYPoint higher = treeReference.higher(dp);
+
+                double deltaFloor = (floor != null) ? (dp.x - floor.x) : Double.MAX_VALUE;
+                double deltaCeiling = (higher != null) ? (higher.x - dp.x) : Double.MAX_VALUE;
+
+
+                if (floor != null || higher != null) {
+                    XYPoint match = (deltaFloor <= deltaCeiling) ? floor : higher;
+                    double delta = dp.x * ppm / Constants.PPM;
+                    referenceXY = (match.x >= dp.x - delta && match.x < dp.x + delta) ? match : null;
+                }
+            }
+
+            if (referenceXY == null || addedMz.contains(referenceXY.x)) continue;
+
+            addedMz.add(referenceXY.x);
+            unknownCommons.add(new XYPoint(dp.x, dp.y / unknownBasePeak.y));
+            referenceCommons.add(new XYPoint(referenceXY.x, referenceXY.y / referenceBasePeak.y));
+        }
+
+        int nCommons = unknownCommons.size();
+        if (nCommons == 0) return 0d;
+
+        // TODO: merge dot product and ratio loops
+
+        // dot product
+        double numerator = 0;
+        double denominatorUnknown = 0;
+        double denominatorReference = 0;
+        for (int i = 0; i < nCommons; i++) {
+            XYPoint unknownXY = unknownCommons.get(i);
+            XYPoint referenceXY = referenceCommons.get(i);
+            double unknownW = FastMath.pow(unknownXY.x, wMass) * FastMath.pow(unknownXY.y, wIntensity);
+            double referenceW = FastMath.pow(referenceXY.x, wMass) * FastMath.pow(referenceXY.y, wIntensity);
+
+            numerator += (unknownW * referenceW);
+            denominatorUnknown += (unknownW * unknownW);
+            denominatorReference += (referenceW * referenceW);
+        }
+
+        double dotProduct = (numerator * numerator) / (denominatorUnknown * denominatorReference);
+
+        // ratio
+        double sumRatio = 0;
+        XYPoint unknownXY = unknownCommons.get(0);
+        XYPoint referenceXY = referenceCommons.get(0);
+        double pUnknownW = FastMath.pow(unknownXY.x, wMass) * FastMath.pow(unknownXY.y, wIntensity);
+        double pReferenceW = FastMath.pow(referenceXY.x, wMass) * FastMath.pow(referenceXY.y, wIntensity);
+        for (int i = 1; i < nCommons; i++) {
+            unknownXY = unknownCommons.get(i);
+            referenceXY = referenceCommons.get(i);
+            double unknownW = FastMath.pow(unknownXY.x, wMass) * FastMath.pow(unknownXY.y, wIntensity);
+            double referenceW = FastMath.pow(referenceXY.x, wMass) * FastMath.pow(referenceXY.y, wIntensity);
+
+            double ratio = (pUnknownW / unknownW) * (referenceW / pReferenceW);
+            if (ratio > 1) ratio = 1 / ratio;
+            sumRatio += ratio;
+
+            pUnknownW = unknownW;
+            pReferenceW = referenceW;
+        }
+
+        double ratio = sumRatio / nCommons;
+
+        // matching factor
+        int nUnknown = unknown.size();
         double mf = ((nUnknown * dotProduct) + (nCommons * ratio)) / (nUnknown + nCommons);
 
 //        LOGGER.log(Level.INFO, "Score: " + mf + "; Fd: " + dotProduct + "; Fr: " + ratio);

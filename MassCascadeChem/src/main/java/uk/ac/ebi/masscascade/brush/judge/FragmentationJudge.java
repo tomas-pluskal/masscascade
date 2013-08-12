@@ -22,17 +22,47 @@
 
 package uk.ac.ebi.masscascade.brush.judge;
 
+import uk.ac.ebi.masscascade.compound.CompoundEntity;
 import uk.ac.ebi.masscascade.compound.CompoundSpectrum;
+import uk.ac.ebi.masscascade.score.WeightedScorer;
+import uk.ac.ebi.masscascade.utilities.xyz.XYList;
+import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class FragmentationJudge implements Judge {
 
+    private final double TOLERANCE_PPM = 10.0;
+
     @Override
     public List<CompoundSpectrum> judge(List<CompoundSpectrum> compoundSpectra) {
 
+        List<CompoundSpectrum> filteredCS = new ArrayList<>();
+        WeightedScorer scorer = new WeightedScorer(0.5);
 
-        return null;
+        for (CompoundSpectrum cs : compoundSpectra) {
+            List<XYPoint> msn2 = cs.getPeakList2();
+            Iterator<CompoundEntity> iter = cs.getCompounds().iterator();
+            while (iter.hasNext()) {
+                CompoundEntity ce = iter.next();
+                List<XYPoint> msn2Explained = new ArrayList<>();
+                for (int index : ce.getIndexToIdentity2().keySet()) {
+                    msn2Explained.add(msn2.get(index - 1));
+                }
+                double score = scorer.getScore(msn2Explained, msn2) / 2d;
+                if (score < 100) {
+
+                } else if (score < 350) {
+
+                } else {
+
+                }
+            }
+        }
+
+        return filteredCS;
     }
 
     @Override
