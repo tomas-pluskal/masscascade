@@ -35,10 +35,21 @@ import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.CDKHydrogenAdder;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
+/**
+ * Utilities class for chemistry format conversion.
+ */
 public class NotationUtil {
 
+    // CDK's coordinates generator for molecules
     private static StructureDiagramGenerator sdg = new StructureDiagramGenerator();
 
+    /**
+     * Converts a SMILES or InChI line notation into a fully configured, aromaticity-detected CDK molecule with 2D
+     * layout. Unconnected fragments are removed, keeping the biggest fragment only.
+     *
+     * @param notation the SMILES or InChI
+     * @return the layout CDK molecule
+     */
     public static IAtomContainer getMoleculeTyped(String notation) {
 
         IAtomContainer molecule = getMolecule(notation);
@@ -66,6 +77,12 @@ public class NotationUtil {
         return molecule;
     }
 
+    /**
+     * Converts a SMILES or InChI line notation into a raw CDK molecule with 2D layout.
+     *
+     * @param notation the SMILES or InChI
+     * @return the layout CDK molecule
+     */
     public static IAtomContainer getMolecule(String notation) {
 
         IAtomContainer molecule = null;
@@ -89,6 +106,34 @@ public class NotationUtil {
         return molecule;
     }
 
+    /**
+     * Converts a SMILES or InChI line notation into a raw CDK molecule.
+     *
+     * @param notation the SMILES or InChI
+     * @return the CDK molecule
+     */
+    public static IAtomContainer getMoleculePlain(String notation) {
+
+        IAtomContainer molecule = null;
+
+        try {
+            if (notation == null) return molecule;
+            else if (notation.toLowerCase().startsWith("inchi")) molecule = convertInChI(notation);
+            else molecule = convertSmiles(notation);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
+
+        return molecule;
+    }
+
+    /**
+     * Converts SMILES into a CDK molecule.
+     *
+     * @param notation the SMILES string
+     * @return the CDK molecule
+     * @throws InvalidSmilesException if a parsing error has occurred
+     */
     private static IAtomContainer convertSmiles(String notation) throws InvalidSmilesException {
 
         SmilesParser sp = new SmilesParser(SilentChemObjectBuilder.getInstance());
@@ -96,6 +141,13 @@ public class NotationUtil {
         return sp.parseSmiles(notation);
     }
 
+    /**
+     * Converts InChI into a CDK molecule.
+     *
+     * @param notation the InChI string
+     * @return the CDK molecule
+     * @throws CDKException if a parsing error has occurred
+     */
     private static IAtomContainer convertInChI(String notation) throws CDKException {
 
         return InChIGeneratorFactory.getInstance().getInChIToStructure(notation,

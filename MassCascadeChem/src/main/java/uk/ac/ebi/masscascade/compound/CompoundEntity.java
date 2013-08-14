@@ -31,6 +31,9 @@ import uk.ac.ebi.masscascade.properties.Identity;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A chemical entity associated with a signal of a compound spectrum.
+ */
 public class CompoundEntity {
 
     // meta

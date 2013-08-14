@@ -31,11 +31,11 @@ import org.openscience.cdk.formula.IsotopePatternGenerator;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IMolecularFormula;
 import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
-import uk.ac.ebi.masscascade.commons.Converter;
 import uk.ac.ebi.masscascade.commons.Evidence;
 import uk.ac.ebi.masscascade.commons.Status;
 import uk.ac.ebi.masscascade.compound.CompoundEntity;
 import uk.ac.ebi.masscascade.compound.CompoundSpectrum;
+import uk.ac.ebi.masscascade.compound.NotationUtil;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
 
@@ -45,6 +45,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Judge resolving the isotope patterns based on detected isotope signals and compound entity annotations.
+ * <p/>
+ * The judge can increase the total score of a compound entity by a maximum of 200.
+ */
 public class IsotopeJudge implements Judge {
 
     private static final Logger LOGGER = Logger.getLogger(IsotopeJudge.class);
@@ -54,8 +59,16 @@ public class IsotopeJudge implements Judge {
 
     private int removed = 0;
 
+    /**
+     * The core method of the judge executing the filtering process.
+     *
+     * @param compoundSpectra the input list of compound spectra
+     * @return the filtered input list
+     */
     @Override
     public List<CompoundSpectrum> judge(List<CompoundSpectrum> compoundSpectra) {
+
+        LOGGER.log(Level.DEBUG, "Starting Isotope Judge...");
 
         List<CompoundSpectrum> filteredCS = new ArrayList<>();
 
@@ -86,7 +99,7 @@ public class IsotopeJudge implements Judge {
                 CompoundEntity ce = iter.next();
                 boolean filter = false;
                 String notation = ce.getNotation(ce.getId());
-                IAtomContainer molecule = Converter.lineNotationToCDK(notation);
+                IAtomContainer molecule = NotationUtil.getMoleculePlain(notation);
                 IMolecularFormula mf = MolecularFormulaManipulator.getMolecularFormula(molecule);
 
                 double[] isoIntensities = getIsoIntensities(mf);
@@ -147,6 +160,11 @@ public class IsotopeJudge implements Judge {
         return isoIntensities;
     }
 
+    /**
+     * Returns the number of removed or filtered compound spectra.
+     *
+     * @return the number of removed or filtered compound spectra
+     */
     @Override
     public int removed() {
         return removed;

@@ -27,9 +27,9 @@ import org.apache.log4j.Logger;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
-import uk.ac.ebi.masscascade.commons.Converter;
 import uk.ac.ebi.masscascade.compound.CompoundEntity;
 import uk.ac.ebi.masscascade.compound.CompoundSpectrum;
+import uk.ac.ebi.masscascade.compound.NotationUtil;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -37,6 +37,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Judge filtering compound entities by element presence. Only entities with CHNOPS and Halogen elements are kept.
+ */
 public class ElementJudge implements Judge {
 
     private static final Logger LOGGER = Logger.getLogger(ElementJudge.class);
@@ -58,6 +61,12 @@ public class ElementJudge implements Judge {
 
     private int removed = 0;
 
+    /**
+     * The core method of the judge executing the filtering process.
+     *
+     * @param compoundSpectra the input list of compound spectra
+     * @return the filtered input list
+     */
     @Override
     public List<CompoundSpectrum> judge(List<CompoundSpectrum> compoundSpectra) {
 
@@ -69,7 +78,7 @@ public class ElementJudge implements Judge {
                 CompoundEntity ce = iter.next();
                 boolean filter = false;
                 String notation = ce.getNotation(ce.getId());
-                IAtomContainer molecule = Converter.lineNotationToCDK(notation);
+                IAtomContainer molecule = NotationUtil.getMoleculePlain(notation);
                 for (IAtom heavyAtom : AtomContainerManipulator.getHeavyAtoms(molecule)) {
                     if (!elements.contains(heavyAtom.getSymbol())) {
                         filter = true;
@@ -91,6 +100,11 @@ public class ElementJudge implements Judge {
         return filteredCS;
     }
 
+    /**
+     * Returns the number of removed or filtered compound spectra.
+     *
+     * @return the number of removed or filtered compound spectra
+     */
     @Override
     public int removed() {
         return removed;

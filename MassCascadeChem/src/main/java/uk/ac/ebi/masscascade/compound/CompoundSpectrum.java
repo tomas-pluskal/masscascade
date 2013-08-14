@@ -33,6 +33,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A compound spectrum consisting of related signals that are believed to originate from the same compound.
+ */
 public class CompoundSpectrum {
 
     // spectrum id

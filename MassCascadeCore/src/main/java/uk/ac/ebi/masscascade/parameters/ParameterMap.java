@@ -26,12 +26,13 @@ import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.Option;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
  * Class holding valid task parameters and their respective values.
  */
-public class ParameterMap {
+public class ParameterMap implements Iterable<Map.Entry<Option, Object>> {
 
     private final Map<Option, Object> parameters;
 
@@ -121,5 +122,10 @@ public class ParameterMap {
      */
     public ParameterMap clone() {
         return new ParameterMap(new HashMap(parameters));
+    }
+
+    @Override
+    public Iterator<Map.Entry<Option, Object>> iterator() {
+        return parameters.entrySet().iterator();
     }
 }

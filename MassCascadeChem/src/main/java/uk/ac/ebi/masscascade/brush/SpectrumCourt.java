@@ -38,6 +38,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+/**
+ * Judge aggregator to rationalise and filter a list of compound spectrum.
+ */
 public class SpectrumCourt implements Callable<List<CompoundSpectrum>> {
 
     private static final Logger LOGGER = Logger.getLogger(SpectrumCourt.class);
@@ -45,6 +48,11 @@ public class SpectrumCourt implements Callable<List<CompoundSpectrum>> {
     private List<CompoundSpectrum> compoundSpectra;
     private final List<Judge> judges;
 
+    /**
+     * Constructs a new court for a list of compound spectra.
+     *
+     * @param compoundSpectra the list of compound spectra
+     */
     public SpectrumCourt(List<CompoundSpectrum> compoundSpectra) {
 
         this.compoundSpectra = compoundSpectra;
@@ -66,8 +74,7 @@ public class SpectrumCourt implements Callable<List<CompoundSpectrum>> {
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .Container}
-     * with the processed data.
+     * .Container} with the processed data.
      *
      * @return the container with the processed data
      */
@@ -88,6 +95,12 @@ public class SpectrumCourt implements Callable<List<CompoundSpectrum>> {
         return compoundSpectra;
     }
 
+    /**
+     * Returns an array of integers indicating the number of removed or filtered compound spectra by a particular judge.
+     * The number at an index corresponds to the judge at the same index in the list of judges.
+     *
+     * @return the array of integers indicating the number of removed or filtered compound spectra
+     */
     public int[] getRemoved() {
 
         int[] removed = new int[judges.size()];

@@ -45,14 +45,38 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Converts a list of pseudo spectra into a list of compound spectra.
+ * <p/>
+ * For every identity annotation in a pseudo spectra for a single peak, a compound spectrum is generated.
+ */
 public class CompoundSpectrumAdapter {
 
     private int gid;
+    private int startingScore;
 
     public CompoundSpectrumAdapter() {
-        gid = 1;
+        this(0);
     }
 
+    /**
+     * Constructs a new adapter with an initial minimum score for new compound entities that are assigned to compound
+     * spectra.
+     *
+     * @param startingScore the initial starting score
+     */
+    public CompoundSpectrumAdapter(int startingScore) {
+
+        gid = 1;
+        this.startingScore = startingScore;
+    }
+
+    /**
+     * Takes a list of spectrum containers and returns a list of compound spectra.
+     *
+     * @param spectraContainer the input list of spectrum containers
+     * @return the converted list of compound spectra
+     */
     public List<CompoundSpectrum> getSpectra(SpectrumContainer... spectraContainer) {
 
         List<CompoundSpectrum> compoundSpectra = new ArrayList<>();
@@ -67,6 +91,14 @@ public class CompoundSpectrumAdapter {
         return compoundSpectra;
     }
 
+    /**
+     * Takes a list of spectrum containers and returns a list of compound spectra.
+     *
+     * @param cToPIdMap        the container to profile id map
+     * @param index            the index of the current container
+     * @param spectraContainer the input list of spectrum containers
+     * @return the converted list of compound spectra
+     */
     public List<CompoundSpectrum> getSpectra(HashMultimap<Integer, Integer> cToPIdMap, int index,
                                              SpectrumContainer... spectraContainer) {
 
@@ -81,11 +113,11 @@ public class CompoundSpectrumAdapter {
         return compoundSpectra;
     }
 
-    private void generateCompoundSpectra(Spectrum spectrum, int spectrumI, List<CompoundSpectrum> compoundSpectra) {
-        generateCompoundSpectra(spectrum, spectrumI, compoundSpectra, null);
+    private void generateCompoundSpectra(Spectrum spectrum, int containerI, List<CompoundSpectrum> compoundSpectra) {
+        generateCompoundSpectra(spectrum, containerI, compoundSpectra, null);
     }
 
-    private void generateCompoundSpectra(Spectrum spectrum, int spectrumI, List<CompoundSpectrum> compoundSpectra,
+    private void generateCompoundSpectra(Spectrum spectrum, int containerI, List<CompoundSpectrum> compoundSpectra,
                                          HashMultimap<Integer, Integer> cToPIdMap) {
 
         List<Profile> profiles = new ArrayList<>(spectrum.getProfileMap().values());
@@ -105,7 +137,8 @@ public class CompoundSpectrumAdapter {
         for (Profile profile : profiles) {
 
             if (cToPIdMap != null) {
-                if (!cToPIdMap.containsKey(spectrumI) || !cToPIdMap.get(spectrumI).contains(profile.getId())) continue;
+                if (!cToPIdMap.containsKey(containerI) || !cToPIdMap.get(containerI).contains(profile.getId()))
+                    continue;
             }
 
             if (profile.hasProperty(PropertyType.Identity)) {
@@ -141,7 +174,7 @@ public class CompoundSpectrumAdapter {
                     Map<Integer, Identity> identMap = new HashMap<>();
                     identMap.put(mainPeak, identity);
                     CompoundEntity ce =
-                            new CompoundEntity(mainPeak, 0, identity.getName(), Status.WEAK,
+                            new CompoundEntity(mainPeak, startingScore, identity.getName(), Status.WEAK,
                                     Evidence.MSI_3, identMap, msnAssociations.get(identity.getId()));
                     compoundSpectrum.addCompound(ce);
                 }
