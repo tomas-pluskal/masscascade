@@ -117,6 +117,7 @@ public class IsotopeJudge implements Judge {
 
                 if (filter) {
                     LOGGER.log(Level.DEBUG, "Removed " + notation + ":\n" + isoLog);
+//                    System.out.println("Removed " + notation + ":\n" + isoLog);
                     iter.remove();
                     removed++;
                 } else {

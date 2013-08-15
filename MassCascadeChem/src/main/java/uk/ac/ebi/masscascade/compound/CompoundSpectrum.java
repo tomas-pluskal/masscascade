@@ -24,14 +24,12 @@ package uk.ac.ebi.masscascade.compound;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import org.apache.commons.lang.ArrayUtils;
 import uk.ac.ebi.masscascade.properties.Adduct;
 import uk.ac.ebi.masscascade.properties.Isotope;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A compound spectrum consisting of related signals that are believed to originate from the same compound.
@@ -69,6 +67,28 @@ public class CompoundSpectrum {
         indexToAdduct = HashMultimap.create();
 
         retentionTime = 0;
+    }
+
+    public List<CompoundEntity> getBest(int number) {
+
+        List<CompoundEntity> cCompounds = new ArrayList<>(compounds);
+        Collections.sort(cCompounds, new Comparator<CompoundEntity>() {
+            // orders the chemical entities by score in descending order
+            @Override
+            public int compare(CompoundEntity o1, CompoundEntity o2) {
+
+                final int BEFORE = -1;
+                final int EQUAL = 0;
+                final int AFTER = 1;
+
+                if (o1.getScore() < o2.getScore()) return AFTER;
+                if (o1.getScore() > o2.getScore()) return BEFORE;
+
+                return EQUAL;
+            }
+        });
+
+        return cCompounds.subList(0, (number < cCompounds.size()) ? number : cCompounds.size());
     }
 
     public int getId() {
