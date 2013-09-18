@@ -156,8 +156,6 @@ public class Obiwarp extends CallableTask {
 
         outProfileContainer.finaliseFile();
 
-        obiwarpHelper.buildLmataFile(outProfileContainer);
-
         return outProfileContainer;
     }
 

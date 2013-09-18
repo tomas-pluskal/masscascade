@@ -96,28 +96,32 @@ public class IsotopeJudge implements Judge {
 
             Iterator<CompoundEntity> iter = cs.getCompounds().iterator();
             while (iter.hasNext()) {
+                String isoLog = "";
                 CompoundEntity ce = iter.next();
                 boolean filter = false;
                 String notation = ce.getNotation(ce.getId());
                 IAtomContainer molecule = NotationUtil.getMoleculePlain(notation);
-                IMolecularFormula mf = MolecularFormulaManipulator.getMolecularFormula(molecule);
+                if (molecule.isEmpty()) {
+                    isoLog = "Empty molecule container";
+                    filter = true;
+                } else {
+                    IMolecularFormula mf = MolecularFormulaManipulator.getMolecularFormula(molecule);
 
-                double[] isoIntensities = getIsoIntensities(mf);
+                    double[] isoIntensities = getIsoIntensities(mf);
 
-                String isoLog = "";
-                for (int j = 0; j < intensities.length; j++) {
-                    isoLog += isoIntensities[j] + " \\ " + new ToleranceRange(intensities[j],
-                            TOLERANCE_PPM).toString() + "\n";
-                    if (!(new ToleranceRange(intensities[j], TOLERANCE_PPM + STEPSIZE_PPM * j)).contains(
-                            isoIntensities[j])) {
-                        filter = true;
-                        break;
+                    for (int j = 0; j < intensities.length; j++) {
+                        isoLog += isoIntensities[j] + " \\ " + new ToleranceRange(intensities[j],
+                                TOLERANCE_PPM).toString() + "\n";
+                        if (!(new ToleranceRange(intensities[j], TOLERANCE_PPM + STEPSIZE_PPM * j)).contains(
+                                isoIntensities[j])) {
+                            filter = true;
+                            break;
+                        }
                     }
                 }
 
                 if (filter) {
                     LOGGER.log(Level.DEBUG, "Removed " + notation + ":\n" + isoLog);
-//                    System.out.println("Removed " + notation + ":\n" + isoLog);
                     iter.remove();
                     removed++;
                 } else {

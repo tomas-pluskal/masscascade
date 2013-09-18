@@ -22,6 +22,8 @@
 
 package uk.ac.ebi.masscascade.compound;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.openscience.cdk.aromaticity.CDKHueckelAromaticityDetector;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.exception.InvalidSmilesException;
@@ -39,6 +41,8 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
  * Utilities class for chemistry format conversion.
  */
 public class NotationUtil {
+
+    private static final Logger LOGGER = Logger.getLogger(NotationUtil.class);
 
     // CDK's coordinates generator for molecules
     private static StructureDiagramGenerator sdg = new StructureDiagramGenerator();
@@ -71,7 +75,8 @@ public class NotationUtil {
                 moleculeSet = null;
             }
         } catch (Exception exception) {
-            exception.printStackTrace();
+            LOGGER.log(Level.WARN, "Error typing molecule: " + notation, exception);
+            molecule = SilentChemObjectBuilder.getInstance().newInstance(IAtomContainer.class);
         }
 
         return molecule;
@@ -100,7 +105,8 @@ public class NotationUtil {
                 return null;
             }
         } catch (Exception exception) {
-            exception.printStackTrace();
+            LOGGER.log(Level.WARN, "Error parsing notation: " + notation, exception);
+            molecule = SilentChemObjectBuilder.getInstance().newInstance(IAtomContainer.class);
         }
 
         return molecule;
@@ -121,7 +127,8 @@ public class NotationUtil {
             else if (notation.toLowerCase().startsWith("inchi")) molecule = convertInChI(notation);
             else molecule = convertSmiles(notation);
         } catch (Exception exception) {
-            exception.printStackTrace();
+            LOGGER.log(Level.WARN, "Error parsing notation: " + notation, exception);
+            molecule = SilentChemObjectBuilder.getInstance().newInstance(IAtomContainer.class);
         }
 
         return molecule;
@@ -149,7 +156,6 @@ public class NotationUtil {
      * @throws CDKException if a parsing error has occurred
      */
     private static IAtomContainer convertInChI(String notation) throws CDKException {
-
         return InChIGeneratorFactory.getInstance().getInChIToStructure(notation,
                 SilentChemObjectBuilder.getInstance()).getAtomContainer();
     }

@@ -79,10 +79,14 @@ public class ElementJudge implements Judge {
                 boolean filter = false;
                 String notation = ce.getNotation(ce.getId());
                 IAtomContainer molecule = NotationUtil.getMoleculePlain(notation);
-                for (IAtom heavyAtom : AtomContainerManipulator.getHeavyAtoms(molecule)) {
-                    if (!elements.contains(heavyAtom.getSymbol())) {
-                        filter = true;
-                        break;
+                if (molecule.isEmpty()) {
+                    filter = true;
+                } else {
+                    for (IAtom heavyAtom : AtomContainerManipulator.getHeavyAtoms(molecule)) {
+                        if (!elements.contains(heavyAtom.getSymbol())) {
+                            filter = true;
+                            break;
+                        }
                     }
                 }
                 if (filter) {

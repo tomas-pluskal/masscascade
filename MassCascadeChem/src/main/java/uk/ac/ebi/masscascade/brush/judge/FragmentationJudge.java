@@ -66,7 +66,6 @@ public class FragmentationJudge implements Judge {
             List<XYPoint> msn2 = cs.getPeakList2();
 
             if (msn2.size() == 0) {
-//                System.out.println("Skip");
                 LOGGER.log(Level.DEBUG, "Skip");
                 filteredCS.add(cs);
                 continue;
@@ -87,7 +86,6 @@ public class FragmentationJudge implements Judge {
                 double score = scorer.getScore(msn2Explained, msn2) / 2d;
                 if (score < 100) {
                     LOGGER.log(Level.DEBUG, "Removed: " + ce.getNotation(ce.getId()) + " - " + score);
-//                    System.out.println("Removed: " + ce.getNotation(ce.getId()) + " - " + score);
                     iter.remove();
                     removed++;
                 } else if (score < 350) {
@@ -104,7 +102,6 @@ public class FragmentationJudge implements Judge {
                     ce.setEvidence(Evidence.MSI_2);
                 }
                 LOGGER.log(Level.DEBUG, "Score: " + ce.getNotation(ce.getId()) + " - " + score);
-//                System.out.println("Score: " + ce.getNotation(ce.getId()) + " - " + score);
             }
 
             if (cs.getCompounds().size() > 0) {
