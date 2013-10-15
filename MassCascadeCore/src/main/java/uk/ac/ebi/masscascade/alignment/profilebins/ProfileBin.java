@@ -57,6 +57,7 @@ public class ProfileBin extends NumberAdapter {
     private double[] present;
 
     private Map<Integer, Integer> containerIndexToProfileId;
+    private Map<Integer, Integer> groupToCount;
     private int nProfiles;
 
     /**
@@ -77,6 +78,7 @@ public class ProfileBin extends NumberAdapter {
         present = new double[fileColumns];
 
         containerIndexToProfileId = new HashMap<>();
+        groupToCount = new HashMap<>();
         nProfiles = 1;
     }
 
@@ -86,13 +88,14 @@ public class ProfileBin extends NumberAdapter {
      * values in the profile.
      *
      * @param index       the index of the profile container to which the profile belongs
+     * @param groupId the group identifier of the container
      * @param profile     the first profile for the bin
      * @param fileColumns the number of columns
      */
-    public ProfileBin(int index, Profile profile, int fileColumns) {
+    public ProfileBin(int index, int groupId, Profile profile, int fileColumns) {
 
         this(fileColumns);
-        add(index, profile);
+        add(index, groupId, profile);
     }
 
     /**
@@ -101,9 +104,10 @@ public class ProfileBin extends NumberAdapter {
      * profile that falls into the bin, the mass chromatogram is recorded.
      *
      * @param index   the index of the profile container to which the profile belongs
+     * @param groupId the group identifier of the container
      * @param profile the first profile for the bin
      */
-    public void add(int index, Profile profile) {
+    public void add(int index, int groupId, Profile profile) {
 
         mz = mz + ((profile.getMz() - mz) / nProfiles);
         rt = rt + ((profile.getRetentionTime() - rt) / nProfiles);
@@ -113,6 +117,13 @@ public class ProfileBin extends NumberAdapter {
         if (nProfiles == 1) chromatogram = profile.getTrace();
 
         present[index] = profile.getIntensity();
+        if (!containerIndexToProfileId.containsKey(index)) {
+            if (groupToCount.containsKey(groupId)) {
+                groupToCount.put(groupId, groupToCount.get(groupId) + 1);
+            } else {
+                groupToCount.put(groupId, 1);
+            }
+        }
         containerIndexToProfileId.put(index, profile.getId());
 
         nProfiles++;
@@ -218,6 +229,21 @@ public class ProfileBin extends NumberAdapter {
      */
     public int getnProfiles() {
         return containerIndexToProfileId.size();
+    }
+
+    /**
+     * Returns the number of container by group in which this trace is present.
+     *
+     * @param group the group identifier
+     * @return the number of profiles
+     */
+    public int getnProfiles(int group) {
+
+        if (groupToCount.containsKey(group)) {
+            return groupToCount.get(group);
+        } else {
+            return 0;
+        }
     }
 
     /**

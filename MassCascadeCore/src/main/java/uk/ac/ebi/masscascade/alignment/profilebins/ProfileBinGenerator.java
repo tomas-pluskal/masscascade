@@ -24,6 +24,7 @@ package uk.ac.ebi.masscascade.alignment.profilebins;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import org.apache.commons.math3.util.FastMath;
 import uk.ac.ebi.masscascade.interfaces.Profile;
 import uk.ac.ebi.masscascade.interfaces.Trace;
@@ -44,16 +45,21 @@ public class ProfileBinGenerator {
      * Groups the profiles of all profile containers into m/z and rt bins based on the given m/z and time tolerance
      * values. Only profiles present in > missing percent of all samples are included.
      */
-    public static List<ProfileBin> createBins(List<? extends Container> profileContainers, double ppm, double sec,
-            double missing) {
+    public static List<ProfileBin> createBins(Multimap<Integer, Container> profileContainers, double ppm, double sec,
+                                              double missing) {
 
         ProfileMap timeBins = group(profileContainers, ppm, sec);
 
         List<ProfileBin> profileBins = new ArrayList<>();
         for (List<ProfileBin> bins : timeBins.values()) {
             for (ProfileBin timeBin : bins) {
-                if (profileContainers.size() - timeBin.getnProfiles() <= missing * profileContainers.size() / 100d)
-                    profileBins.add(timeBin);
+                for (int groupId : profileContainers.keySet()) {
+                    if (profileContainers.get(groupId).size() - timeBin.getnProfiles(groupId)
+                            <= missing * profileContainers.get(groupId).size() / 100d) {
+                        profileBins.add(timeBin);
+                        break;
+                    }
+                }
             }
         }
 
@@ -70,16 +76,20 @@ public class ProfileBinGenerator {
      * @return the container id to profile id multi map
      */
     public static HashMultimap<Integer, Integer> createContainerToProfileMap(
-            List<? extends Container> profileContainers, double ppm, double sec, double missing) {
+            Multimap<Integer, Container> profileContainers, double ppm, double sec, double missing) {
 
         HashMultimap<Integer, Integer> cToPIdMap = HashMultimap.create();
 
         ProfileMap timeBins = group(profileContainers, ppm, sec);
         for (List<ProfileBin> bins : timeBins.values()) {
             for (ProfileBin timeBin : bins) {
-                if (profileContainers.size() - timeBin.getnProfiles() <= missing * profileContainers.size() / 100d) {
-                    for (Map.Entry<Integer, Integer> entry : timeBin.getContainerIndexToProfileId().entrySet()) {
-                        cToPIdMap.put(entry.getKey(), entry.getValue());
+                for (int groupId : profileContainers.keySet()) {
+                    if (profileContainers.get(groupId).size() - timeBin.getnProfiles(groupId)
+                            <= missing * profileContainers.get(groupId).size() / 100d) {
+                        for (Map.Entry<Integer, Integer> entry : timeBin.getContainerIndexToProfileId().entrySet()) {
+                            cToPIdMap.put(entry.getKey(), entry.getValue());
+                        }
+                        break;
                     }
                 }
             }
@@ -105,43 +115,45 @@ public class ProfileBinGenerator {
      * @param sec               the time tolerance value
      * @return
      */
-    public static ProfileMap group(List<? extends Container> profileContainers, double ppm, double sec) {
+    public static ProfileMap group(Multimap<Integer, Container> profileContainers, double ppm, double sec) {
 
         int index = -1;
         ProfileMap timeBins = new ProfileMap();
-        for (Container container : profileContainers) {
-            List<Profile> profiles = Lists.newArrayList(container.profileIterator());
-            Collections.sort(profiles, new ProfileMassComparator());
-            index++;
-            for (Profile profile : profiles) {
-                double rt = profile.getRetentionTime();
-                XYTrace mzTrace = new XYTrace(profile.getMzIntDp());
-                Trace closestMzTrace = DataUtils.getClosestKey(mzTrace, timeBins);
+        for (int groupId : profileContainers.keySet()) {
+            for (Container container : profileContainers.get(groupId)) {
+                List<Profile> profiles = Lists.newArrayList(container.profileIterator());
+                Collections.sort(profiles, new ProfileMassComparator());
+                index++;
+                for (Profile profile : profiles) {
+                    double rt = profile.getRetentionTime();
+                    XYTrace mzTrace = new XYTrace(profile.getMzIntDp());
+                    Trace closestMzTrace = DataUtils.getClosestKey(mzTrace, timeBins);
 
-                ProfileBin timeBin = new ProfileBin(index, profile, profileContainers.size());
-                if (closestMzTrace != null && timeBins.containsKey(closestMzTrace)) {
+                    ProfileBin timeBin = new ProfileBin(index, groupId, profile, profileContainers.size());
+                    if (closestMzTrace != null && timeBins.containsKey(closestMzTrace)) {
 
-                    if (new ToleranceRange(closestMzTrace.getAvg(), ppm).contains(profile.getMz())) {
+                        if (new ToleranceRange(closestMzTrace.getAvg(), ppm).contains(profile.getMz())) {
 
-                        int cIndex = 0;
-                        List<ProfileBin> mzTimeBins = timeBins.get(closestMzTrace);
-                        ProfileBin cTimeBin = mzTimeBins.get(cIndex);
-                        for (int i = 1; i < mzTimeBins.size(); i++) {
-                            ProfileBin nTimeBin = mzTimeBins.get(i);
-                            if (FastMath.abs(nTimeBin.getRt() - rt) < FastMath.abs(cTimeBin.getRt() - rt)) {
-                                cTimeBin = nTimeBin;
-                                cIndex = i;
+                            int cIndex = 0;
+                            List<ProfileBin> mzTimeBins = timeBins.get(closestMzTrace);
+                            ProfileBin cTimeBin = mzTimeBins.get(cIndex);
+                            for (int i = 1; i < mzTimeBins.size(); i++) {
+                                ProfileBin nTimeBin = mzTimeBins.get(i);
+                                if (FastMath.abs(nTimeBin.getRt() - rt) < FastMath.abs(cTimeBin.getRt() - rt)) {
+                                    cTimeBin = nTimeBin;
+                                    cIndex = i;
+                                }
                             }
-                        }
-                        if (cTimeBin.getRt() - sec <= rt && cTimeBin.getRt() + sec > rt) {
-                            cTimeBin.add(index, profile);
-                            timeBins.add(closestMzTrace, cTimeBin, cIndex);
-                        } else timeBins.put(closestMzTrace, timeBin);
+                            if (cTimeBin.getRt() - sec <= rt && cTimeBin.getRt() + sec > rt) {
+                                cTimeBin.add(index, groupId, profile);
+                                timeBins.add(closestMzTrace, cTimeBin, cIndex);
+                            } else timeBins.put(closestMzTrace, timeBin);
 
-                        continue;
+                            continue;
+                        }
                     }
+                    timeBins.put(mzTrace, timeBin);
                 }
-                timeBins.put(mzTrace, timeBin);
             }
         }
 

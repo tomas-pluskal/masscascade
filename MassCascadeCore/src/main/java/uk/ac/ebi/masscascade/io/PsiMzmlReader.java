@@ -44,15 +44,13 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 /**
- * Class for reading PSI mzML files.
- * <ul>
- * <li>Parameter <code> DATA FILE </code>- The data file to be read.</li>
- * <li>Parameter <code> RAW FILE </code>- The target raw container.</li>
- * </ul>
+ * Class for reading PSI mzML files. <ul> <li>Parameter <code> DATA FILE </code>- The data file to be read.</li>
+ * <li>Parameter <code> RAW FILE </code>- The target raw container.</li> </ul>
  */
 public class PsiMzmlReader extends CallableTask {
 
@@ -113,8 +111,11 @@ public class PsiMzmlReader extends CallableTask {
         MzML mzml = mzMLUnmarshaller.unmarshall();
 
         // Meta information
-        String creationDate = mzml.getRun().getStartTimeStamp().getTime().toString();
-        if (creationDate == null || creationDate.isEmpty()) creationDate = (new Date()).toString();
+        Calendar creationDate = mzml.getRun().getStartTimeStamp();
+        String creationTime = (new Date()).toString();
+        if (creationDate != null && creationDate.getTime() != null) {
+            creationTime = creationDate.getTime().toString();
+        }
 
         // PseudoSpectrum information
         for (Spectrum spectrum : mzml.getRun().getSpectrumList().getSpectrum()) {
@@ -212,7 +213,7 @@ public class PsiMzmlReader extends CallableTask {
             totalIonCurrent = 0;
         }
         // wrap up loose ends
-        rawContainer.finaliseFile(creationDate);
+        rawContainer.finaliseFile(creationTime);
         return rawContainer;
     }
 }

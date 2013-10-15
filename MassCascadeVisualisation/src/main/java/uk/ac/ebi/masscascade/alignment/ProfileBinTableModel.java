@@ -22,6 +22,7 @@
 
 package uk.ac.ebi.masscascade.alignment;
 
+import com.google.common.collect.Multimap;
 import uk.ac.ebi.masscascade.alignment.profilebins.ProfileBin;
 import uk.ac.ebi.masscascade.alignment.profilebins.ProfileBinGenerator;
 import uk.ac.ebi.masscascade.interfaces.Profile;
@@ -42,7 +43,7 @@ public class ProfileBinTableModel extends AbstractTableModel implements Iterable
 
     private static final long serialVersionUID = 1526497097606220131L;
 
-    private List<Container> profileContainers;
+    private Multimap<Integer, Container> profileContainers;
     private double ppm;
     private double sec;
 
@@ -52,12 +53,12 @@ public class ProfileBinTableModel extends AbstractTableModel implements Iterable
     /**
      * Constructs a table model for arranging multiple profile containers in a single table.
      *
-     * @param profileContainers the list of profile containers
+     * @param profileContainers the group id by profile container list map
      * @param ppm               the m/z tolerance value in ppm
      * @param sec               the time tolerance value in seconds
      * @param missing           the percentage of max. allowed missing profiles
      */
-    public ProfileBinTableModel(List<Container> profileContainers, double ppm, double sec, double missing) {
+    public ProfileBinTableModel(Multimap<Integer, Container> profileContainers, double ppm, double sec, double missing) {
 
         this.profileContainers = profileContainers;
         this.ppm = ppm;
@@ -77,9 +78,17 @@ public class ProfileBinTableModel extends AbstractTableModel implements Iterable
 
         Map<String, Profile> idToProfile = new HashMap<>();
         for (Map.Entry<Integer, Integer> entry : profileBins.get(rowIndex).getContainerIndexToProfileId().entrySet()) {
-            Profile profile = ((ProfileContainer) profileContainers.get(entry.getKey())).getProfile(entry.getValue());
-            String id = "(" + entry.getKey() + "-" + profile.getId() + ")";
-            idToProfile.put(id, profile);
+            int counter = 0;
+            for (int groupId : profileContainers.keySet()) {
+                for (Container container : profileContainers.get(groupId)) {
+                    if (counter == entry.getKey()) {
+                        Profile profile = ((ProfileContainer) container).getProfile(entry.getValue());
+                        String id = "(" + entry.getKey() + "-" + profile.getId() + ")";
+                        idToProfile.put(id, profile);
+                    }
+                    counter++;
+                }
+            }
         }
         return idToProfile;
     }
@@ -140,7 +149,19 @@ public class ProfileBinTableModel extends AbstractTableModel implements Iterable
     public String getColumnName(int col) {
 
         if (col < ProfileBin.COLUMNS) return headers[col];
-        else return "(" + (col - ProfileBin.COLUMNS) + ") " + profileContainers.get(col - ProfileBin.COLUMNS).getId();
+        else {
+            int index = col - ProfileBin.COLUMNS;
+            int counter = 0;
+            for (int groupId : profileContainers.keySet()) {
+                for (Container container : profileContainers.get(groupId)) {
+                    if (counter == index) {
+                        return "(" + (col - ProfileBin.COLUMNS) + ") " + container.getId();
+                    }
+                    counter++;
+                }
+            }
+            return "(" + (col - ProfileBin.COLUMNS) + ") ";
+        }
     }
 
     /**

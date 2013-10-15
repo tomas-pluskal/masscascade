@@ -22,49 +22,25 @@
 
 package uk.ac.ebi.masscascade.server;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.alignment.Obiwarp;
-import uk.ac.ebi.masscascade.alignment.ObiwarpHelper;
 import uk.ac.ebi.masscascade.alignment.ProfileBinTableModel;
 import uk.ac.ebi.masscascade.alignment.profilebins.ProfileBin;
-import uk.ac.ebi.masscascade.core.container.file.FileContainerBuilder;
-import uk.ac.ebi.masscascade.core.container.memory.MemoryContainerBuilder;
-import uk.ac.ebi.masscascade.deconvolution.BiehmanDeconvolution;
-import uk.ac.ebi.masscascade.deconvolution.SavitzkyGolayDeconvolution;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
-import uk.ac.ebi.masscascade.io.PsiMzmlReader;
-import uk.ac.ebi.masscascade.io.XCaliburReader;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.TextUtils;
 import uk.ac.ebi.masscascade.utilities.comparator.ProfileBinTimeComparator;
-import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
-import uk.ac.ebi.masscascade.utilities.range.SimpleRange;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -84,7 +60,7 @@ public class TaskRunner {
     private File tmpDirectory;
     private int nThreads;
 
-    private List<Container> results;
+    private Multimap<Integer, Container> results;
 
     /**
      * Constructs a task runner that keeps all files in memory.
@@ -142,7 +118,7 @@ public class TaskRunner {
         this.tmpDirectory = tmpDirectory;
         this.nThreads = nThreads;
 
-        results = new ArrayList<>();
+        results = HashMultimap.create();
         tasks = new LinkedHashMap<>();
     }
 
@@ -159,7 +135,7 @@ public class TaskRunner {
     /**
      * Executes all tasks in order and writes the results in the output directory.
      */
-    public List<Container> run() {
+    public Multimap<Integer, Container> run() {
 
         ExecutorService threadPool = Executors.newFixedThreadPool(nThreads);
         List<Future<Container>> futures = new ArrayList<>();
@@ -177,7 +153,7 @@ public class TaskRunner {
             threadPool.shutdown();
 
             for (Future<Container> future : futures) {
-                results.add(future.get());
+                results.put(1, future.get());
             }
 
         } catch (Exception exception) {

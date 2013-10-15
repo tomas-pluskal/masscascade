@@ -85,10 +85,6 @@ public class ProfileBinFiller {
      */
     public void reverseFill(int index, RawContainer container, List<ProfileBin> bins, Collection<Integer> binIndices) {
 
-        for (int i : binIndices) {
-            System.out.println(index + " " + i);
-        }
-
         int minI = -1;
         Set<Integer> checked = new HashSet<>();
         Map<Integer, XYPoint> indexToIntensity = new HashMap<>();
