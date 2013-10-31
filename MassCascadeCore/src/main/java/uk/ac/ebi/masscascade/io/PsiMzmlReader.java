@@ -29,11 +29,11 @@ import uk.ac.ebi.jmzml.model.mzml.ParamGroup;
 import uk.ac.ebi.jmzml.model.mzml.Precursor;
 import uk.ac.ebi.jmzml.model.mzml.Spectrum;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshaller;
-import uk.ac.ebi.masscascade.core.raw.ScanImpl;
+import uk.ac.ebi.masscascade.core.scan.ScanImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Range;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -50,12 +50,12 @@ import java.util.List;
 
 /**
  * Class for reading PSI mzML files. <ul> <li>Parameter <code> DATA FILE </code>- The data file to be read.</li>
- * <li>Parameter <code> RAW FILE </code>- The target raw container.</li> </ul>
+ * <li>Parameter <code> RAW FILE </code>- The target scan container.</li> </ul>
  */
 public class PsiMzmlReader extends CallableTask {
 
     private File mzmlFile;
-    private RawContainer rawContainer;
+    private ScanContainer scanContainer;
 
     // Scan information
     private int scanNumber = 0;
@@ -64,7 +64,7 @@ public class PsiMzmlReader extends CallableTask {
     private double basePeak = 0;
     private double basePeakIntensity = 0;
     private double totalIonCurrent = 0;
-    private Constants.ION_MODE ionMode = Constants.ION_MODE.IN_SILICO;
+    private Constants.ION_MODE ionMode = Constants.ION_MODE.UNKNOWN;
 
     // Tandem information
     private int parentCharge = 0;
@@ -95,7 +95,7 @@ public class PsiMzmlReader extends CallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         mzmlFile = params.get(Parameter.DATA_FILE, File.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        scanContainer = params.get(Parameter.SCAN_CONTAINER, ScanContainer.class);
 
         if (mzmlFile == null || !mzmlFile.isFile()) throw new MassCascadeException("File not found.");
     }
@@ -105,7 +105,7 @@ public class PsiMzmlReader extends CallableTask {
      *
      * @return the compiled mass spec sample
      */
-    public RawContainer call() {
+    public ScanContainer call() {
 
         MzMLUnmarshaller mzMLUnmarshaller = new MzMLUnmarshaller(mzmlFile);
         MzML mzml = mzMLUnmarshaller.unmarshall();
@@ -117,7 +117,7 @@ public class PsiMzmlReader extends CallableTask {
             creationTime = creationDate.getTime().toString();
         }
 
-        // PseudoSpectrum information
+        // FeatureSetImpl information
         for (Spectrum spectrum : mzml.getRun().getSpectrumList().getSpectrum()) {
 
             boolean isSpectrum = false;
@@ -199,7 +199,7 @@ public class PsiMzmlReader extends CallableTask {
             ScanImpl scan =
                     new ScanImpl(scanNumber, msn, ionMode, optimizedXYList, mzExtendableRange, baseXY, retentionTime,
                             totalIonCurrent, parentScan, parentCharge, parentMz);
-            rawContainer.addScan(scan);
+            scanContainer.addScan(scan);
 
             // Clean the variables for next scan
             scanNumber = 0;
@@ -213,7 +213,7 @@ public class PsiMzmlReader extends CallableTask {
             totalIonCurrent = 0;
         }
         // wrap up loose ends
-        rawContainer.finaliseFile(creationTime);
-        return rawContainer;
+        scanContainer.finaliseFile(creationTime);
+        return scanContainer;
     }
 }

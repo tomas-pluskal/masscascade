@@ -74,9 +74,9 @@ public interface Scan {
     XYList getData();
 
     /**
-     * Returns the base profile.
+     * Returns the base feature.
      *
-     * @return the base profile
+     * @return the base feature
      */
     XYList getBasePeak();
 

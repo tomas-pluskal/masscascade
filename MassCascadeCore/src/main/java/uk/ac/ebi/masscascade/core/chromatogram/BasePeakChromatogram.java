@@ -29,8 +29,8 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 import java.io.Serializable;
 
 /**
- * Class representing a base profile chromatogram where the most intense signal of a particular scan in the mass domain
- * represents a single base profile.
+ * Class representing a base feature chromatogram where the most intense signal of a particular scan in the mass domain
+ * represents a single base feature.
  */
 public class BasePeakChromatogram implements Chromatogram, Serializable {
 
@@ -41,7 +41,7 @@ public class BasePeakChromatogram implements Chromatogram, Serializable {
     private final XYList basePeakData;
 
     /**
-     * Constructs a default base profile chromatogram.
+     * Constructs a default base feature chromatogram.
      */
     public BasePeakChromatogram() {
 
@@ -51,11 +51,11 @@ public class BasePeakChromatogram implements Chromatogram, Serializable {
     }
 
     /**
-     * Constructs a custom base profile chromatogram based on the input scan list.
+     * Constructs a custom base feature chromatogram based on the input scan list.
      *
      * @param id           the identifier
      * @param msn        the setup level
-     * @param basePeakData base profile data points
+     * @param basePeakData base feature data points
      */
     public BasePeakChromatogram(String id, Constants.MSN msn, XYList basePeakData) {
 

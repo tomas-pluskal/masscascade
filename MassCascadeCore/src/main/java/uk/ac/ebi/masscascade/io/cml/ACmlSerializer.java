@@ -47,7 +47,7 @@ public abstract class ACmlSerializer {
     protected static final String METADATALIST = "metadataList";
     protected static final String METADATA = "metadata";
     protected static final String SPECTRUMLIST = "spectrumList";
-    protected static final String SPECTRUM = "spectrum";
+    protected static final String SPECTRUM = "featureset";
     protected static final String SPECTRUMCONDITIONLIST = "conditionList";
     protected static final String SCALAR = "scalar";
     protected static final String SPECTRUMDATA = "spectrumData";

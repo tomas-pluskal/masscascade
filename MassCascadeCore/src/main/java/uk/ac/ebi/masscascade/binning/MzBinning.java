@@ -33,6 +33,7 @@ import java.util.concurrent.Callable;
 /**
  * Class implementing binning for the mass domain.
  */
+@Deprecated
 public class MzBinning implements Callable<Scan> {
 
     /**

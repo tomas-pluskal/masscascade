@@ -23,7 +23,7 @@
 package uk.ac.ebi.masscascade.tables.model;
 
 /**
- * Table model for a simple spectrum comparison table.
+ * Table model for a simple featureset comparison table.
  */
 public class CompareSpectrumTableModel extends ATableModel {
 

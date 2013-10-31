@@ -28,7 +28,7 @@ import uk.ac.ebi.masscascade.tables.lazytable.util.LazyList;
 import javax.swing.*;
 
 /**
- * Table model for a comprehensive profile-centered profile table.
+ * Table model for a comprehensive feature-centered feature table.
  *
  * @author Stephan Beisken
  */

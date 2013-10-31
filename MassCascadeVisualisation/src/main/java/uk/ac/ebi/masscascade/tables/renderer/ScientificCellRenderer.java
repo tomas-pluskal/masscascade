@@ -21,16 +21,15 @@
  */
 package uk.ac.ebi.masscascade.tables.renderer;
 
-import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Feature;
 import uk.ac.ebi.masscascade.utilities.math.MathUtils;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import java.text.DecimalFormat;
 
 /**
- * Custom number cell renderer for profile objects.
+ * Custom number cell renderer for feature objects.
  *
  * @author Stephan Beisken
  */
@@ -43,10 +42,10 @@ public class ScientificCellRenderer extends DefaultTableCellRenderer {
 
         Component c = super.getTableCellRendererComponent(jTable, value, isSelected, hasFocus, row, column);
 
-        if (c instanceof JLabel && value instanceof Profile) {
+        if (c instanceof JLabel && value instanceof Feature) {
             JLabel label = (JLabel) c;
             label.setHorizontalAlignment(JLabel.RIGHT);
-            label.setText("" + (MathUtils.SCIENTIFIC_FORMAT.format(((Profile) value).getArea())));
+            label.setText("" + (MathUtils.SCIENTIFIC_FORMAT.format(((Feature) value).getArea())));
         }
 
         if (c instanceof JLabel && value instanceof Number) {

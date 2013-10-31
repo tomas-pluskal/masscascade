@@ -34,9 +34,9 @@ import uk.ac.ebi.masscascade.core.PropertyManager;
 import uk.ac.ebi.masscascade.core.chromatogram.BasePeakChromatogram;
 import uk.ac.ebi.masscascade.core.chromatogram.MassChromatogram;
 import uk.ac.ebi.masscascade.core.chromatogram.TotalIonChromatogram;
-import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
-import uk.ac.ebi.masscascade.core.raw.ScanImpl;
-import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
+import uk.ac.ebi.masscascade.core.feature.FeatureImpl;
+import uk.ac.ebi.masscascade.core.scan.ScanImpl;
+import uk.ac.ebi.masscascade.core.featureset.FeatureSetImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.RunManager;
 import uk.ac.ebi.masscascade.parameters.Constants;
@@ -81,7 +81,7 @@ public class FileManager implements RunManager, Serializable {
     private Kryo kryo;
 
     /**
-     * Constructs a raw file manager.
+     * Constructs a scan file manager.
      *
      * @param workingDirectory the working directory
      */
@@ -113,7 +113,7 @@ public class FileManager implements RunManager, Serializable {
     }
 
     /**
-     * Constructs a raw file manager with an existing data file.
+     * Constructs a scan file manager with an existing data file.
      *
      * @param dataFile the data file
      */
@@ -132,8 +132,8 @@ public class FileManager implements RunManager, Serializable {
         kryo = new Kryo();
 
         kryo.register(ScanImpl.class);
-        kryo.register(ProfileImpl.class);
-        kryo.register(PseudoSpectrum.class);
+        kryo.register(FeatureImpl.class);
+        kryo.register(FeatureSetImpl.class);
         kryo.register(TotalIonChromatogram.class);
         kryo.register(BasePeakChromatogram.class);
         kryo.register(MassChromatogram.class);

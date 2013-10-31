@@ -24,9 +24,9 @@ package uk.ac.ebi.masscascade.library;
 
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableSearch;
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -35,9 +35,6 @@ import uk.ac.ebi.masscascade.reference.ReferenceContainer;
 import uk.ac.ebi.masscascade.reference.ReferenceSpectrum;
 import uk.ac.ebi.masscascade.score.WeightedScorer;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * Task to query custom libraries, matching MSn spectra where indicated.
@@ -48,7 +45,7 @@ import java.util.Map;
  * <li>Parameter <code> MS LEVEL </code>- The MSn level to be queried.</li>
  * <li>Parameter <code> SCORE </code>- The minimum query score (0-1000).</li>
  * <li>Parameter <code> COLLISION ENERGY </code>- The collision energy.</li>
- * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input spectrum container.</li>
+ * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input featureset container.</li>
  * </ul>
  */
 public class LibrarySearch extends CallableSearch {
@@ -58,7 +55,7 @@ public class LibrarySearch extends CallableSearch {
     private double minScore;
     private Constants.MSN msn;
     private Constants.ION_MODE ionMode;
-    private SpectrumContainer spectrumContainer;
+    private FeatureSetContainer featureSetContainer;
     private ReferenceContainer referenceContainer;
 
     private WeightedScorer weightedScorer;
@@ -91,35 +88,35 @@ public class LibrarySearch extends CallableSearch {
         minScore = params.get(Parameter.SCORE, Double.class);
         msn = params.get(Parameter.MS_LEVEL, Constants.MSN.class);
         ionMode = params.get(Parameter.ION_MODE, Constants.ION_MODE.class);
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
+        featureSetContainer = params.get(Parameter.FEATURE_SET_CONTAINER, FeatureSetContainer.class);
         referenceContainer = params.get(LibraryParameter.REFERENCE_LIBRARY, ReferenceContainer.class);
     }
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .SpectrumContainer} with the processed data.
+     * .FeatureSetContainer} with the processed data.
      *
-     * @return the spectrum container with the processed data
+     * @return the featureset container with the processed data
      */
-    public SpectrumContainer call() {
+    public FeatureSetContainer call() {
 
-        String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer outContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
-                spectrumContainer.getWorkingDirectory());
+        String id = featureSetContainer.getId() + IDENTIFIER;
+        FeatureSetContainer outContainer = featureSetContainer.getBuilder().newInstance(FeatureSetContainer.class, id,
+                featureSetContainer.getIonMode(), featureSetContainer.getWorkingDirectory());
 
         weightedScorer = new WeightedScorer(amuMSn);
 
         if (msn == Constants.MSN.MS1) {
-            for (Spectrum spectrum : spectrumContainer) {
-                score(spectrum);
-                outContainer.addSpectrum(spectrum);
+            for (FeatureSet featureSet : featureSetContainer) {
+                score(featureSet);
+                outContainer.addFeatureSet(featureSet);
             }
         } else {
-            for (Spectrum spectrum : spectrumContainer) {
-                for (Profile profile : spectrum) {
-                    if (profile.hasMsnSpectra(msn)) score(profile);
+            for (FeatureSet featureSet : featureSetContainer) {
+                for (Feature feature : featureSet) {
+                    if (feature.hasMsnSpectra(msn)) score(feature);
                 }
-                outContainer.addSpectrum(spectrum);
+                outContainer.addFeatureSet(featureSet);
             }
         }
 
@@ -127,12 +124,12 @@ public class LibrarySearch extends CallableSearch {
         return outContainer;
     }
 
-    private void score(Spectrum spectrum) {
+    private void score(FeatureSet featureSet) {
 
         for (ReferenceSpectrum reference : referenceContainer) {
             if (reference.getIonMode() != ionMode) continue;
 
-            double score = weightedScorer.getScore(spectrum, reference);
+            double score = weightedScorer.getScore(featureSet, reference);
             if (score < minScore) continue;
 
             Identity identity = new Identity(reference.getId(), reference.getName(), reference.getNotation(), score,
@@ -141,7 +138,7 @@ public class LibrarySearch extends CallableSearch {
             double mass = 0;
 
             if (reference.getPrecursorMass() != 0) {
-                XYPoint nearestDp = spectrum.getNearestPoint(reference.getPrecursorMass(), ppmMS1);
+                XYPoint nearestDp = featureSet.getNearestPoint(reference.getPrecursorMass(), ppmMS1);
                 mass = nearestDp.x;
             } else if (reference.getMass() != 0) {
                 mass = reference.getMass();
@@ -149,19 +146,19 @@ public class LibrarySearch extends CallableSearch {
                 else if (ionMode.equals(Constants.ION_MODE.NEGATIVE)) mass -= Constants.PARTICLES.PROTON.getMass();
             }
 
-            XYPoint nearestDp = spectrum.getNearestPoint(mass, ppmMS1);
-            for (Profile profile : spectrum) {
-                if (profile.getMz() == nearestDp.x) {
-                    profile.setProperty(identity);
+            XYPoint nearestDp = featureSet.getNearestPoint(mass, ppmMS1);
+            for (Feature feature : featureSet) {
+                if (feature.getMz() == nearestDp.x) {
+                    feature.setProperty(identity);
                     break;
                 }
             }
         }
     }
 
-    private void score(Profile profile) {
+    private void score(Feature feature) {
 
-        for (Spectrum unknown : profile.getMsnSpectra(msn)) {
+        for (FeatureSet unknown : feature.getMsnSpectra(msn)) {
             for (ReferenceSpectrum reference : referenceContainer.getSpectra(unknown.getParentMz(), ppmMS1)) {
 
                 if (reference.getIonMode() != ionMode) continue;
@@ -173,16 +170,16 @@ public class LibrarySearch extends CallableSearch {
                     Identity identity =
                             new Identity(reference.getId(), reference.getName(), reference.getNotation(), score,
                                     reference.getSource(), msn.name(), reference.getTitle());
-                    profile.setProperty(identity);
+                    feature.setProperty(identity);
                 } else {
-                    for (Spectrum msnSpectrum : profile.getMsnSpectra(msn.up())) {
-                        if (msnSpectrum.getProfile(unknown.getParentScan()) != null) {
-                            Profile msnProfile = msnSpectrum.getProfile(unknown.getParentScan());
+                    for (FeatureSet msnFeatureSet : feature.getMsnSpectra(msn.up())) {
+                        if (msnFeatureSet.getFeature(unknown.getParentScan()) != null) {
+                            Feature msnFeature = msnFeatureSet.getFeature(unknown.getParentScan());
 
                             Identity identity =
                                     new Identity(reference.getId(), reference.getName(), reference.getNotation(), score,
                                             reference.getSource(), msn.name(), reference.getTitle());
-                            msnProfile.setProperty(identity);
+                            msnFeature.setProperty(identity);
                             break;
                         }
                     }

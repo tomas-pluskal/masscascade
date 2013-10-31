@@ -22,20 +22,18 @@
 
 package uk.ac.ebi.masscascade.distance;
 
-import org.apache.log4j.Level;
-import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
+import uk.ac.ebi.masscascade.core.featureset.FeatureSetImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
 import uk.ac.ebi.masscascade.interfaces.Range;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
-import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 
@@ -47,18 +45,18 @@ import java.util.Set;
 import java.util.SortedSet;
 
 /**
- * Groups all profiles into pseudospectra based on their retention time and profile using a modified Biehman approach
+ * Groups all features into feature sets based on their retention time and feature using a modified Biehman approach
  * to component perception.
  * <ul>
- * <li>Parameter <code> PROFILE_CONTAINER </code>- The input raw container.</li>
+ * <li>Parameter <code> FEATURE_CONTAINER </code>- The input scan container.</li>
  * <li>Parameter <code> BINS </code>- The number of bins.</li>
  * <li>Parameter <code> TIME WINDOW </code>- The approximate distance between two scans in seconds.</li>
  * </ul>
  */
 public class BiehmanSimilarity extends CallableTask {
 
-    private ProfileContainer profileContainer;
-    private SpectrumContainer spectrumContainer;
+    private FeatureContainer featureContainer;
+    private FeatureSetContainer featureSetContainer;
 
     private int binNumber;
     private double scanDistance;
@@ -88,42 +86,42 @@ public class BiehmanSimilarity extends CallableTask {
     @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        featureContainer = params.get(Parameter.FEATURE_CONTAINER, FeatureContainer.class);
         binNumber = params.get(Parameter.BINS, Integer.class);
         scanDistance = params.get(Parameter.TIME_WINDOW, Double.class);
     }
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .RawContainer} with the processed data.
+     * .ScanContainer} with the processed data.
      *
-     * @return the spectrum container with the processed data
+     * @return the featureset container with the processed data
      */
     @Override
-    public SpectrumContainer call() {
+    public FeatureSetContainer call() {
 
-        String id = profileContainer.getId() + IDENTIFIER;
-        spectrumContainer = profileContainer.getBuilder().newInstance(SpectrumContainer.class, id,
-                profileContainer.getWorkingDirectory());
+        String id = featureContainer.getId() + IDENTIFIER;
+        featureSetContainer = featureContainer.getBuilder().newInstance(FeatureSetContainer.class, id,
+                featureSetContainer.getIonMode(), featureContainer.getWorkingDirectory());
 
-        SortedSet<Double> rtSet = profileContainer.getTimes().keySet();
+        SortedSet<Double> rtSet = featureContainer.getTimes().keySet();
         Range rtRange = new ExtendableRange(rtSet.first(), rtSet.last());
 
         double binWidth = scanDistance / binNumber;
         int noOfBins = (int) (rtRange.getSize() / binWidth) + 1;
         Bin[] bins = new Bin[noOfBins];
 
-        Set<Integer> allProfileIds = new HashSet<>();
+        Set<Integer> allFeatureIds = new HashSet<>();
 
-        for (Profile profile : profileContainer) {
-            allProfileIds.add(profile.getId());
-            XYZList profileData = profile.getData();
+        for (Feature feature : featureContainer) {
+            allFeatureIds.add(feature.getId());
+            XYZList featureData = feature.getData();
 
             int traceMax = 0;
-            XYZPoint pDp = profileData.get(traceMax);
-            for (XYZPoint dp : profileData) {
-                if (dp.x > profile.getRetentionTime()) {
-                    if (dp.x - profile.getRetentionTime() > profile.getRetentionTime() - pDp.x) traceMax--;
+            XYZPoint pDp = featureData.get(traceMax);
+            for (XYZPoint dp : featureData) {
+                if (dp.x > feature.getRetentionTime()) {
+                    if (dp.x - feature.getRetentionTime() > feature.getRetentionTime() - pDp.x) traceMax--;
                     break;
                 }
                 pDp = dp;
@@ -135,8 +133,8 @@ public class BiehmanSimilarity extends CallableTask {
             for (int leftI = traceMax - 1; leftI > 0; leftI++) {
 
                 sharpnessMaxL = Math.max(sharpnessMaxL,
-                        profileData.get(traceMax).z - profileData.get(leftI).z) / (reachMax * Math.sqrt(
-                        profileData.get(traceMax).z));
+                        featureData.get(traceMax).z - featureData.get(leftI).z) / (reachMax * Math.sqrt(
+                        featureData.get(traceMax).z));
 
                 if (reachMax == N_MAX) break;
                 reachMax++;
@@ -144,20 +142,20 @@ public class BiehmanSimilarity extends CallableTask {
 
             reachMax = 1;
             double sharpnessMaxR = 0;
-            for (int rightI = traceMax + 1; rightI < profileData.size(); rightI++) {
+            for (int rightI = traceMax + 1; rightI < featureData.size(); rightI++) {
 
                 sharpnessMaxR = Math.max(sharpnessMaxR,
-                        profileData.get(traceMax).z - profileData.get(rightI).z) / (reachMax * Math.sqrt(
-                        profileData.get(traceMax).z));
+                        featureData.get(traceMax).z - featureData.get(rightI).z) / (reachMax * Math.sqrt(
+                        featureData.get(traceMax).z));
 
                 if (reachMax == N_MAX) break;
                 reachMax++;
             }
 
-            int binIndex = (int) ((profile.getRetentionTime() - rtRange.getLowerBounds()) / binWidth);
+            int binIndex = (int) ((feature.getRetentionTime() - rtRange.getLowerBounds()) / binWidth);
 
-            if (bins[binIndex] == null) bins[binIndex] = new Bin((sharpnessMaxL + sharpnessMaxR) / 2d, profile.getId());
-            else bins[binIndex].add((sharpnessMaxL + sharpnessMaxR) / 2d, profile.getId());
+            if (bins[binIndex] == null) bins[binIndex] = new Bin((sharpnessMaxL + sharpnessMaxR) / 2d, feature.getId());
+            else bins[binIndex].add((sharpnessMaxL + sharpnessMaxR) / 2d, feature.getId());
         }
 
         int index = 1;
@@ -201,58 +199,58 @@ public class BiehmanSimilarity extends CallableTask {
             }
 
             if (isComponent) {
-                Set<Profile> profileSet = new HashSet<>();
+                Set<Feature> features = new HashSet<>();
 
                 Range specRange = new ExtendableRange();
-                XYList spectrumData = new XYList();
+                XYList featureSetData = new XYList();
                 double rt = 0;
 
                 List<Integer> tmpIds = new ArrayList<>();
-                tmpIds.addAll(bins[i].getProfileIds());
-                if (bins[i - 1] != null) tmpIds.addAll(bins[i - 1].getProfileIds());
-                if (bins[i + 1] != null) tmpIds.addAll(bins[i + 1].getProfileIds());
+                tmpIds.addAll(bins[i].getFeatureIds());
+                if (bins[i - 1] != null) tmpIds.addAll(bins[i - 1].getFeatureIds());
+                if (bins[i + 1] != null) tmpIds.addAll(bins[i + 1].getFeatureIds());
 
-                Profile profile;
-                for (int profileId : tmpIds) {
-                    profile = profileContainer.getProfile(profileId);
-                    profileSet.add(profile);
-                    spectrumData.add(profile.getMzIntDp());
-                    specRange.extendRange(profile.getRetentionTime());
-                    rt += profile.getRetentionTime();
+                Feature feature;
+                for (int featureId : tmpIds) {
+                    feature = featureContainer.getFeature(featureId);
+                    features.add(feature);
+                    featureSetData.add(feature.getMzIntDp());
+                    specRange.extendRange(feature.getRetentionTime());
+                    rt += feature.getRetentionTime();
                 }
 
                 rt /= tmpIds.size();
-                Collections.sort(spectrumData);
+                Collections.sort(featureSetData);
 
-                Spectrum pseudoSpectrum = new PseudoSpectrum(index, spectrumData, specRange, rt, profileSet);
-                spectrumContainer.addSpectrum(pseudoSpectrum);
+                FeatureSet featureSet = new FeatureSetImpl(index, featureSetData, specRange, rt, features);
+                featureSetContainer.addFeatureSet(featureSet);
 
-                allProfileIds.removeAll(tmpIds);
+                allFeatureIds.removeAll(tmpIds);
                 index++;
             }
         }
 
-        Profile profile;
-        for (int profileId : allProfileIds) {
+        Feature feature;
+        for (int featureId : allFeatureIds) {
 
-            profile = profileContainer.getProfile(profileId);
-            Set<Profile> profileSet = new HashSet<Profile>();
-            profileSet.add(profile);
+            feature = featureContainer.getFeature(featureId);
+            Set<Feature> featureSet = new HashSet<Feature>();
+            featureSet.add(feature);
 
-            double rt = profile.getRetentionTime();
+            double rt = feature.getRetentionTime();
             Range specRange = new ExtendableRange(rt);
 
-            XYList spectrumData = new XYList();
-            spectrumData.add(profile.getMzIntDp());
+            XYList featureSetData = new XYList();
+            featureSetData.add(feature.getMzIntDp());
 
-            Spectrum pseudoSpectrum = new PseudoSpectrum(index, spectrumData, specRange, rt, profileSet);
-            spectrumContainer.addSpectrum(pseudoSpectrum);
+            FeatureSet pseudoFeatureSet = new FeatureSetImpl(index, featureSetData, specRange, rt, featureSet);
+            featureSetContainer.addFeatureSet(pseudoFeatureSet);
 
             index++;
         }
 
-        spectrumContainer.finaliseFile();
-        return spectrumContainer;
+        featureSetContainer.finaliseFile();
+        return featureSetContainer;
     }
 
     /**
@@ -261,34 +259,34 @@ public class BiehmanSimilarity extends CallableTask {
     class Bin {
 
         private double value;
-        private List<Integer> profileIds;
+        private List<Integer> featureIds;
 
         public Bin() {
 
             value = 0;
-            profileIds = new ArrayList<Integer>();
+            featureIds = new ArrayList<>();
         }
 
-        public Bin(double value, int profileId) {
+        public Bin(double value, int featureId) {
 
             this.value = value;
 
-            this.profileIds = new ArrayList<Integer>();
-            profileIds.add(profileId);
+            this.featureIds = new ArrayList<>();
+            featureIds.add(featureId);
         }
 
-        public void add(double value, int profileId) {
+        public void add(double value, int featureId) {
 
             this.value += value;
-            this.profileIds.add(profileId);
+            this.featureIds.add(featureId);
         }
 
         public double getValue() {
             return value;
         }
 
-        public List<Integer> getProfileIds() {
-            return profileIds;
+        public List<Integer> getFeatureIds() {
+            return featureIds;
         }
     }
 }

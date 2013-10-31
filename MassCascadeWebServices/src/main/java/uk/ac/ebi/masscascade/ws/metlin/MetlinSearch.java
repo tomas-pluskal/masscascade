@@ -27,9 +27,9 @@ import org.apache.log4j.Level;
 import org.codehaus.jackson.map.ObjectMapper;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableWebservice;
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -66,7 +66,7 @@ import java.util.concurrent.Future;
  * <li>Parameter <code> SCORE METLIN </code>- The minimum Metlin query score.</li>
  * <li>Parameter <code> COLLISION ENERGY </code>- The collision energy.</li>
  * <li>Parameter <code> SECURITY TOKEN </code>- The Metlin security token.</li>
- * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input spectrum container.</li>
+ * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input featureset container.</li>
  * </ul>
  */
 public class MetlinSearch extends CallableWebservice {
@@ -77,7 +77,7 @@ public class MetlinSearch extends CallableWebservice {
     private double ppmMS1;
     private double ppmMS2;
     private int minScore;
-    private SpectrumContainer spectrumContainer;
+    private FeatureSetContainer featureSetContainer;
 
     /**
      * Constructs a web task for the Metlin web service.
@@ -107,7 +107,7 @@ public class MetlinSearch extends CallableWebservice {
         token = params.get(Parameter.SECURITY_TOKEN, String.class);
         minScore = params.get(Parameter.SCORE_METLIN, Integer.class);
         collisionEnergy = params.get(Parameter.COLLISION_ENERGY, Integer.class);
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
+        featureSetContainer = params.get(Parameter.FEATURE_SET_CONTAINER, FeatureSetContainer.class);
 
         Constants.ION_MODE mode = params.get(Parameter.ION_MODE, Constants.ION_MODE.class);
         ionMode = (mode == Constants.ION_MODE.POSITIVE) ? "pos" : "neg";
@@ -115,27 +115,27 @@ public class MetlinSearch extends CallableWebservice {
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .SpectrumContainer} with the processed data.
+     * .FeatureSetContainer} with the processed data.
      *
-     * @return the spectrum container with the processed data
+     * @return the featureset container with the processed data
      */
-    public SpectrumContainer call() {
+    public FeatureSetContainer call() {
 
-        String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer outContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
-                spectrumContainer.getWorkingDirectory());
+        String id = featureSetContainer.getId() + IDENTIFIER;
+        FeatureSetContainer outContainer = featureSetContainer.getBuilder().newInstance(FeatureSetContainer.class, id,
+                featureSetContainer.getIonMode(), featureSetContainer.getWorkingDirectory());
 
         ExecutorService executor = Executors.newFixedThreadPool(3);
-        List<Future<Spectrum>> futureList = new ArrayList<>();
+        List<Future<FeatureSet>> futureList = new ArrayList<>();
 
-        for (Spectrum spectrum : spectrumContainer) {
-            Callable<Spectrum> searcher = new SpectrumSearcher(spectrum);
+        for (FeatureSet featureSet : featureSetContainer) {
+            Callable<FeatureSet> searcher = new SpectrumSearcher(featureSet);
             futureList.add(executor.submit(searcher));
         }
 
-        for (Future<Spectrum> search : futureList) {
+        for (Future<FeatureSet> search : futureList) {
             try {
-                outContainer.addSpectrum(search.get());
+                outContainer.addFeatureSet(search.get());
             } catch (InterruptedException | ExecutionException e) {
                 LOGGER.log(Level.ERROR, e);
             }
@@ -148,40 +148,40 @@ public class MetlinSearch extends CallableWebservice {
     }
 
     /**
-     * Runs Metlin's <code> SearchSpectrum </code> web service on the query spectrum. The returned profiles in the
-     * spectrum are annotated with the retrieved results.
+     * Runs Metlin's <code> SearchSpectrum </code> web service on the query featureset. The returned profiles in the
+     * featureset are annotated with the retrieved results.
      */
-    class SpectrumSearcher implements Callable<Spectrum> {
+    class SpectrumSearcher implements Callable<FeatureSet> {
 
-        private Spectrum spectrum;
+        private FeatureSet featureSet;
 
         /**
          * Constructs a Metlin search helper.
          *
-         * @param spectrum the spectrum containing the profiles for the query.
+         * @param featureSet the featureset containing the profiles for the query.
          */
-        public SpectrumSearcher(Spectrum spectrum) {
-            this.spectrum = spectrum;
+        public SpectrumSearcher(FeatureSet featureSet) {
+            this.featureSet = featureSet;
         }
 
         /**
-         * Converts the spectrum into a Metlin compatible format and queries Metlin for compounds matching the
-         * spectrum.
+         * Converts the featureset into a Metlin compatible format and queries Metlin for compounds matching the
+         * featureset.
          *
-         * @return the annotated spectrum
+         * @return the annotated featureset
          * @throws Exception if unable to run the web service
          */
         @Override
-        public Spectrum call() throws Exception {
+        public FeatureSet call() throws Exception {
 
-            for (Profile profile : spectrum) {
-                if (profile.hasMsnSpectra(Constants.MSN.MS2)) queryMetlin(profile);
+            for (Feature feature : featureSet) {
+                if (feature.hasMsnSpectra(Constants.MSN.MS2)) queryMetlin(feature);
             }
 
-            return spectrum;
+            return featureSet;
         }
 
-        private void queryMetlin(Profile profile) {
+        private void queryMetlin(Feature feature) {
 
             String urlPrefix = "http://metlin.scripps.edu/REST/match/index.php?";
             String urlToken = "token=" + token;
@@ -195,8 +195,8 @@ public class MetlinSearch extends CallableWebservice {
 
             String delimiter = "&";
 
-            List<Spectrum> msnSpectra = profile.getMsnSpectra(Constants.MSN.MS2);
-            for (Spectrum msnSpectrum : msnSpectra) {
+            List<FeatureSet> msnSpectra = feature.getMsnSpectra(Constants.MSN.MS2);
+            for (FeatureSet msnFeatureSet : msnSpectra) {
 
                 StringBuilder urlBuilder = new StringBuilder();
                 urlBuilder.append(urlPrefix);
@@ -206,9 +206,9 @@ public class MetlinSearch extends CallableWebservice {
                 StringBuilder mzBuilder = new StringBuilder();
                 StringBuilder intBuilder = new StringBuilder();
 
-                List<XYPoint> dps = msnSpectrum.getData();
+                List<XYPoint> dps = msnFeatureSet.getData();
                 if (dps.size() > 30) {
-                    dps = msnSpectrum.getData();
+                    dps = msnFeatureSet.getData();
                     Collections.sort(dps, new PointIntensityComparator());
                     dps = dps.subList(dps.size() - 30, dps.size());
                 }
@@ -235,7 +235,7 @@ public class MetlinSearch extends CallableWebservice {
                 urlBuilder.append(urlPpmMs1);
                 urlBuilder.append(delimiter);
                 urlBuilder.append(urlParent);
-                urlBuilder.append((float) msnSpectrum.getParentMz());
+                urlBuilder.append((float) msnFeatureSet.getParentMz());
 
                 try {
                     URL url = new URL(urlBuilder.toString());
@@ -274,7 +274,7 @@ public class MetlinSearch extends CallableWebservice {
                         if (metlinScore < minScore) continue;
                         Identity identity = new Identity(metlinId + "", metlinName, "", metlinScore, "Metlin",
                                 Constants.MSN.MS2.name(), "");
-                        profile.setProperty(identity);
+                        feature.setProperty(identity);
                     }
                 } catch (Exception exception) {
                     // if IOException, query most likely not found

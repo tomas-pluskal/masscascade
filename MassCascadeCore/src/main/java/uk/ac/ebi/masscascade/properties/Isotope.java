@@ -52,8 +52,8 @@ public class Isotope implements Property {
      *
      * @param name         the isotope name
      * @param mzDifference the nominal isotopic difference
-     * @param parentId     id of the most abundant profile in the isotope envelope
-     * @param childId      id of the annotated profile
+     * @param parentId     id of the most abundant feature in the isotope envelope
+     * @param childId      id of the annotated feature
      */
     public Isotope(String name, int mzDifference, int parentId, int childId) {
 
@@ -83,9 +83,9 @@ public class Isotope implements Property {
     }
 
     /**
-     * Returns the id of the annotated profile.
+     * Returns the id of the annotated feature.
      *
-     * @return the profile id
+     * @return the feature id
      */
     public Integer getChildId() {
         return childId;
@@ -101,9 +101,9 @@ public class Isotope implements Property {
     }
 
     /**
-     * Returns the id of the most abundant profile in the isotope envelope.
+     * Returns the id of the most abundant feature in the isotope envelope.
      *
-     * @return the profile id
+     * @return the feature id
      */
     public Integer getParentId() {
         return parentId;

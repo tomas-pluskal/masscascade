@@ -11,22 +11,9 @@ It provides a plug-in for the workflow platform KNIME and has been tested with m
 
 Description
 -------
-The following input formats are supported:
+The following input formats are supported (centroid data):
 * Thermo RAW file format
 * PSI mzML file format
-
-Functionality includes:
-* input (mzML, raw)
-* raw data- or profile-based sample alignment
-* background subtraction and noise reduction
-* data binning for the m/z and time domain
-* data and profile filters for the m/z and time domain
-* gap filling for chromatographic profiles using natural cubic splines
-* isotope, ion, and list-based adduct detection
-* ion chromatogram extraction and manipulation
-* data smoothing in the m/z and time domain
-* visualisation of spectra and chromatograms
-* web services for m/z and spectra queries
 
 The core classes are representations of essential mass spectrometry objects. These core objects are manipulated by task
 instances, each carrying out a single task on the core object. To reduce memory load and ensure persistence within a
@@ -35,9 +22,9 @@ workflow environment, every task can serialize the core instance to a specified 
 Installation
 -------
 The library can be freely used as backend for mass spectrometry data processing. All task classes implement the
-'Callable<?>' interface and can be configured via the 'setParameters()' method or constructed fully parameterized.
+'Callable<?>' interface and can be configured via the 'setParameters()' method.
 
-Currently, the library is used in the KNIME MassCascade feature. "KNIME is a user-friendly and comprehensive
+The library is used in the KNIME MassCascade feature. "KNIME is a user-friendly and comprehensive
 open-source data integration, processing, analysis, and exploration platform." (http://knime.org/)
 
 For the <a href="http://sbeisken.github.com/MassCascade/javadoc/index.html">API</a> see the JavaDoc pages.
@@ -46,3 +33,5 @@ Changelog
 -------
 1.0.0
 * Initial release.
+1.1.0
+* Various updates and bug fixes.

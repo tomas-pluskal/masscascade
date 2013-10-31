@@ -25,7 +25,7 @@ package uk.ac.ebi.masscascade;
 import junit.framework.Assert;
 import org.junit.Test;
 import uk.ac.ebi.masscascade.commons.FileLoader;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 
 public class PsiMzmlReaderTest {
@@ -33,10 +33,10 @@ public class PsiMzmlReaderTest {
     @Test
     public void testPsiReader() {
 
-        RawContainer container = FileLoader.getRawContainer(FileLoader.TESTFILE.SAMPLE);
+        ScanContainer container = FileLoader.getRawContainer(FileLoader.TESTFILE.SAMPLE);
 
         Assert.assertEquals(2, container.size());
-        Assert.assertEquals(2, container.getRawLevels().size());
+        Assert.assertEquals(2, container.getScanLevels().size());
         Assert.assertEquals(102, (int) container.getScan(1).getBasePeak().get(0).x);
         Assert.assertEquals(Constants.ION_MODE.NEGATIVE, container.getScan(5).getIonMode());
     }

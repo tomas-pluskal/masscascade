@@ -22,11 +22,11 @@
 
 package uk.ac.ebi.masscascade.smoothing;
 
-import uk.ac.ebi.masscascade.core.raw.RawLevel;
+import uk.ac.ebi.masscascade.core.scan.ScanLevel;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Scan;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -44,15 +44,16 @@ import java.util.Queue;
  * <ul>
  * <li>Parameter <code> DATA WINDOW </code>- The number of data points in the m/z domain.</li>
  * <li>Parameter <code> MS LEVEL </code>- The MSn level.</li>
- * <li>Parameter <code> RAW FILE </code>- The input raw container.</li>
+ * <li>Parameter <code> RAW FILE </code>- The input scan container.</li>
  * </ul>
  */
+@Deprecated
 public class RunningMedianSmoothing extends CallableTask {
 
     private Queue<Double> window = new LinkedList<Double>();
     private int mzWindow;
     private Constants.MSN msn;
-    private RawContainer rawContainer;
+    private ScanContainer scanContainer;
 
     /**
      * Constructs a median smoother task.
@@ -77,9 +78,9 @@ public class RunningMedianSmoothing extends CallableTask {
     @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        mzWindow = params.get(Parameter.DATA_WINDOW, Integer.class);
+        mzWindow = params.get(Parameter.SCAN_WINDOW, Integer.class);
         msn = params.get(Parameter.MS_LEVEL, Constants.MSN.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        scanContainer = params.get(Parameter.SCAN_CONTAINER, ScanContainer.class);
     }
 
     /**
@@ -117,22 +118,22 @@ public class RunningMedianSmoothing extends CallableTask {
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .RawContainer} with the processed data.
+     * .ScanContainer} with the processed data.
      *
-     * @return the raw container with the processed data
+     * @return the scan container with the processed data
      */
     @Override
-    public RawContainer call() {
+    public ScanContainer call() {
 
-        String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer smoothedRawContainer = rawContainer.getBuilder().newInstance(RawContainer.class, id, rawContainer);
+        String id = scanContainer.getId() + IDENTIFIER;
+        ScanContainer smoothedScanContainer = scanContainer.getBuilder().newInstance(ScanContainer.class, id, scanContainer);
 
         XYList smoothedData;
 
-        for (RawLevel level : rawContainer.getRawLevels()) {
+        for (ScanLevel level : scanContainer.getScanLevels()) {
 
             if (level.getMsn() == Constants.MSN.MS1) {
-                for (Scan scan : rawContainer) {
+                for (Scan scan : scanContainer) {
                     smoothedData = new XYList();
                     for (XYPoint xyPoint : scan.getData()) {
                         double y = xyPoint.y;
@@ -141,15 +142,15 @@ public class RunningMedianSmoothing extends CallableTask {
                         double newY = y - getMedian();
                         smoothedData.add(new XYPoint(xyPoint.x, newY));
                     }
-                    smoothedRawContainer.addScan(ScanUtils.getModifiedScan(scan, smoothedData));
+                    smoothedScanContainer.addScan(ScanUtils.getModifiedScan(scan, smoothedData));
                     smoothedData = null;
                 }
             } else {
-                for (Scan msnScan : rawContainer.iterator(level.getMsn())) smoothedRawContainer.addScan(msnScan);
+                for (Scan msnScan : scanContainer.iterator(level.getMsn())) smoothedScanContainer.addScan(msnScan);
             }
         }
 
-        smoothedRawContainer.finaliseFile(rawContainer.getRawInfo().getDate());
-        return smoothedRawContainer;
+        smoothedScanContainer.finaliseFile(scanContainer.getScanInfo().getDate());
+        return smoothedScanContainer;
     }
 }

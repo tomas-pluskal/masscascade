@@ -22,7 +22,7 @@
 
 package uk.ac.ebi.masscascade.core;
 
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
 import uk.ac.ebi.masscascade.parameters.Constants;
 
 import java.util.ArrayList;
@@ -32,12 +32,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class for Profile-based MSn handling.
+ * Class for Feature-based MSn handling.
  */
 public class MsnManager {
 
     private Map<Constants.MSN, Set<Integer>> msnToScanIds;
-    private Map<Constants.MSN, List<Spectrum>> msnToSpectra;
+    private Map<Constants.MSN, List<FeatureSet>> msnToSpectra;
 
     public MsnManager() {
 
@@ -49,17 +49,17 @@ public class MsnManager {
         this.msnToScanIds.putAll(msnToScanIds);
     }
 
-    public void addMsnToSpectra(Map<Constants.MSN, List<Spectrum>> msnToProfiles) {
-        this.msnToSpectra.putAll(msnToProfiles);
+    public void addMsnToSpectra(Map<Constants.MSN, List<FeatureSet>> msnToFeatures) {
+        this.msnToSpectra.putAll(msnToFeatures);
     }
 
-    public void addMsnSpectrum(Constants.MSN msn, Spectrum spectrum) {
+    public void addMsnSpectrum(Constants.MSN msn, FeatureSet featureSet) {
 
         if (msnToSpectra.containsKey(msn)) {
-            msnToSpectra.get(msn).add(spectrum);
+            msnToSpectra.get(msn).add(featureSet);
         } else {
-            List<Spectrum> spectra = new ArrayList<>();
-            spectra.add(spectrum);
+            List<FeatureSet> spectra = new ArrayList<>();
+            spectra.add(featureSet);
             msnToSpectra.put(msn, spectra);
         }
     }
@@ -68,12 +68,12 @@ public class MsnManager {
         return msnToScanIds;
     }
 
-    public Map<Constants.MSN, List<Spectrum>> getMsnToSpectra() {
+    public Map<Constants.MSN, List<FeatureSet>> getMsnToSpectra() {
         return msnToSpectra;
     }
 
-    public List<Spectrum> getSpectra(Constants.MSN msn) {
-        List<Spectrum> spectra = msnToSpectra.get(msn);
-        return (spectra == null) ? new ArrayList<Spectrum>() : spectra;
+    public List<FeatureSet> getSpectra(Constants.MSN msn) {
+        List<FeatureSet> spectra = msnToSpectra.get(msn);
+        return (spectra == null) ? new ArrayList<FeatureSet>() : spectra;
     }
 }

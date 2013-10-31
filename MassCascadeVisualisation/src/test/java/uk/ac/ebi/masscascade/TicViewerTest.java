@@ -28,7 +28,7 @@ import uk.ac.ebi.masscascade.charts.SimpleSpectrum;
 import uk.ac.ebi.masscascade.core.container.memory.MemoryContainerBuilder;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Chromatogram;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
 import uk.ac.ebi.masscascade.io.PsiMzmlReader;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
@@ -50,16 +50,16 @@ public class TicViewerTest {
         File file = new File(url.getFile());
 
         // build the output data container
-        RawContainer container = MemoryContainerBuilder.getInstance().newInstance(RawContainer.class, file.getName());
+        ScanContainer container = MemoryContainerBuilder.getInstance().newInstance(ScanContainer.class, file.getName());
 
         // build the parameter map for the reader task
         ParameterMap params = new ParameterMap();
         params.put(Parameter.DATA_FILE, file);
-        params.put(Parameter.RAW_CONTAINER, container);
+        params.put(Parameter.SCAN_CONTAINER, container);
 
         // create and run the task to read the file
         CallableTask task = new PsiMzmlReader(params);
-        RawContainer outContainer = (RawContainer) task.call();
+        ScanContainer outContainer = (ScanContainer) task.call();
 
         // get the total ion chromatogram from the data container
         Chromatogram tic = outContainer.getTicChromatogram(Constants.MSN.MS1);

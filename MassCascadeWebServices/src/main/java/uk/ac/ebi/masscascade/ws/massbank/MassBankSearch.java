@@ -24,12 +24,11 @@ package uk.ac.ebi.masscascade.ws.massbank;
 
 import org.apache.axis2.AxisFault;
 import org.apache.log4j.Level;
-import uk.ac.ebi.masscascade.core.container.file.spectrum.FileSpectrumContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableWebservice;
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -49,15 +48,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * Web task to run a spectrum search against MassBank using the MassBank web service.
+ * Web task to run a featureset search against MassBank using the MassBank web service.
  * <ul>
  * <li>Parameter <code> MZ WINDOW PPM </code>- The m/z tolerance value in ppm.</li>
  * <li>Parameter <code> ION MODE </code>- The ion mode.</li>
  * <li>Parameter <code> RESULTS </code>- The max. number of retrieved results.</li>
  * <li>Parameter <code> MS LEVEL </code>- The MSn level to be queried.</li>
  * <li>Parameter <code> INSTRUMENTS </code>- The instruments to be included in the query.</li>
- * <li>Parameter <code> MIN PROFILE INTENSITY </code>- The min. valid profile intensity.</li>
- * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input spectrum container.</li>
+ * <li>Parameter <code> MIN PROFILE INTENSITY </code>- The min. valid feature intensity.</li>
+ * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input featureset container.</li>
  * </ul>
  */
 public class MassBankSearch extends CallableWebservice {
@@ -73,7 +72,7 @@ public class MassBankSearch extends CallableWebservice {
 
     private static final String IUPAC = "CH$IUPAC: ";
 
-    private SpectrumContainer spectrumContainer;
+    private FeatureSetContainer featureSetContainer;
 
     /**
      * Constructs a web task for the MassBank web service.
@@ -98,41 +97,41 @@ public class MassBankSearch extends CallableWebservice {
     @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        cutoff = params.get(Parameter.MIN_PROFILE_INTENSITY, Integer.class);
+        cutoff = params.get(Parameter.MIN_FEATURE_INTENSITY, Integer.class);
         ionMode = params.get(Parameter.ION_MODE, Constants.ION_MODE.class);
         instruments = params.get(Parameter.INSTRUMENTS, (new ArrayList<String>()).getClass());
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         msn = params.get(Parameter.MS_LEVEL, Constants.MSN.class);
         maxNumOfResults = params.get(Parameter.RESULTS, Integer.class);
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
+        featureSetContainer = params.get(Parameter.FEATURE_SET_CONTAINER, FeatureSetContainer.class);
     }
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .SpectrumContainer} with the processed data.
+     * .FeatureSetContainer} with the processed data.
      *
-     * @return the spectrum container with the processed data
+     * @return the featureset container with the processed data
      */
-    public SpectrumContainer call() {
+    public FeatureSetContainer call() {
 
-        String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer outContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
-                spectrumContainer.getWorkingDirectory());
+        String id = featureSetContainer.getId() + IDENTIFIER;
+        FeatureSetContainer outContainer = featureSetContainer.getBuilder().newInstance(FeatureSetContainer.class, id,
+                featureSetContainer.getIonMode(), featureSetContainer.getWorkingDirectory());
 
         try {
             stub = new MassBankAPIStub();
 
             ExecutorService executor = Executors.newFixedThreadPool(Constants.NTHREADS);
-            List<Future<Spectrum>> futureList = new ArrayList<>();
+            List<Future<FeatureSet>> futureList = new ArrayList<>();
 
-            for (Spectrum ps : spectrumContainer) {
-                Callable<Spectrum> searcher = new SpectrumSearcher(ps);
+            for (FeatureSet ps : featureSetContainer) {
+                Callable<FeatureSet> searcher = new SpectrumSearcher(ps);
                 futureList.add(executor.submit(searcher));
             }
 
-            for (Future<Spectrum> search : futureList) {
+            for (Future<FeatureSet> search : futureList) {
                 try {
-                    outContainer.addSpectrum(search.get());
+                    outContainer.addFeatureSet(search.get());
                 } catch (InterruptedException e) {
                     LOGGER.log(Level.ERROR, e);
                 } catch (ExecutionException e) {
@@ -150,62 +149,62 @@ public class MassBankSearch extends CallableWebservice {
     }
 
     /**
-     * Runs MassBank's <code> SearchSpectrum </code> web service on the query spectrum. The returned profiles in the
-     * spectrum are annotated with the retrieved results.
+     * Runs MassBank's <code> SearchSpectrum </code> web service on the query featureset. The returned profiles in the
+     * featureset are annotated with the retrieved results.
      */
-    class SpectrumSearcher implements Callable<Spectrum> {
+    class SpectrumSearcher implements Callable<FeatureSet> {
 
-        private Spectrum spectrum;
+        private FeatureSet featureSet;
 
         /**
          * Constructs a MassBank search helper.
          *
-         * @param spectrum the spectrum containing the profiles for the query.
+         * @param featureSet the featureset containing the profiles for the query.
          */
-        public SpectrumSearcher(Spectrum spectrum) {
-            this.spectrum = spectrum;
+        public SpectrumSearcher(FeatureSet featureSet) {
+            this.featureSet = featureSet;
         }
 
         /**
-         * Converts the spectrum into a MassBank compatible format and queries MassBank for compounds matching the
-         * spectrum.
+         * Converts the featureset into a MassBank compatible format and queries MassBank for compounds matching the
+         * featureset.
          *
-         * @return the annotated spectrum
+         * @return the annotated featureset
          * @throws Exception if unable to run the web service
          */
         @Override
-        public Spectrum call() throws Exception {
+        public FeatureSet call() throws Exception {
 
             if (msn == Constants.MSN.MS1) {
-                queryMSn(spectrum, null);
+                queryMSn(featureSet, null);
             } else {
-                for (Profile profile : spectrum) {
-                    if (profile.hasMsnSpectra(msn)) {
-                        for (Spectrum msnSpectrumX : profile.getMsnSpectra(msn)) {
-                            int parentId = msnSpectrumX.getParentScan();
-                            if (profile.getId() == parentId) queryMSn(msnSpectrumX, profile);
-                            else queryMSn(msnSpectrumX, profile.getMsnSpectra(msn.up()).get(0).getProfile(parentId));
+                for (Feature feature : featureSet) {
+                    if (feature.hasMsnSpectra(msn)) {
+                        for (FeatureSet msnFeatureSetX : feature.getMsnSpectra(msn)) {
+                            int parentId = msnFeatureSetX.getParentScan();
+                            if (feature.getId() == parentId) queryMSn(msnFeatureSetX, feature);
+                            else queryMSn(msnFeatureSetX, feature.getMsnSpectra(msn.up()).get(0).getFeature(parentId));
                         }
                     }
                 }
             }
-            return spectrum;
+            return featureSet;
         }
 
-        private void queryMSn(Spectrum spectrum, Profile parent) throws Exception {
+        private void queryMSn(FeatureSet featureSet, Feature parent) throws Exception {
 
-            String[] mzs = new String[spectrum.getProfileMap().size()];
-            String[] ints = new String[spectrum.getProfileMap().size()];
+            String[] mzs = new String[featureSet.getFeaturesMap().size()];
+            String[] ints = new String[featureSet.getFeaturesMap().size()];
 
-            double[] intsVal = new double[spectrum.getProfileMap().size()];
+            double[] intsVal = new double[featureSet.getFeaturesMap().size()];
             TreeSet<Double> mzsOrder = new TreeSet<>();
 
             double max = Double.MIN_VALUE;
 
             int i = 0;
-            for (Profile profile : spectrum) {
-                double mz = profile.getMz();
-                double intensity = profile.getIntensity();
+            for (Feature feature : featureSet) {
+                double mz = feature.getMz();
+                double intensity = feature.getIntensity();
 
                 mzs[i] = "" + mz;
                 intsVal[i] = intensity;
@@ -252,8 +251,8 @@ public class MassBankSearch extends CallableWebservice {
                             Identity identity =
                                     new Identity(id, title.split(";")[0], iupacString, score, "MassBank", msn.name(),
                                             title);
-                            for (Profile profile : spectrum) {
-                                if (profile.getMz() == closestValue) profile.setProperty(identity);
+                            for (Feature feature : featureSet) {
+                                if (feature.getMz() == closestValue) feature.setProperty(identity);
                             }
                         }
                     } else {

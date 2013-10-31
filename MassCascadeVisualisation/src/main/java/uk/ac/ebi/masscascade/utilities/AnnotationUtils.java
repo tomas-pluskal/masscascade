@@ -22,7 +22,7 @@
 
 package uk.ac.ebi.masscascade.utilities;
 
-import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Feature;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
 import java.util.Collection;
@@ -40,13 +40,13 @@ public class AnnotationUtils {
      * @param peakList the annotated list of peaks
      * @return the annotation map: data point - annotation
      */
-    public static Map<XYPoint, String> getAnnotations(Collection<Profile> peakList) {
+    public static Map<XYPoint, String> getAnnotations(Collection<Feature> peakList) {
 
         Map<XYPoint, String> annotations = new HashMap<>();
 
         String annotation = "";
-        for (Profile peak : peakList) {
-            annotation = ProfUtils.getProfileLabel(peak);
+        for (Feature peak : peakList) {
+            annotation = FeatureUtils.getProfileLabel(peak);
             if (!annotation.isEmpty()) annotations.put(peak.getMzIntDp(), annotation);
         }
 

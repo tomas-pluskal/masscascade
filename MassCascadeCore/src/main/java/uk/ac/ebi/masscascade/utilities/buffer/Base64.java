@@ -38,7 +38,7 @@ public class Base64
 	// *  char[] version
 	// ****************************************************************************************
 
-	/** Encodes a raw byte array into a BASE64 <code>char[]</code> representation i accordance with RFC 2045.
+	/** Encodes a scan byte array into a BASE64 <code>char[]</code> representation i accordance with RFC 2045.
 	 * @param sArr The bytes to convert. If <code>null</code> or length 0 an empty array will be returned.
 	 * @param lineSep Optional "\r\n" after 76 characters, unless end of file.<br>
 	 * No line separator will be in breach of RFC 2045 which specifies max 76 per line but will be a
@@ -214,7 +214,7 @@ public class Base64
 	// *  byte[] version
 	// ****************************************************************************************
 
-	/** Encodes a raw byte array into a BASE64 <code>byte[]</code> representation i accordance with RFC 2045.
+	/** Encodes a scan byte array into a BASE64 <code>byte[]</code> representation i accordance with RFC 2045.
 	 * @param sArr The bytes to convert. If <code>null</code> or length 0 an empty array will be returned.
 	 * @param lineSep Optional "\r\n" after 76 characters, unless end of file.<br>
 	 * No line separator will be in breach of RFC 2045 which specifies max 76 per line but will be a
@@ -391,7 +391,7 @@ public class Base64
 	// * String version
 	// ****************************************************************************************
 
-	/** Encodes a raw byte array into a BASE64 <code>String</code> representation i accordance with RFC 2045.
+	/** Encodes a scan byte array into a BASE64 <code>String</code> representation i accordance with RFC 2045.
 	 * @param sArr The bytes to convert. If <code>null</code> or length 0 an empty array will be returned.
 	 * @param lineSep Optional "\r\n" after 76 characters, unless end of file.<br>
 	 * No line separator will be in breach of RFC 2045 which specifies max 76 per line but will be a

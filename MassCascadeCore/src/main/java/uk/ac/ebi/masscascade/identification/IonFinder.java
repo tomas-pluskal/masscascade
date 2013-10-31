@@ -26,9 +26,9 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Level;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -56,14 +56,14 @@ import java.util.TreeMap;
  * One or many comment lines followed by lines containing the major isotopic mass and its label in comma-separated
  * format.
  * <ul>
- * <li>Parameter <code> MZ TOLERANCE PPM </code>- The mz tolerance in ppm.</li>
- * <li>Parameter <code> ADDUCT LIST </code>- The adducts to be searched for.</li>
- * <li>Parameter <code> SPECTRUM FILE </code>- The input spectrum container.</li>
+ * <li>Parameter <code> MZ_TOLERANCE_PPM </code>- The mz tolerance in ppm.</li>
+ * <li>Parameter <code> ADDUCT_LIST </code>- The adducts to be searched for.</li>
+ * <li>Parameter <code> FEATURE_SET_FILE </code>- The input feature set container.</li>
  * </ul>
  */
 public class IonFinder extends CallableTask {
 
-    private SpectrumContainer spectrumContainer;
+    private FeatureSetContainer featureSetContainer;
     private double ppm;
     private TreeMap<Double, String> ionMzs = new TreeMap<Double, String>();
 
@@ -143,41 +143,41 @@ public class IonFinder extends CallableTask {
     @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
+        featureSetContainer = params.get(Parameter.FEATURE_SET_CONTAINER, FeatureSetContainer.class);
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         setIonList(params.get(Parameter.ION_LIST, (new TreeMap<Double, String>()).getClass()));
     }
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .RawContainer} with the processed data.
+     * .ScanContainer} with the aprocessed data.
      *
-     * @return the spectrum container with the processed data
+     * @return the featureset container with the processed data
      */
     @Override
-    public SpectrumContainer call() {
+    public FeatureSetContainer call() {
 
-        String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer outSpectrumContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
-                spectrumContainer.getWorkingDirectory());
+        String id = featureSetContainer.getId() + IDENTIFIER;
+        FeatureSetContainer outFeatureSetContainer = featureSetContainer.getBuilder().newInstance(FeatureSetContainer.class, id,
+                featureSetContainer.getIonMode(), featureSetContainer.getWorkingDirectory());
 
         Double closestIon;
-        for (Spectrum spectrum : spectrumContainer) {
-            for (Profile profile : spectrum) {
-                double mz = profile.getMzIntDp().x;
+        for (FeatureSet featureSet : featureSetContainer) {
+            for (Feature feature : featureSet) {
+                double mz = feature.getMzIntDp().x;
 
                 closestIon = DataUtils.getClosestKey(mz, ionMzs);
                 if (closestIon != null && new ToleranceRange(mz, ppm).contains(closestIon)) {
                     double score = FastMath.abs(mz - closestIon) * Constants.PPM / mz;
                     score = FastMath.round(-0.001 * score + 1000);
                     Identity identity = new Identity("", ionMzs.get(closestIon), "", score, "IonFinder", "m/z", "");
-                    profile.setProperty(identity);
+                    feature.setProperty(identity);
                 }
             }
-            outSpectrumContainer.addSpectrum(spectrum);
+            outFeatureSetContainer.addFeatureSet(featureSet);
         }
 
-        outSpectrumContainer.finaliseFile();
-        return outSpectrumContainer;
+        outFeatureSetContainer.finaliseFile();
+        return outFeatureSetContainer;
     }
 }

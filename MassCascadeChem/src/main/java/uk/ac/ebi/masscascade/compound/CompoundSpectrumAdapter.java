@@ -27,14 +27,14 @@ import com.google.common.collect.Multimap;
 import uk.ac.ebi.masscascade.commons.Evidence;
 import uk.ac.ebi.masscascade.commons.Status;
 import uk.ac.ebi.masscascade.core.PropertyType;
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.properties.Adduct;
 import uk.ac.ebi.masscascade.properties.Identity;
 import uk.ac.ebi.masscascade.properties.Isotope;
-import uk.ac.ebi.masscascade.utilities.comparator.ProfileMassComparator;
+import uk.ac.ebi.masscascade.utilities.comparator.FeatureMassComparator;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ import java.util.Set;
 /**
  * Converts a list of pseudo spectra into a list of compound spectra.
  * <p/>
- * For every identity annotation in a pseudo spectra for a single peak, a compound spectrum is generated.
+ * For every identity annotation in a pseudo spectra for a single peak, a compound featureset is generated.
  */
 public class CompoundSpectrumAdapter {
 
@@ -72,19 +72,19 @@ public class CompoundSpectrumAdapter {
     }
 
     /**
-     * Takes a list of spectrum containers and returns a list of compound spectra.
+     * Takes a list of featureset containers and returns a list of compound spectra.
      *
-     * @param spectraContainer the input list of spectrum containers
+     * @param spectraContainer the input list of featureset containers
      * @return the converted list of compound spectra
      */
-    public List<CompoundSpectrum> getSpectra(SpectrumContainer... spectraContainer) {
+    public List<CompoundSpectrum> getSpectra(FeatureSetContainer... spectraContainer) {
 
         List<CompoundSpectrum> compoundSpectra = new ArrayList<>();
 
         int i = 0;
-        for (SpectrumContainer spectrumContainer : spectraContainer) {
-            for (Spectrum spectrum : spectrumContainer) {
-                generateCompoundSpectra(spectrum, i++, compoundSpectra);
+        for (FeatureSetContainer featureSetContainer : spectraContainer) {
+            for (FeatureSet featureSet : featureSetContainer) {
+                generateCompoundSpectra(featureSet, i++, compoundSpectra);
             }
         }
 
@@ -92,69 +92,69 @@ public class CompoundSpectrumAdapter {
     }
 
     /**
-     * Takes a list of spectrum containers and returns a list of compound spectra.
+     * Takes a list of featureset containers and returns a list of compound spectra.
      *
-     * @param cToPIdMap        the container to profile id map
+     * @param cToPIdMap        the container to feature id map
      * @param index            the index of the current container
-     * @param spectraContainer the input list of spectrum containers
+     * @param spectraContainer the input list of featureset containers
      * @return the converted list of compound spectra
      */
     public List<CompoundSpectrum> getSpectra(HashMultimap<Integer, Integer> cToPIdMap, int index,
-                                             SpectrumContainer... spectraContainer) {
+                                             FeatureSetContainer... spectraContainer) {
 
         List<CompoundSpectrum> compoundSpectra = new ArrayList<>();
 
-        for (SpectrumContainer spectrumContainer : spectraContainer) {
-            for (Spectrum spectrum : spectrumContainer) {
-                generateCompoundSpectra(spectrum, index, compoundSpectra, cToPIdMap);
+        for (FeatureSetContainer featureSetContainer : spectraContainer) {
+            for (FeatureSet featureSet : featureSetContainer) {
+                generateCompoundSpectra(featureSet, index, compoundSpectra, cToPIdMap);
             }
         }
 
         return compoundSpectra;
     }
 
-    private void generateCompoundSpectra(Spectrum spectrum, int containerI, List<CompoundSpectrum> compoundSpectra) {
-        generateCompoundSpectra(spectrum, containerI, compoundSpectra, null);
+    private void generateCompoundSpectra(FeatureSet featureSet, int containerI, List<CompoundSpectrum> compoundSpectra) {
+        generateCompoundSpectra(featureSet, containerI, compoundSpectra, null);
     }
 
-    private void generateCompoundSpectra(Spectrum spectrum, int containerI, List<CompoundSpectrum> compoundSpectra,
+    private void generateCompoundSpectra(FeatureSet featureSet, int containerI, List<CompoundSpectrum> compoundSpectra,
                                          HashMultimap<Integer, Integer> cToPIdMap) {
 
-        List<Profile> profiles = new ArrayList<>(spectrum.getProfileMap().values());
-        Collections.sort(profiles, new ProfileMassComparator());
+        List<Feature> features = new ArrayList<>(featureSet.getFeaturesMap().values());
+        Collections.sort(features, new FeatureMassComparator());
 
         int mainPeak = 1;
 
         Map<Integer, Integer> drawIndexToId = new HashMap<>();
         XYList data = new XYList();
-        for (Profile profile : profiles) {
-            data.add(profile.getMzIntDp());
-            drawIndexToId.put(profile.getId(), mainPeak++);
+        for (Feature feature : features) {
+            data.add(feature.getMzIntDp());
+            drawIndexToId.put(feature.getId(), mainPeak++);
         }
 
         mainPeak = 1;
 
-        for (Profile profile : profiles) {
+        for (Feature feature : features) {
 
             if (cToPIdMap != null) {
-                if (!cToPIdMap.containsKey(containerI) || !cToPIdMap.get(containerI).contains(profile.getId()))
+                if (!cToPIdMap.containsKey(containerI) || !cToPIdMap.get(containerI).contains(feature.getId()))
                     continue;
             }
 
-            if (profile.hasProperty(PropertyType.Identity)) {
+            if (feature.hasProperty(PropertyType.Identity)) {
                 CompoundSpectrum compoundSpectrum = new CompoundSpectrum(gid++);
                 compoundSpectrum.setMajorPeak(mainPeak);
                 compoundSpectrum.setPeakList(data);
-                compoundSpectrum.setRetentionTime(profile.getRetentionTime());
+                compoundSpectrum.setRetentionTime(feature.getRetentionTime());
 
                 Map<String, Multimap<Integer, Identity>> msnAssociations = new HashMap<>();
-                if (profile.hasMsnSpectra(Constants.MSN.MS2)) {
+                if (feature.hasMsnSpectra(Constants.MSN.MS2)) {
                     int msnIndex = 1;
                     XYList msnData = new XYList();
-                    for (Profile msnProfile : profile.getMsnSpectra(Constants.MSN.MS2).get(0)) {
-                        msnData.add(msnProfile.getMzIntDp());
-                        if (msnProfile.hasProperty(PropertyType.Identity)) {
-                            for (Identity msnIdentity : msnProfile.getProperty(PropertyType.Identity, Identity.class)) {
+                    for (Feature msnFeature : feature.getMsnSpectra(Constants.MSN.MS2).get(0)) {
+                        msnData.add(msnFeature.getMzIntDp());
+                        if (msnFeature.hasProperty(PropertyType.Identity)) {
+                            for (Identity msnIdentity : msnFeature.getProperty(PropertyType.Identity, Identity.class)) {
                                 String parentId = msnIdentity.getSource();
                                 if (msnAssociations.containsKey(parentId)) {
                                     msnAssociations.get(parentId).put(msnIndex, msnIdentity);
@@ -170,7 +170,7 @@ public class CompoundSpectrumAdapter {
                     compoundSpectrum.setPeakList2(msnData);
                 }
 
-                for (Identity identity : profile.getProperty(PropertyType.Identity, Identity.class)) {
+                for (Identity identity : feature.getProperty(PropertyType.Identity, Identity.class)) {
                     Map<Integer, Identity> identMap = new HashMap<>();
                     identMap.put(mainPeak, identity);
                     CompoundEntity ce =
@@ -179,24 +179,24 @@ public class CompoundSpectrumAdapter {
                     compoundSpectrum.addCompound(ce);
                 }
 
-                if (profile.hasProperty(PropertyType.Adduct)) {
+                if (feature.hasProperty(PropertyType.Adduct)) {
                     HashMultimap<Integer, Adduct> adductMap = HashMultimap.create();
-                    for (Adduct adduct : profile.getProperty(PropertyType.Adduct, Adduct.class)) {
-                        if (adduct.getParentId().equals(profile.getId()))
+                    for (Adduct adduct : feature.getProperty(PropertyType.Adduct, Adduct.class)) {
+                        if (adduct.getParentId().equals(feature.getId()))
                             adductMap.put(drawIndexToId.get(adduct.getChildId()), adduct);
                         else adductMap.put(drawIndexToId.get(adduct.getParentId()), adduct);
                     }
                     compoundSpectrum.setIndexToAdduct(adductMap);
                 }
 
-                if (profile.hasProperty(PropertyType.Isotope)) {
+                if (feature.hasProperty(PropertyType.Isotope)) {
                     Map<Integer, Isotope> isoMap = new HashMap<>();
                     Set<Integer> parentIds = new HashSet<>();
-                    for (Isotope isotope : profile.getProperty(PropertyType.Isotope, Isotope.class)) {
+                    for (Isotope isotope : feature.getProperty(PropertyType.Isotope, Isotope.class)) {
                         parentIds.add(isotope.getParentId());
                     }
                     for (int id : parentIds) {
-                        for (Isotope isotope : spectrum.getProfile(id).getProperty(PropertyType.Isotope,
+                        for (Isotope isotope : featureSet.getFeature(id).getProperty(PropertyType.Isotope,
                                 Isotope.class)) {
                             isoMap.put(drawIndexToId.get(isotope.getChildId()), isotope);
                         }

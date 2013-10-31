@@ -23,14 +23,11 @@
 package uk.ac.ebi.masscascade.core.container.memory;
 
 import uk.ac.ebi.masscascade.core.ContainerFactory;
-import uk.ac.ebi.masscascade.core.container.memory.profile.MemoryProfileContainer;
-import uk.ac.ebi.masscascade.core.container.memory.raw.MemoryRawContainer;
-import uk.ac.ebi.masscascade.core.container.memory.spectrum.MemorySpectrumContainer;
-import uk.ac.ebi.masscascade.interfaces.container.Container;
-import uk.ac.ebi.masscascade.interfaces.container.ContainerBuilder;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.core.container.memory.feature.MemoryFeatureContainer;
+import uk.ac.ebi.masscascade.core.container.memory.featureset.MemoryFeatureSetContainer;
+import uk.ac.ebi.masscascade.core.container.memory.scan.MemoryScanContainer;
+import uk.ac.ebi.masscascade.interfaces.container.*;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
 
 import java.util.Arrays;
 
@@ -44,9 +41,9 @@ public class MemoryContainerBuilder implements ContainerBuilder {
 
     private MemoryContainerBuilder() {
 
-        factory.register(RawContainer.class, MemoryRawContainer.class);
-        factory.register(ProfileContainer.class, MemoryProfileContainer.class);
-        factory.register(SpectrumContainer.class, MemorySpectrumContainer.class);
+        factory.register(ScanContainer.class, MemoryScanContainer.class);
+        factory.register(FeatureContainer.class, MemoryFeatureContainer.class);
+        factory.register(FeatureSetContainer.class, MemoryFeatureSetContainer.class);
     }
 
     /**
@@ -66,7 +63,9 @@ public class MemoryContainerBuilder implements ContainerBuilder {
             Object... params) throws IllegalArgumentException {
 
         // hack to remove the working directory from the parameter array
-        if (params.length == 2 && params[1] instanceof String) params = Arrays.copyOf(params, params.length - 1);
+        if (params.length == 3 && params[2] instanceof String) {
+            params = Arrays.copyOf(params, params.length - 1);
+        }
         return factory.ofClass(containerClass, params);
     }
 }

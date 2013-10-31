@@ -30,7 +30,7 @@ import java.io.Serializable;
 
 /**
  * Class representing a total ion chromatogram where the all signals of a scan in the mass domain represent
- * a single ion profile.
+ * a single ion feature.
  */
 public class TotalIonChromatogram implements Chromatogram, Serializable {
 

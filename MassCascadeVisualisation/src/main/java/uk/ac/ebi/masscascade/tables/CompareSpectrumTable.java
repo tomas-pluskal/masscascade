@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class implementing a table for spectrum comparison.
+ * Class implementing a table for featureset comparison.
  */
 public class CompareSpectrumTable extends JTable {
 
@@ -42,7 +42,7 @@ public class CompareSpectrumTable extends JTable {
     }
 
     /**
-     * Constructs the compare spectrum table.
+     * Constructs the compare featureset table.
      */
     public CompareSpectrumTable() {
 
@@ -53,7 +53,7 @@ public class CompareSpectrumTable extends JTable {
     }
 
     /**
-     * Sets the data table model forthe compare spectrum table.
+     * Sets the data table model forthe compare featureset table.
      *
      * @param tableModel the table model
      */

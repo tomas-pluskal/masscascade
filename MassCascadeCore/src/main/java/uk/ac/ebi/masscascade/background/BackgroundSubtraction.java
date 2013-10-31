@@ -23,11 +23,10 @@
 package uk.ac.ebi.masscascade.background;
 
 import com.google.common.collect.TreeMultimap;
-import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
-import uk.ac.ebi.masscascade.core.raw.RawLevel;
+import uk.ac.ebi.masscascade.core.scan.ScanLevel;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.interfaces.Trace;
@@ -53,12 +52,12 @@ import java.util.TreeSet;
  * for extraction of drug metabolites in liquid chromatography / mass spectrometry data from biological matrices.
  * (2009) Rapid Communications in Mass Spectrometry, 1563-1572</i>
  * <ul>
- * <li>Parameter <code> TIME WINDOW </code>- The time window in seconds.</li>
- * <li>Parameter <code> MZ WINDOW PPM </code>- The mass window in ppm.</li>
- * <li>Parameter <code> SCALE FACTOR </code>- The factor by which background signals are multiplied before
- * subtraction.</li>
- * <li>Parameter <code> REFERENCE RAW CONTAINER </code>- The input raw background container.</li>
- * <li>Parameter <code> RAW CONTAINER </code>- The input raw container.</li>
+ * <li>Parameter <code> TIME_WINDOW </code>- The time window in seconds.</li>
+ * <li>Parameter <code> MZ_WINDOW_PPM </code>- The mass window in ppm.</li>
+ * <li>Parameter <code> SCALE_FACTOR </code>- The factor by which background signals are
+ * multiplied before subtraction.</li>
+ * <li>Parameter <code> REFERENCE_SCAN_CONTAINER </code>- The input scan background container.</li>
+ * <li>Parameter <code> SCAN_CONTAINER </code>- The input scan container.</li>
  * </ul>
  */
 public class BackgroundSubtraction extends CallableTask {
@@ -68,39 +67,13 @@ public class BackgroundSubtraction extends CallableTask {
     private double ppm;
     private double intensityScale;
 
-    private RawContainer rawContainer;
-    private RawContainer bgRawContainer;
+    private ScanContainer scanContainer;
+    private ScanContainer bgScanContainer;
 
     private TreeMultimap<Range, Trace> reference;
 
-    private final TreeSet<Trace> traces = new TreeSet<Trace>();
-    private final TreeSet<Trace> tracesExtended = new TreeSet<Trace>();
-
-    /**
-     * Constructs an empty background subtraction task. This constructor should only be used to retrieve the <code>
-     * Parameter.REFERENCE_RAW_MAP </code> via the <code> getReference() </code> method.
-     *
-     * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *          if the task fails
-     */
-    public BackgroundSubtraction() throws MassCascadeException {
-
-        super(BackgroundSubtraction.class);
-    }
-
-    /**
-     * Returns the reference map: m/z range to m/z trace along the time axis.
-     *
-     * @param bgRawContainer the background raw container
-     * @return the reference map
-     */
-    public TreeMultimap<Range, Trace> getReference(RawContainer bgRawContainer) {
-
-        this.bgRawContainer = bgRawContainer;
-        buildReferenceMap();
-
-        return reference;
-    }
+    private final TreeSet<Trace> traces = new TreeSet<>();
+    private final TreeSet<Trace> tracesExtended = new TreeSet<>();
 
     /**
      * Constructs a background subtraction task.
@@ -128,47 +101,44 @@ public class BackgroundSubtraction extends CallableTask {
         timeWindow = params.get(Parameter.TIME_WINDOW, Double.class);
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         intensityScale = params.get(Parameter.SCALE_FACTOR, Double.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
-
-        if (params.containsKey(Parameter.REFERENCE_RAW_CONTAINER))
-            bgRawContainer = params.get(Parameter.REFERENCE_RAW_CONTAINER, RawContainer.class);
-        else if (params.containsKey(Parameter.REFERENCE_RAW_MAP))
-            reference = params.get(Parameter.REFERENCE_RAW_MAP, TreeMultimap.class);
+        scanContainer = params.get(Parameter.SCAN_CONTAINER, ScanContainer.class);
+        bgScanContainer = params.get(Parameter.REFERENCE_SCAN_CONTAINER, ScanContainer.class);
+        buildReferenceMap();
     }
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .RawContainer} with the processed data.
+     * .ScanContainer} with the processed data.
      *
-     * @return the raw container with the processed data
+     * @return the scan container with the processed data
      */
     @Override
-    public RawContainer call() {
+    public ScanContainer call() {
 
         if (reference == null) buildReferenceMap();
 
         // prepares the new scan container
-        String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer outRawContainer = rawContainer.getBuilder().newInstance(RawContainer.class, id, rawContainer);
+        String id = scanContainer.getId() + IDENTIFIER;
+        ScanContainer outScanContainer = scanContainer.getBuilder().newInstance(ScanContainer.class, id, scanContainer);
 
-        for (RawLevel level : rawContainer.getRawLevels()) {
+        for (ScanLevel level : scanContainer.getScanLevels()) {
 
-            if (level.getMsn() == Constants.MSN.MS1) subtractBackground(outRawContainer);
-            else for (Scan scan : rawContainer.iterator(level.getMsn())) outRawContainer.addScan(scan);
+            if (level.getMsn() == Constants.MSN.MS1) subtractBackground(outScanContainer);
+            else for (Scan scan : scanContainer.iterator(level.getMsn())) outScanContainer.addScan(scan);
         }
 
-        outRawContainer.finaliseFile(rawContainer.getRawInfo().getDate());
-        return outRawContainer;
+        outScanContainer.finaliseFile(scanContainer.getScanInfo().getDate());
+        return outScanContainer;
     }
 
     /**
-     * Subtracts the background from the raw container using the <code> Parameter.REFERENCE_RAW_MAP </code>.
+     * Subtracts the background from the scan container using the <code> Parameter.REFERENCE_SCAN_MAP </code>.
      *
-     * @param outRawContainer the output raw container
+     * @param outScanContainer the output scan container
      */
-    private void subtractBackground(final RawContainer outRawContainer) {
+    private void subtractBackground(final ScanContainer outScanContainer) {
 
-        for (Scan scan : rawContainer) {
+        for (Scan scan : scanContainer) {
             double rt = scan.getRetentionTime();
 
             Range timeRange = new ExtendableRange(rt - timeWindow / 2d, rt + timeWindow / 2d);
@@ -227,7 +197,7 @@ public class BackgroundSubtraction extends CallableTask {
             }
 
             Scan processedScan = ScanUtils.getModifiedScan(scan, processedData);
-            outRawContainer.addScan(processedScan);
+            outScanContainer.addScan(processedScan);
         }
     }
 
@@ -250,7 +220,7 @@ public class BackgroundSubtraction extends CallableTask {
 
         reference = TreeMultimap.create();
 
-        for (Scan scan : bgRawContainer) {
+        for (Scan scan : bgScanContainer) {
 
             if (traces.isEmpty()) {
                 for (XYPoint dataPoint : scan.getData())

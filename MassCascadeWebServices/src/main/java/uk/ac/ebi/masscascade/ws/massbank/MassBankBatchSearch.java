@@ -29,9 +29,9 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Level;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableWebservice;
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -48,15 +48,15 @@ import java.util.Map;
 import java.util.TreeSet;
 
 /**
- * Web task to run a spectrum search against MassBank using the MassBank's batch web service.
+ * Web task to run a featureset search against MassBank using the MassBank's batch web service.
  * <ul>
  * <li>Parameter <code> MZ WINDOW PPM </code>- The m/z tolerance value for the precursor ions in ppm.</li>
  * <li>Parameter <code> SCORE </code>- The minimum score per hit (min-0, max=1).</li>
  * <li>Parameter <code> ION MODE </code>- The ion mode.</li>
  * <li>Parameter <code> RESULTS </code>- The max. number of retrieved results.</li>
  * <li>Parameter <code> INSTRUMENTS </code>- The instruments to be included in the query.</li>
- * <li>Parameter <code> RESULTS </code>- The max. number of results per spectrum.</li>
- * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input spectrum container.</li>
+ * <li>Parameter <code> RESULTS </code>- The max. number of results per featureset.</li>
+ * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input featureset container.</li>
  * </ul>
  */
 public class MassBankBatchSearch extends CallableWebservice {
@@ -76,7 +76,7 @@ public class MassBankBatchSearch extends CallableWebservice {
     private static final String IUPAC = "CH$IUPAC: ";
     private static final String SEARCHSPECTRUM = "searchSpectrum";
 
-    private SpectrumContainer spectrumContainer;
+    private FeatureSetContainer featureSetContainer;
 
     /**
      * Constructs a web task for the MassBank web service.
@@ -104,24 +104,24 @@ public class MassBankBatchSearch extends CallableWebservice {
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         ionMode = params.get(Parameter.ION_MODE, Constants.ION_MODE.class);
         instruments = params.get(Parameter.INSTRUMENTS, (new ArrayList<String>()).getClass());
-        minNumOfProfiles = params.get(Parameter.MIN_PROFILES, Integer.class);
+        minNumOfProfiles = params.get(Parameter.MIN_FEATURES, Integer.class);
         score = params.get(Parameter.SCORE, Double.class);
         maxNumOfResults = params.get(Parameter.RESULTS, Integer.class);
         msn = params.get(Parameter.MS_LEVEL, Constants.MSN.class);
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
+        featureSetContainer = params.get(Parameter.FEATURE_SET_CONTAINER, FeatureSetContainer.class);
     }
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .SpectrumContainer} with the processed data.
+     * .FeatureSetContainer} with the processed data.
      *
-     * @return the spectrum container with the processed data
+     * @return the featureset container with the processed data
      */
-    public SpectrumContainer call() {
+    public FeatureSetContainer call() {
 
-        String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer outContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
-                spectrumContainer.getWorkingDirectory());
+        String id = featureSetContainer.getId() + IDENTIFIER;
+        FeatureSetContainer outContainer = featureSetContainer.getBuilder().newInstance(FeatureSetContainer.class, id,
+                featureSetContainer.getIonMode(), featureSetContainer.getWorkingDirectory());
 
         try {
             List<String> queries = buildQuery();
@@ -155,8 +155,8 @@ public class MassBankBatchSearch extends CallableWebservice {
                 for (MassBankAPIStub.ResultSet resultSet : resultSets) {
 
                     int querySpectrumId = Integer.parseInt(resultSet.getQueryName());
-                    Spectrum querySpectrum = spectrumContainer.getSpectrum(querySpectrumId);
-                    TreeSet<Double> mzTree = new TreeSet<>(Doubles.asList(querySpectrum.getData().getXs()));
+                    FeatureSet queryFeatureSet = featureSetContainer.getFeatureSet(querySpectrumId);
+                    TreeSet<Double> mzTree = new TreeSet<>(Doubles.asList(queryFeatureSet.getData().getXs()));
 
                     MassBankAPIStub.Result[] results = resultSet.getResults();
                     if (results == null) continue;
@@ -193,21 +193,21 @@ public class MassBankBatchSearch extends CallableWebservice {
                 }
 
                 Map<Identity, String> identityToInChI = getIUPACNotation(recordIdsToIdentities);
-                for (Spectrum spectrum : spectrumContainer) {
-                    if (sIdToMzProfiId.containsKey(spectrum.getIndex())) {
-                        Multimap<Double, Identity> tmpMm = sIdToMzProfiId.get(spectrum.getIndex());
+                for (FeatureSet featureSet : featureSetContainer) {
+                    if (sIdToMzProfiId.containsKey(featureSet.getIndex())) {
+                        Multimap<Double, Identity> tmpMm = sIdToMzProfiId.get(featureSet.getIndex());
                         for (double mz : tmpMm.keySet()) {
-                            for (Profile profile : spectrum) {
-                                if (profile.getMz() == mz) {
+                            for (Feature feature : featureSet) {
+                                if (feature.getMz() == mz) {
                                     for (Identity identity : tmpMm.get(mz)) {
                                         identity.setNotation(identityToInChI.get(identity));
-                                        profile.setProperty(identity);
+                                        feature.setProperty(identity);
                                     }
                                 }
                             }
                         }
                     }
-                    outContainer.addSpectrum(spectrum);
+                    outContainer.addFeatureSet(featureSet);
                 }
             } else {
 
@@ -255,11 +255,11 @@ public class MassBankBatchSearch extends CallableWebservice {
                 }
 
                 Map<Identity, String> identityToInChI = getIUPACNotation(recordIdsToIdentities);
-                for (Spectrum spectrum : spectrumContainer) {
-                    if (sIdToMzProfiId.containsKey(spectrum.getIndex())) {
-                        Multimap<Integer[], Identity> msnSpectrum = sIdToMzProfiId.get(spectrum.getIndex());
+                for (FeatureSet featureSet : featureSetContainer) {
+                    if (sIdToMzProfiId.containsKey(featureSet.getIndex())) {
+                        Multimap<Integer[], Identity> msnSpectrum = sIdToMzProfiId.get(featureSet.getIndex());
                         for (Integer[] profIds : msnSpectrum.keySet()) {
-                            Profile tmpProf = spectrum.getProfile(profIds[0]);
+                            Feature tmpProf = featureSet.getFeature(profIds[0]);
                             if (msn.up() == Constants.MSN.MS1) {
                                 for (Identity identity : msnSpectrum.get(profIds)) {
                                     if (new ToleranceRange(identityToMass.get(identity), ppm).contains(
@@ -269,14 +269,14 @@ public class MassBankBatchSearch extends CallableWebservice {
                                     }
                                 }
                             } else {
-                                for (Spectrum parentSpectrum : tmpProf.getMsnSpectra(msn.up())) {
-                                    Profile parentProfile = parentSpectrum.getProfile(profIds[1]);
-                                    if (parentProfile != null) {
+                                for (FeatureSet parentFeatureSet : tmpProf.getMsnSpectra(msn.up())) {
+                                    Feature parentFeature = parentFeatureSet.getFeature(profIds[1]);
+                                    if (parentFeature != null) {
                                         for (Identity identity : msnSpectrum.get(profIds)) {
                                             if (new ToleranceRange(identityToMass.get(identity), ppm).contains(
-                                                    parentProfile.getMz())) {
+                                                    parentFeature.getMz())) {
                                                 identity.setNotation(identityToInChI.get(identity));
-                                                parentProfile.setProperty(identity);
+                                                parentFeature.setProperty(identity);
                                             }
                                         }
                                         break;
@@ -285,7 +285,7 @@ public class MassBankBatchSearch extends CallableWebservice {
                             }
                         }
                     }
-                    outContainer.addSpectrum(spectrum);
+                    outContainer.addFeatureSet(featureSet);
                 }
             }
         } catch (Exception exception) {
@@ -300,7 +300,7 @@ public class MassBankBatchSearch extends CallableWebservice {
     private List<String> buildQuery() {
 
         List<String> queries = new ArrayList<>();
-        for (Spectrum ps : spectrumContainer) {
+        for (FeatureSet ps : featureSetContainer) {
 
             if (msn == Constants.MSN.MS1) {
                 if (ps.size() < minNumOfProfiles) continue;
@@ -318,9 +318,9 @@ public class MassBankBatchSearch extends CallableWebservice {
                 }
                 queries.add(sb.toString());
             } else {
-                for (Profile profile : ps) {
-                    if (profile.hasMsnSpectra(msn)) {
-                        for (Spectrum singleMsnPs : profile.getMsnSpectra(msn)) {
+                for (Feature feature : ps) {
+                    if (feature.hasMsnSpectra(msn)) {
+                        for (FeatureSet singleMsnPs : feature.getMsnSpectra(msn)) {
                             if (singleMsnPs.size() < minNumOfProfiles) continue;
 
                             double maxY = Constants.MIN_ABUNDANCE;
@@ -328,7 +328,7 @@ public class MassBankBatchSearch extends CallableWebservice {
 
                             StringBuilder sb = new StringBuilder();
                             sb.append(
-                                    "Name: " + ps.getIndex() + "-" + profile.getId() + "-" + singleMsnPs
+                                    "Name: " + ps.getIndex() + "-" + feature.getId() + "-" + singleMsnPs
                                             .getParentScan() + ";");
                             for (XYPoint dp : singleMsnPs.getData()) {
                                 sb.append(dp.x);

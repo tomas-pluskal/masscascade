@@ -24,16 +24,16 @@ package uk.ac.ebi.masscascade.identification;
 
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 
 /**
  * Class implementing an isotope finder method.
  * <ul>
- * <li>Parameter <code> MZ WINDOW PPM </code>- The m/z tolerance in ppm.</li>
- * <li>Parameter <code> SPECTRUM FILE </code>- The input spectrum container.</li>
+ * <li>Parameter <code> MZ_WINDOW_PPM </code>- The m/z tolerance in ppm.</li>
+ * <li>Parameter <code> FEATURE_SET_FILE </code>- The input feature set container.</li>
  * </ul>
  */
 public class IsotopeFinder extends CallableTask {
@@ -41,19 +41,19 @@ public class IsotopeFinder extends CallableTask {
     private static final int CHARGE = 3;
 
     private double massTolerance;
-    private SpectrumContainer spectrumContainer;
+    private FeatureSetContainer featureSetContainer;
 
     /**
      * Constructor for the isotope finder implementation.
      *
      * @param massTolerance the mass tolerance
      */
-    public IsotopeFinder(double massTolerance, SpectrumContainer spectrumContainer) {
+    public IsotopeFinder(double massTolerance, FeatureSetContainer featureSetContainer) {
 
         super(IsotopeFinder.class);
 
         this.massTolerance = massTolerance;
-        this.spectrumContainer = spectrumContainer;
+        this.featureSetContainer = featureSetContainer;
     }
 
     /**
@@ -80,32 +80,32 @@ public class IsotopeFinder extends CallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         massTolerance = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
+        featureSetContainer = params.get(Parameter.FEATURE_SET_CONTAINER, FeatureSetContainer.class);
     }
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .RawContainer} with the processed data.
+     * .ScanContainer} with the processed data.
      *
-     * @return the spectrum container with the processed data
+     * @return the featureset container with the processed data
      */
     @Override
-    public SpectrumContainer call() {
+    public FeatureSetContainer call() {
 
-        String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer outSpectrumContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
-                spectrumContainer.getWorkingDirectory());
+        String id = featureSetContainer.getId() + IDENTIFIER;
+        FeatureSetContainer outFeatureSetContainer = featureSetContainer.getBuilder().newInstance(FeatureSetContainer.class, id,
+                featureSetContainer.getIonMode(), featureSetContainer.getWorkingDirectory());
 
 //        IsotopeDetector isotopeDetector = new IsotopeDetector(CHARGE, massTolerance);
         IsotopeDetectorRec isotopeDetector = new IsotopeDetectorRec(CHARGE, massTolerance);
 
-        for (Spectrum spectrum : spectrumContainer) {
-            isotopeDetector.findIsotopes(spectrum);
-            outSpectrumContainer.addSpectrum(spectrum);
+        for (FeatureSet featureSet : featureSetContainer) {
+            isotopeDetector.findIsotopes(featureSet);
+            outFeatureSetContainer.addFeatureSet(featureSet);
         }
 
-        outSpectrumContainer.finaliseFile();
+        outFeatureSetContainer.finaliseFile();
 
-        return outSpectrumContainer;
+        return outFeatureSetContainer;
     }
 }

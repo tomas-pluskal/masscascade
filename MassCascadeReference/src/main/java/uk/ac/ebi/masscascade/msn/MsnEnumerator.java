@@ -25,11 +25,10 @@ package uk.ac.ebi.masscascade.msn;
 import org.apache.log4j.Level;
 import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.interfaces.CallableSearch;
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.Property;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.library.LibraryParameter;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
@@ -40,7 +39,6 @@ import uk.ac.ebi.masscascade.utilities.TextUtils;
 import uk.ac.ebi.masscascade.utilities.math.MathUtils;
 
 import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +50,7 @@ import java.util.TreeMap;
  * <li>Parameter <code> MZ WINDOW AMU </code>- The m/z tolerance value for the MSn signals in dalton.</li>
  * <li>Parameter <code> DEPTH </code>- The fragment depth.</li>
  * <li>Parameter <code> EXECUTABLE </code>- The full path to the MSnFragExplorer executable.</li>
- * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input spectrum container.</li>
+ * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input featureset container.</li>
  * </ul>
  */
 public class MsnEnumerator extends CallableSearch {
@@ -60,7 +58,7 @@ public class MsnEnumerator extends CallableSearch {
     private String executable;
     private int depth;
     private double amu;
-    private SpectrumContainer spectrumContainer;
+    private FeatureSetContainer featureSetContainer;
 
     /**
      * Constructs an enumerator task.
@@ -85,7 +83,7 @@ public class MsnEnumerator extends CallableSearch {
     @Override
     public void setParameters(ParameterMap params) {
 
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
+        featureSetContainer = params.get(Parameter.FEATURE_SET_CONTAINER, FeatureSetContainer.class);
         depth = params.get(LibraryParameter.DEPTH, Integer.class);
         amu = params.get(Parameter.MZ_WINDOW_AMU, Double.class);
         executable = params.get(Parameter.EXECUTABLE, String.class);
@@ -93,47 +91,47 @@ public class MsnEnumerator extends CallableSearch {
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .SpectrumContainer} with the processed data.
+     * .FeatureSetContainer} with the processed data.
      *
-     * @return the spectrum container with the processed data
+     * @return the featureset container with the processed data
      */
     @Override
     public Container call() {
 
-        String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer outSpectrumContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
-                spectrumContainer.getWorkingDirectory());
+        String id = featureSetContainer.getId() + IDENTIFIER;
+        FeatureSetContainer outFeatureSetContainer = featureSetContainer.getBuilder().newInstance(FeatureSetContainer.class, id,
+                featureSetContainer.getIonMode(), featureSetContainer.getWorkingDirectory());
 
-        for (Spectrum spectrum : spectrumContainer) {
+        for (FeatureSet featureSet : featureSetContainer) {
             int msnId = 0;
-            for (Profile profile : spectrum) {
-                if (!(profile.hasProperty(PropertyType.Identity) && profile.hasMsnSpectra(Constants.MSN.MS2)))
+            for (Feature feature : featureSet) {
+                if (!(feature.hasProperty(PropertyType.Identity) && feature.hasMsnSpectra(Constants.MSN.MS2)))
                     continue;
 
-                Spectrum msnSpectrum = profile.getMsnSpectra(Constants.MSN.MS2).get(0);
-                for (Identity identity : profile.getProperty(PropertyType.Identity, Identity.class)) {
+                FeatureSet msnFeatureSet = feature.getMsnSpectra(Constants.MSN.MS2).get(0);
+                for (Identity identity : feature.getProperty(PropertyType.Identity, Identity.class)) {
                     String notation = identity.getNotation();
                     if (notation == null || notation.isEmpty()) continue;
 
                     TreeMap<Double, List<String>> massToSmiles = enumerate(notation, depth);
-                    for (Profile msnProfile : msnSpectrum) {
-                        Double closestKey = DataUtils.getClosestKey(msnProfile.getMz(), massToSmiles);
+                    for (Feature msnFeature : msnFeatureSet) {
+                        Double closestKey = DataUtils.getClosestKey(msnFeature.getMz(), massToSmiles);
                         if (closestKey == null) continue;
-                        if (MathUtils.getRangeFromAbs(msnProfile.getMz(), amu).contains(closestKey)) {
+                        if (MathUtils.getRangeFromAbs(msnFeature.getMz(), amu).contains(closestKey)) {
                             for (String smiles : massToSmiles.get(closestKey)) {
                                 Identity msnIdentity =
                                         new Identity(msnId++ + "", smiles, smiles, 0, identity.getId(), "calc.", "");
-                                msnProfile.setProperty(msnIdentity);
+                                msnFeature.setProperty(msnIdentity);
                             }
                         }
                     }
                 }
             }
-            outSpectrumContainer.addSpectrum(spectrum);
+            outFeatureSetContainer.addFeatureSet(featureSet);
         }
 
-        outSpectrumContainer.finaliseFile();
-        return outSpectrumContainer;
+        outFeatureSetContainer.finaliseFile();
+        return outFeatureSetContainer;
     }
 
     /**

@@ -28,12 +28,9 @@ import uk.ac.ebi.masscascade.commons.FileLoader;
 import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.identification.IsotopeFinder;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
-import uk.ac.ebi.masscascade.properties.Isotope;
-
-import java.util.Set;
 
 public class IsotopeTest {
 
@@ -42,12 +39,12 @@ public class IsotopeTest {
 
         ParameterMap params = new ParameterMap();
         params.put(Parameter.MZ_WINDOW_PPM, 20);
-        params.put(Parameter.SPECTRUM_CONTAINER, FileLoader.getSpectrumContainer(FileLoader.TESTFILE.QC2));
+        params.put(Parameter.FEATURE_SET_CONTAINER, FileLoader.getSpectrumContainer(FileLoader.TESTFILE.QC2));
 
         CallableTask task = new IsotopeFinder(params);
-        SpectrumContainer container = (SpectrumContainer) task.call();
+        FeatureSetContainer container = (FeatureSetContainer) task.call();
 
-        Assert.assertTrue(container.getSpectrum(3).getProfile(245).hasProperty(PropertyType.Isotope));
-        Assert.assertTrue(container.getSpectrum(3).getProfile(246).hasProperty(PropertyType.Isotope));
+        Assert.assertTrue(container.getFeatureSet(3).getFeature(245).hasProperty(PropertyType.Isotope));
+        Assert.assertTrue(container.getFeatureSet(3).getFeature(246).hasProperty(PropertyType.Isotope));
     }
 }

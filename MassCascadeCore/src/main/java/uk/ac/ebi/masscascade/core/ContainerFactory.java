@@ -46,8 +46,8 @@ import java.util.TreeSet;
  * Internally the factory stores the object creators in a symbol table which
  * allows near constant time access for all registered classes.<p/>
  * <p/>
- * In cases of a non-direct parameter match (e.g. {@code RawContainer(RawContainer)} can resolve
- * to {@code RawContainer(FileRawContainer)}) the constructor is matched by invoking {@link
+ * In cases of a non-direct parameter match (e.g. {@code ScanContainer(ScanContainer)} can resolve
+ * to {@code ScanContainer(FileScanContainer)}) the constructor is matched by invoking {@link
  * #find(ConstructorKey)}. If a constructor was found the new key will be
  * registered with cache to avoid the overhead of finding the correct
  * constructor again.<p/>

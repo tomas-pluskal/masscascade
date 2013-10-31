@@ -24,12 +24,11 @@ package uk.ac.ebi.masscascade.background;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
-import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
-import uk.ac.ebi.masscascade.core.raw.RawLevel;
-import uk.ac.ebi.masscascade.core.raw.ScanImpl;
+import uk.ac.ebi.masscascade.core.scan.ScanLevel;
+import uk.ac.ebi.masscascade.core.scan.ScanImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.interfaces.Trace;
 import uk.ac.ebi.masscascade.parameters.Constants;
@@ -53,9 +52,9 @@ import java.util.TreeMap;
  * For every m/z in every scan, the algorithm checks m/z values in subsequent scans for similar values within the
  * tolerance window. Only values that are part of a m/z trace exceeding the minimum trace width are kept.
  * <ul>
- * <li>Parameter <code> SCAN WINDOW </code>- The scan window in scans.</li>
- * <li>Parameter <code> MZ WINDOW PPM </code>- The mass window in ppm.</li>
- * <li>Parameter <code> RAW CONTAINER </code>- The input raw container.</li>
+ * <li>Parameter <code> SCAN_WINDOW </code>- The scan window in scans.</li>
+ * <li>Parameter <code> MZ_WINDOW_PPM </code>- The mass window in ppm.</li>
+ * <li>Parameter <code> SCAN_CONTAINER </code>- The input scan container.</li>
  * </ul>
  */
 public class NoiseReduction extends CallableTask {
@@ -64,11 +63,11 @@ public class NoiseReduction extends CallableTask {
     private int minTraceWidth;
     private double ppm;
 
-    private RawContainer rawContainer;
+    private ScanContainer scanContainer;
 
     // m/z trace -> scan index
-    private final TreeMap<Trace, Integer> traces = new TreeMap<Trace, Integer>();
-    private final TreeMap<Trace, Integer> tracesExtended = new TreeMap<Trace, Integer>();
+    private final TreeMap<Trace, Integer> traces = new TreeMap<>();
+    private final TreeMap<Trace, Integer> tracesExtended = new TreeMap<>();
 
     /**
      * Constructs a noise reduction task.
@@ -96,39 +95,39 @@ public class NoiseReduction extends CallableTask {
 
         minTraceWidth = params.get(Parameter.SCAN_WINDOW, Integer.class);
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        scanContainer = params.get(Parameter.SCAN_CONTAINER, ScanContainer.class);
     }
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .RawContainer} with the processed data.
+     * .ScanContainer} with the processed data.
      *
-     * @return the raw container with the processed data
+     * @return the scan container with the processed data
      */
     @Override
-    public RawContainer call() {
+    public ScanContainer call() {
 
-        String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer outRawContainer =
-                rawContainer.getBuilder().newInstance(RawContainer.class, id, rawContainer.getWorkingDirectory());
+        String id = scanContainer.getId() + IDENTIFIER;
+        ScanContainer outScanContainer =
+                scanContainer.getBuilder().newInstance(ScanContainer.class, id, scanContainer.getWorkingDirectory());
 
         Multimap<Integer, XYTrace> completedTraces = TreeMultimap.create();
 
-        for (RawLevel level : rawContainer.getRawLevels()) {
+        for (ScanLevel level : scanContainer.getScanLevels()) {
 
             if (level.getMsn() == Constants.MSN.MS1) {
                 buildTraceMap(completedTraces);
-                buildContainer(completedTraces, outRawContainer);
-            } else for (Scan scan : rawContainer.iterator(level.getMsn())) outRawContainer.addScan(scan);
+                buildContainer(completedTraces, outScanContainer);
+            } else for (Scan scan : scanContainer.iterator(level.getMsn())) outScanContainer.addScan(scan);
         }
 
-        outRawContainer.finaliseFile(rawContainer.getRawInfo().getDate());
-        return outRawContainer;
+        outScanContainer.finaliseFile(scanContainer.getScanInfo().getDate());
+        return outScanContainer;
     }
 
     private void buildTraceMap(Multimap<Integer, XYTrace> completedTraces) {
 
-        for (Scan scan : rawContainer) {
+        for (Scan scan : scanContainer) {
 
             if (traces.isEmpty()) {
                 for (XYPoint dataPoint : scan.getData())
@@ -190,7 +189,7 @@ public class NoiseReduction extends CallableTask {
         tracesExtended.clear();
     }
 
-    private void buildContainer(Multimap<Integer, XYTrace> completedTraces, RawContainer outRawContainer) {
+    private void buildContainer(Multimap<Integer, XYTrace> completedTraces, ScanContainer outScanContainer) {
 
         Map<XYTrace, Integer> activeTraces = new HashMap<XYTrace, Integer>();
 
@@ -198,7 +197,7 @@ public class NoiseReduction extends CallableTask {
         XYTrace trace;
         XYList processedData;
         Iterator<Map.Entry<XYTrace, Integer>> iterator;
-        for (Scan scan : rawContainer) {
+        for (Scan scan : scanContainer) {
 
             processedData = new XYList();
 
@@ -224,7 +223,7 @@ public class NoiseReduction extends CallableTask {
 
             Scan processedScan = new ScanImpl(scan.getIndex(), scan.getMsn(), scan.getIonMode(), processedData,
                     scan.getRetentionTime(), scan.getParentScan(), scan.getParentCharge(), scan.getParentMz());
-            outRawContainer.addScan(processedScan);
+            outScanContainer.addScan(processedScan);
             processedScan = null;
         }
         activeTraces = null;

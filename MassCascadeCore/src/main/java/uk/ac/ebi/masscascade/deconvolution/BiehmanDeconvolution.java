@@ -23,13 +23,12 @@
 package uk.ac.ebi.masscascade.deconvolution;
 
 import org.apache.commons.math3.util.FastMath;
-import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
-import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
+import uk.ac.ebi.masscascade.core.feature.FeatureImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -44,7 +43,6 @@ import uk.ac.ebi.masscascade.utilities.math.Parabola;
 import uk.ac.ebi.masscascade.utilities.math.QuadraticEquation;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
@@ -53,10 +51,10 @@ import java.util.TreeSet;
 /**
  * Class implementing deconvolution using a modified Biller Biehman algorithm.
  * <ul>
- * <li>Parameter <code> SCAN WINDOW </code>- The number of scans defining the time window.</li>
+ * <li>Parameter <code> SCAN_WINDOW </code>- The number of scans defining the time window.</li>
  * <li>Parameter <code> CENTER </code>- If found peaks should be centered around their apex.</li>
- * <li>Parameter <code> RAW FILE </code>- The input raw container.</li>
- * <li>Parameter <code> PROFILE FILE </code>- The input profile container.</li>
+ * <li>Parameter <code> SCAN_FILE </code>- The input scan container.</li>
+ * <li>Parameter <code> FEATURE_FILE </code>- The input feature container.</li>
  * </ul>
  */
 public class BiehmanDeconvolution extends CallableTask {
@@ -66,11 +64,11 @@ public class BiehmanDeconvolution extends CallableTask {
     private boolean center;
     private double noiseEstimate;
 
-    private int profileId;
+    private int featureId;
 
     private int noiseFactor;
-    private ProfileContainer profileContainer;
-    private RawContainer rawContainer;
+    private FeatureContainer featureContainer;
+    private ScanContainer scanContainer;
     private NoiseEstimation noiseEstimation;
 
     /**
@@ -97,8 +95,8 @@ public class BiehmanDeconvolution extends CallableTask {
 
         center = params.get(Parameter.CENTER, Boolean.class);
         noiseFactor = params.get(Parameter.NOISE_FACTOR, Integer.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        scanContainer = params.get(Parameter.SCAN_CONTAINER, ScanContainer.class);
+        featureContainer = params.get(Parameter.FEATURE_CONTAINER, FeatureContainer.class);
 
         noiseEstimation = new NoiseEstimation();
         noiseEstimate = 0;
@@ -109,32 +107,32 @@ public class BiehmanDeconvolution extends CallableTask {
      *
      * @return the extracted mass traces
      */
-    public ProfileContainer call() {
+    public FeatureContainer call() {
 
-        String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer = profileContainer.getBuilder().newInstance(ProfileContainer.class, id,
-                profileContainer.getWorkingDirectory());
+        String id = featureContainer.getId() + IDENTIFIER;
+        FeatureContainer outFeatureContainer = featureContainer.getBuilder().newInstance(FeatureContainer.class, id,
+                featureContainer.getIonMode(), featureContainer.getWorkingDirectory());
 
-        profileId = 1;
+        featureId = 1;
 
-        for (Profile profile : profileContainer) {
+        for (Feature feature : featureContainer) {
 
-            if (profile.getMzData().size() < MIN_SIZE) continue;
-            if (isNoise(profile.getTrace(2).getData())) continue;
+            if (feature.getMzData().size() < MIN_SIZE) continue;
+            if (isNoise(feature.getTrace(2).getData())) continue;
 
-            noiseEstimate = noiseEstimation.getNoiseEstimate(profile);
+            noiseEstimate = noiseEstimation.getNoiseEstimate(feature);
 
-            List<Profile> profiles = new ArrayList<>();
-            perceiveAll(profile, 0, profile.getMzData().size() - 1, profiles, -1);
+            List<Feature> features = new ArrayList<>();
+            perceiveAll(feature, 0, feature.getMzData().size() - 1, features, -1);
 
-            outProfileContainer.addProfileList(profiles);
+            outFeatureContainer.addFeatureList(features);
         }
-        outProfileContainer.finaliseFile();
-        return outProfileContainer;
+        outFeatureContainer.finaliseFile();
+        return outFeatureContainer;
     }
 
     /**
-     * Checks if the profile looks like noise
+     * Checks if the feature looks like noise
      *
      * @param xicData the trace data
      * @return boolean if noise
@@ -157,16 +155,16 @@ public class BiehmanDeconvolution extends CallableTask {
     /**
      * Perceives all putative peaks within the trace.
      *
-     * @param profile          the profile
+     * @param feature          the feature
      * @param oriLeftBoundary  the left bound
      * @param oriRightBoundary the right bound
-     * @param profiles         the profile list containing perceived putative peaks
+     * @param features         the feature list containing perceived putative peaks
      */
-    private void perceiveAll(Profile profile, int oriLeftBoundary, int oriRightBoundary, List<Profile> profiles,
-            int pBoundary) {
+    private void perceiveAll(Feature feature, int oriLeftBoundary, int oriRightBoundary, List<Feature> features,
+                             int pBoundary) {
 
         // define deconvolution window
-        XYList xicData = profile.getTrace().getData();
+        XYList xicData = feature.getTrace().getData();
         BiehmanWindow window =
                 new BiehmanWindow(xicData, oriLeftBoundary, oriRightBoundary, noiseEstimate * noiseFactor);
 
@@ -205,73 +203,73 @@ public class BiehmanDeconvolution extends CallableTask {
                 XYPoint dpR = xicData.get(window.getMaxDpIndex() + 1);
                 XYPoint apex = MathUtils.getParabolaVertex(dpL, maxDp, dpR);
 
-                Profile deconProfile =
-                        center ? buildCenteredProfile(profile, xicData, apex, window) : buildProfile(profile, xicData,
+                Feature deconFeature =
+                        center ? buildCenteredFeature(feature, xicData, apex, window) : buildFeature(feature, xicData,
                                 window);
-                deconProfile.setMsnScans(profile.getMsnScans(rawContainer, deconProfile.getRtRange()));
-                profiles.add(deconProfile);
+                deconFeature.setMsnScans(feature.getMsnScans(scanContainer, deconFeature.getRtRange()));
+                features.add(deconFeature);
             }
         }
 
         // moving forward
         if (oriRightBoundary == xicData.size() - 1 && oriRightBoundary != rightBoundary && rightBoundary != pBoundary)
-            perceiveAll(profile, window.getRightMinDpIndex(), xicData.size() - 1, profiles, rightBoundary);
+            perceiveAll(feature, window.getRightMinDpIndex(), xicData.size() - 1, features, rightBoundary);
 
         // moving backward
         if (oriLeftBoundary == 0 && oriLeftBoundary != leftBoundary && leftBoundary != pBoundary)
-            perceiveAll(profile, 0, window.getLeftMinDpIndex(), profiles, leftBoundary);
+            perceiveAll(feature, 0, window.getLeftMinDpIndex(), features, leftBoundary);
     }
 
     /**
-     * Builds an extracted profile from the original profile.
+     * Builds an extracted feature from the original feature.
      *
-     * @param profile the original profile
-     * @param xicData the trace data of the profile
+     * @param feature the original feature
+     * @param xicData the trace data of the feature
      * @param window  the Biehman deconvolution window
-     * @return the time-shifted profile
+     * @return the time-shifted feature
      */
-    private Profile buildProfile(Profile profile, XYList xicData, BiehmanWindow window) {
+    private Feature buildFeature(Feature feature, XYList xicData, BiehmanWindow window) {
 
         int leftBoundary = window.getLeftBoundary();
         int rightBoundary = window.getRightBoundary();
 
-        Profile deconProfile;
+        Feature deconFeature;
         if (xicData.get(leftBoundary).y != Constants.MIN_ABUNDANCE) {
-            double mz = profile.getMzData().get(leftBoundary - 1).x;
-            deconProfile = new ProfileImpl(profileId, new YMinPoint(mz), xicData.get(leftBoundary - 1).x,
-                    profile.getMzRange());
-            deconProfile.addProfilePoint(profile.getMzData().get(leftBoundary).x, xicData.get(leftBoundary));
+            double mz = feature.getMzData().get(leftBoundary - 1).x;
+            deconFeature = new FeatureImpl(featureId, new YMinPoint(mz), xicData.get(leftBoundary - 1).x,
+                    feature.getMzRange());
+            deconFeature.addFeaturePoint(feature.getMzData().get(leftBoundary).x, xicData.get(leftBoundary));
         } else {
-            double mz = profile.getMzData().get(leftBoundary).x;
-            deconProfile =
-                    new ProfileImpl(profileId, new YMinPoint(mz), xicData.get(leftBoundary).x, profile.getMzRange());
+            double mz = feature.getMzData().get(leftBoundary).x;
+            deconFeature =
+                    new FeatureImpl(featureId, new YMinPoint(mz), xicData.get(leftBoundary).x, feature.getMzRange());
         }
-        profileId++;
+        featureId++;
 
         for (int i = leftBoundary + 1; i <= rightBoundary; i++)
-            deconProfile.addProfilePoint(profile.getMzData().get(i).x, xicData.get(i));
+            deconFeature.addFeaturePoint(feature.getMzData().get(i).x, xicData.get(i));
 
         if (xicData.get(rightBoundary).y != Constants.MIN_ABUNDANCE)
-            deconProfile.closeProfile(profile.getMzData().get(rightBoundary + 1), xicData.get(rightBoundary + 1).x);
-        else deconProfile.closeProfile();
+            deconFeature.closeFeature(feature.getMzData().get(rightBoundary + 1), xicData.get(rightBoundary + 1).x);
+        else deconFeature.closeFeature();
 
-        return deconProfile;
+        return deconFeature;
     }
 
     /**
-     * Builds an extracted, time-shifted profile from the original profile.
+     * Builds an extracted, time-shifted feature from the original feature.
      *
-     * @param profile the original profile
-     * @param xicData the trace data of the profile
+     * @param feature the original feature
+     * @param xicData the trace data of the feature
      * @param apex    the parabola apex
      * @param window  the Biehman deconvolution window
-     * @return the time-shifted profile
+     * @return the time-shifted feature
      */
-    public Profile buildCenteredProfile(Profile profile, XYList xicData, XYPoint apex, BiehmanWindow window) {
+    public Feature buildCenteredFeature(Feature feature, XYList xicData, XYPoint apex, BiehmanWindow window) {
 
         TreeMap<XYPoint, Double> rtIntMz = new TreeMap<XYPoint, Double>();
 
-        XYList mzData = profile.getMzData();
+        XYList mzData = feature.getMzData();
         double rtShift = apex.x - window.getMaxDp().x;
 
         rtIntMz.put(apex, mzData.get(window.getMaxDpIndex()).x);
@@ -341,21 +339,21 @@ public class BiehmanDeconvolution extends CallableTask {
             }
         }
 
-        Profile centeredProfile = new ProfileImpl(profileId,
+        Feature centeredFeature = new FeatureImpl(featureId,
                 new XYZPoint(rtIntMz.firstKey().x, rtIntMz.firstEntry().getValue(), rtIntMz.firstKey().y),
-                profile.getMzRange());
+                feature.getMzRange());
 
         Iterator<XYPoint> it = rtIntMz.keySet().iterator();
         it.next();
 
         while (it.hasNext()) {
             shiftedDp = it.next();
-            centeredProfile.addProfilePoint(new XYPoint(rtIntMz.get(shiftedDp), shiftedDp.y), shiftedDp.x);
+            centeredFeature.addFeaturePoint(new XYPoint(rtIntMz.get(shiftedDp), shiftedDp.y), shiftedDp.x);
         }
-        profileId++;
+        featureId++;
 
-        centeredProfile.closeProfile();
+        centeredFeature.closeFeature();
 
-        return centeredProfile;
+        return centeredFeature;
     }
 }

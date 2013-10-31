@@ -24,11 +24,10 @@ package uk.ac.ebi.masscascade.io;
 
 import com.mindprod.ledatastream.LEDataInputStream;
 import org.apache.log4j.Level;
-import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
-import uk.ac.ebi.masscascade.core.raw.ScanImpl;
+import uk.ac.ebi.masscascade.core.scan.ScanImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -49,14 +48,14 @@ import java.util.regex.Pattern;
 /**
  * Class for reading XCalibur RAW files.
  * <ul>
- * <li>Parameter <code> DATA FILE </code>- The data file to be read.</li>
- * <li>Parameter <code> RAW FILE </code>- The target raw container.</li>
+ * <li>Parameter <code> DATA_FILE </code>- The data file to be read.</li>
+ * <li>Parameter <code> SCAN_FILE </code>- The target scan container.</li>
  * </ul>
  */
 public class XCaliburReader extends CallableTask {
 
     private File file;
-    private RawContainer rawContainer;
+    private ScanContainer scanContainer;
 
     // scan information
     private int scanNumber = 0;
@@ -97,19 +96,19 @@ public class XCaliburReader extends CallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         file = params.get(Parameter.DATA_FILE, File.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        scanContainer = params.get(Parameter.SCAN_CONTAINER, ScanContainer.class);
 
         if (file == null || !file.isFile()) throw new MassCascadeException("File not found.");
     }
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .RawContainer} with the processed data.
+     * .ScanContainer} with the processed data.
      *
-     * @return the raw container with the processed data
+     * @return the scan container with the processed data
      */
     @Override
-    public RawContainer call() {
+    public ScanContainer call() {
 
         Process dumper = null;
         try {
@@ -131,11 +130,11 @@ public class XCaliburReader extends CallableTask {
             if (dumper != null) dumper.destroy();
             LOGGER.log(Level.ERROR, e.getMessage());
         }
-        return rawContainer;
+        return scanContainer;
     }
 
     /**
-     * Reads the '.raw' file utilizing the external exe.
+     * Reads the '.scan' file utilizing the external exe.
      *
      * @param bufStream the input stream as send by the external executable
      * @throws IOException unexpected behaviour
@@ -172,7 +171,7 @@ public class XCaliburReader extends CallableTask {
                 } else if (line.contains(" - ")) {
                     ionMode = Constants.ION_MODE.NEGATIVE;
                 } else {
-                    ionMode = Constants.ION_MODE.IN_SILICO;
+                    ionMode = Constants.ION_MODE.UNKNOWN;
                 }
                 if (line.contains("ms ")) {
                     msn = Constants.MSN.MS1;
@@ -233,7 +232,7 @@ public class XCaliburReader extends CallableTask {
                 baseXY.add(new XYPoint(basePeak, basePeakIntensity));
                 ScanImpl scan = new ScanImpl(scanNumber, msn, ionMode, optimizedXYList, mzExtendableRange, baseXY,
                         retentionTime, totalIonCurrent, parentScan, parentCharge, parentMz);
-                rawContainer.addScan(scan);
+                scanContainer.addScan(scan);
 
                 // Clean the variables for next scan
                 scanNumber = 0;
@@ -249,6 +248,6 @@ public class XCaliburReader extends CallableTask {
         }
 
         // wrap up loose ends
-        rawContainer.finaliseFile(creationDate);
+        scanContainer.finaliseFile(creationDate);
     }
 }

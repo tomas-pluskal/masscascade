@@ -25,12 +25,12 @@ package uk.ac.ebi.masscascade.identification;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Feature;
 import uk.ac.ebi.masscascade.interfaces.Property;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.properties.Adduct;
-import uk.ac.ebi.masscascade.utilities.comparator.ProfileMassComparator;
+import uk.ac.ebi.masscascade.utilities.comparator.FeatureMassComparator;
 import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
 
 import java.io.BufferedReader;
@@ -44,13 +44,10 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class implementing an adduct search method for a list of peaks. The input file containing adduct information
- * must follow the following format:
+ * Class implementing an adduct search method for a list of peaks. The input file containing adduct information must
+ * follow the following format:
  * <p/>
- * # comment line (x times)
- * 1.008,Hydrogen
- * ...
- * ...
+ * # comment line (x times) 1.008,Hydrogen ... ...
  * <p/>
  * One or many comment lines followed by lines containing the major isotopic mass and its label in comma-separated
  * format. The adduct masses are corrected according to the specified ion mode.
@@ -60,8 +57,7 @@ public class AdductDetector {
     private static final Logger LOGGER = Logger.getLogger(AdductDetector.class);
 
     /**
-     * Reference: "The isotopic Mass Defect", E. Thurman, et al.
-     * Mass defect: +/- 0.003 u
+     * Reference: "The isotopic Mass Defect", E. Thurman, et al. Mass defect: +/- 0.003 u
      */
     private static final double DEFAULT_MASS_TOLERANCE = 5;
 
@@ -73,11 +69,10 @@ public class AdductDetector {
 
     private final String MH;
 
-    private List<Profile> profileList;
+    private List<Feature> featureList;
     private List<AdductSingle> adductList;
 
     private final Constants.ION_MODE ionMode;
-    private final boolean neutralLoss;
     private final double ppm;
 
     /**
@@ -85,22 +80,20 @@ public class AdductDetector {
      *
      * @param ionMode the acquisition mode
      */
-    public AdductDetector(Constants.ION_MODE ionMode, boolean neutralLoss) {
-        this(DEFAULT_MASS_TOLERANCE, ionMode, neutralLoss);
+    public AdductDetector(Constants.ION_MODE ionMode) {
+        this(DEFAULT_MASS_TOLERANCE, ionMode);
     }
 
     /**
      * Constructor for the adduct detector. Instantiates an empty adduct map.
      *
-     * @param ppm         the mass tolerance for the isotope and adduct search [ppm]
-     * @param ionMode     the acquisition mode
-     * @param neutralLoss whether the adduct(s) results from a neutral loss
+     * @param ppm     the mass tolerance for the isotope and adduct search [ppm]
+     * @param ionMode the acquisition mode
      */
-    public AdductDetector(double ppm, Constants.ION_MODE ionMode, boolean neutralLoss) {
+    public AdductDetector(double ppm, Constants.ION_MODE ionMode) {
 
         this.ppm = ppm;
         this.ionMode = ionMode;
-        this.neutralLoss = neutralLoss;
 
         if (ionMode.equals(Constants.ION_MODE.POSITIVE)) MH = "M+H";
         else if (ionMode.equals(Constants.ION_MODE.NEGATIVE)) MH = "M-H";
@@ -140,7 +133,7 @@ public class AdductDetector {
                 if (lineElements.length != 3) continue;
 
                 adductList.add(new AdductSingle(lineElements[0], Integer.parseInt(lineElements[1]),
-                        Double.parseDouble(lineElements[2]), ionMode, neutralLoss));
+                        Double.parseDouble(lineElements[2])));
             }
         } catch (Exception exception) {
             LOGGER.log(Level.INFO, "Adduct record not readable. " + exception.getMessage());
@@ -156,12 +149,12 @@ public class AdductDetector {
         this.adductList = adductList;
     }
 
-    public void findAdducts(List<Profile> profileList) {
+    public void findAdducts(List<Feature> featureList) {
 
-        this.profileList = profileList;
+        this.featureList = featureList;
 
-        Collections.sort(this.profileList, new ProfileMassComparator());
-        double[][] peakMassDeltas = getPeakMassDeltas(this.profileList);
+        Collections.sort(this.featureList, new FeatureMassComparator());
+        double[][] peakMassDeltas = getPeakMassDeltas(this.featureList);
 
         for (AdductSingle adduct : adductList) {
             if (adduct.isCluster() || adduct.getMass() < -0.5 || adduct.getMass() >= 0.5)
@@ -192,27 +185,27 @@ public class AdductDetector {
                 // adduct lost
                 if (adductMass < 0) {
                     if (adduct.isCluster()) {
-                        double mz = correctMz(profileList.get(row).getMz(), adduct);
-                        if (new ToleranceRange(mz, ppm).contains(profileList.get(col).getMz()))
+                        double mz = correctMz(featureList.get(row).getMz(), adduct);
+                        if (new ToleranceRange(mz, ppm).contains(featureList.get(col).getMz()))
                             adductAndReferenceProperty = getProperties(adduct, row, col);
                     } else adductAndReferenceProperty = getProperties(adduct, row, col);
 
                     if (adductAndReferenceProperty != null) {
-                        profileList.get(col).setProperty(adductAndReferenceProperty[0]);
-                        profileList.get(row).setProperty(adductAndReferenceProperty[1]);
+                        featureList.get(col).setProperty(adductAndReferenceProperty[0]);
+                        featureList.get(row).setProperty(adductAndReferenceProperty[1]);
                     }
 
                     // adduct gained
                 } else if (adductMass > 0) {
                     if (adduct.isCluster()) {
-                        double mz = correctMz(profileList.get(row).getMz(), adduct);
-                        if (new ToleranceRange(mz, ppm).contains(profileList.get(col).getMz()))
+                        double mz = correctMz(featureList.get(row).getMz(), adduct);
+                        if (new ToleranceRange(mz, ppm).contains(featureList.get(col).getMz()))
                             adductAndReferenceProperty = getProperties(adduct, col, row);
                     } else adductAndReferenceProperty = getProperties(adduct, col, row);
 
                     if (adductAndReferenceProperty != null) {
-                        profileList.get(row).setProperty(adductAndReferenceProperty[0]);
-                        profileList.get(col).setProperty(adductAndReferenceProperty[1]);
+                        featureList.get(row).setProperty(adductAndReferenceProperty[0]);
+                        featureList.get(col).setProperty(adductAndReferenceProperty[1]);
                     }
                 }
             }
@@ -228,22 +221,24 @@ public class AdductDetector {
      */
     private double correctMz(double mz, AdductSingle adduct) {
 
-        if (neutralLoss) return mz - adduct.getMass();
-
-        if (ionMode.equals(Constants.ION_MODE.POSITIVE))
-            mz = (mz - adduct.getMass()) / adduct.getClusterSize() + Constants.PARTICLES.PROTON.getMass();
-        else if (ionMode.equals(Constants.ION_MODE.NEGATIVE))
-            mz = (mz - adduct.getMass()) / adduct.getClusterSize() - Constants.PARTICLES.PROTON.getMass();
-
+        if (adduct.isCluster()) {
+            if (ionMode == Constants.ION_MODE.POSITIVE) {
+                mz = (mz - adduct.getMass() - Constants.PARTICLES.PROTON.getMass()) / adduct.getClusterSize();
+                mz += Constants.PARTICLES.PROTON.getMass();
+            } else if (ionMode == Constants.ION_MODE.NEGATIVE) {
+                mz = (mz - adduct.getMass() + Constants.PARTICLES.PROTON.getMass()) / adduct.getClusterSize();
+                mz -= Constants.PARTICLES.PROTON.getMass();
+            }
+        }
         return mz;
     }
 
     private Property[] getProperties(AdductSingle adduct, int parent, int child) {
 
         Property[] props = new Property[2];
-        int parentId = profileList.get(parent).getId();
-        props[0] = new Adduct(adduct.getMass(), adduct.getName(), parentId, profileList.get(child).getId());
-        props[1] = new Adduct(adduct.getMass(), adduct.getName(), parentId, profileList.get(child).getId());
+        int parentId = featureList.get(parent).getId();
+        props[0] = new Adduct(adduct.getMass(), adduct.getName(), parentId, featureList.get(child).getId());
+        props[1] = new Adduct(adduct.getMass(), adduct.getName(), parentId, featureList.get(child).getId());
         return props;
     }
 
@@ -253,17 +248,17 @@ public class AdductDetector {
      * @param peakList the peaks used for the matrix
      * @return the mass difference matrix
      */
-    private double[][] getPeakMassDeltas(List<Profile> peakList) {
+    private double[][] getPeakMassDeltas(List<Feature> peakList) {
 
         double[][] massDeltas = new double[peakList.size()][peakList.size()];
 
         int row = 0;
-        Iterator<Profile> itRow = peakList.iterator();
+        Iterator<Feature> itRow = peakList.iterator();
         while (itRow.hasNext()) {
             double rowMass = itRow.next().getMz();
 
             int col = 0;
-            Iterator<Profile> itCol = peakList.iterator();
+            Iterator<Feature> itCol = peakList.iterator();
             while (itCol.hasNext()) {
                 double colMass = itCol.next().getMz();
 

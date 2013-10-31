@@ -22,14 +22,14 @@
 
 package uk.ac.ebi.masscascade.tables.model.lazy;
 
-import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
+import uk.ac.ebi.masscascade.core.container.file.feature.FileFeatureContainer;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.tables.lazytable.util.LazyListService;
-import uk.ac.ebi.masscascade.utilities.ProfUtils;
+import uk.ac.ebi.masscascade.utilities.FeatureUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,14 +58,14 @@ public class LazyProfileListPeer implements LazyListService<Object[]> {
         ids = new ArrayList<Integer>();
         profileToSpectraNumbers = new LinkedHashMap<Integer, Integer>();
 
-        if (profileContainer instanceof ProfileContainer) {
-            ids = new LinkedList<Integer>(((FileProfileContainer) profileContainer).getProfileNumbers().keySet());
+        if (profileContainer instanceof FeatureContainer) {
+            ids = new LinkedList<Integer>(((FileFeatureContainer) profileContainer).getFeatureNumbers().keySet());
         } else {
             profileToSpectraNumbers = new LinkedHashMap<Integer, Integer>();
-            for (Spectrum spectrum : (SpectrumContainer) profileContainer) {
-                for (Profile profile : spectrum) {
-                    profileToSpectraNumbers.put(profile.getId(), spectrum.getIndex());
-                    ids.add(profile.getId());
+            for (FeatureSet featureSet : (FeatureSetContainer) profileContainer) {
+                for (Feature feature : featureSet) {
+                    profileToSpectraNumbers.put(feature.getId(), featureSet.getIndex());
+                    ids.add(feature.getId());
                 }
             }
         }
@@ -78,23 +78,23 @@ public class LazyProfileListPeer implements LazyListService<Object[]> {
         int i = 0;
         while (startElement < endElement) {
 
-            Profile profile;
-            if (profileContainer instanceof ProfileContainer) {
-                profile = ((FileProfileContainer) profileContainer).getProfile(ids.get(startElement));
+            Feature feature;
+            if (profileContainer instanceof FeatureContainer) {
+                feature = ((FileFeatureContainer) profileContainer).getFeature(ids.get(startElement));
             } else {
                 int startId = ids.get(startElement);
-                profile = ((SpectrumContainer) profileContainer).getSpectrum(
-                        profileToSpectraNumbers.get(startId)).getProfile(startId);
+                feature = ((FeatureSetContainer) profileContainer).getFeatureSet(
+                        profileToSpectraNumbers.get(startId)).getFeature(startId);
             }
 
-            result[i][ID] = profile.getId();
-            result[i][RT] = profile.getRetentionTime();
-            result[i][WIDTH] = profile.getRtRange().getSize();
-            result[i][MZ] = profile.getMz();
-            result[i][DEV] = profile.getDeviation();
-            result[i][AREA] = profile.getArea();
-            result[i][INFO] = ProfUtils.getProfileLabel(profile);
-            result[i][SHAPE] = profile.getTrace(3);
+            result[i][ID] = feature.getId();
+            result[i][RT] = feature.getRetentionTime();
+            result[i][WIDTH] = feature.getRtRange().getSize();
+            result[i][MZ] = feature.getMz();
+            result[i][DEV] = feature.getDeviation();
+            result[i][AREA] = feature.getArea();
+            result[i][INFO] = FeatureUtils.getProfileLabel(feature);
+            result[i][SHAPE] = feature.getTrace(3);
 
             i++;
             startElement++;

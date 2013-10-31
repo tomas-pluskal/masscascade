@@ -32,11 +32,11 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 import java.util.*;
 
 /**
- * A compound spectrum consisting of related signals that are believed to originate from the same compound.
+ * A compound featureset consisting of related signals that are believed to originate from the same compound.
  */
 public class CompoundSpectrum {
 
-    // spectrum id
+    // featureset id
     private final int id;
 
     List<CompoundEntity> compounds;

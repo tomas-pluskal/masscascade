@@ -22,8 +22,6 @@
 
 package uk.ac.ebi.masscascade.identification;
 
-import uk.ac.ebi.masscascade.parameters.Constants;
-
 public class AdductSingle {
 
     private String name;
@@ -32,17 +30,13 @@ public class AdductSingle {
     private int clusterSize;
     private boolean cluster;
 
-    public AdductSingle(String name, int charge, double mass, Constants.ION_MODE ionMode, boolean neutralLoss) {
+    public AdductSingle(String name, int charge, double mass) {
 
         this.name = name;
         this.mass = mass;
         this.charge = charge;
         cluster = (name.startsWith("2") || name.startsWith("3"));
         clusterSize = cluster ? Integer.parseInt(name.substring(0, 1)) : 1;
-
-        if (!neutralLoss && !cluster)
-            if (ionMode.equals(Constants.ION_MODE.POSITIVE)) this.mass -= Constants.PARTICLES.PROTON.getMass();
-            else if (ionMode.equals(Constants.ION_MODE.NEGATIVE)) this.mass += Constants.PARTICLES.PROTON.getMass();
     }
 
     public String getName() {

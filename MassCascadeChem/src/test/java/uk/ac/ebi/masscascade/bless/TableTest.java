@@ -6,7 +6,7 @@ import uk.ac.ebi.masscascade.bless.table.BlessPane;
 import uk.ac.ebi.masscascade.bless.table.BlessTable;
 import uk.ac.ebi.masscascade.compound.CompoundSpectrum;
 import uk.ac.ebi.masscascade.compound.CompoundSpectrumAdapter;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.properties.Identity;
 import uk.ac.ebi.masscascade.properties.Isotope;
 
@@ -18,11 +18,11 @@ public class TableTest {
     @Test
     public void testTable() throws Exception {
 
-        SpectrumContainer container = FileLoader.getSpectrumContainer(FileLoader.TESTFILE.QC);
+        FeatureSetContainer container = FileLoader.getSpectrumContainer(FileLoader.TESTFILE.QC);
 
-        container.getSpectrum(3).getProfile(245).setProperty(new Identity("123", "Ga", "CCCCC", 200, "F", "MS1", ""));
-        container.getSpectrum(3).getProfile(245).setProperty(new Isotope("M+1", 1, 245, 246));
-        container.getSpectrum(3).getProfile(245).setProperty(new Isotope("M+2", 2, 245, 247));
+        container.getFeatureSet(3).getFeature(245).setProperty(new Identity("123", "Ga", "CCCCC", 200, "F", "MS1", ""));
+        container.getFeatureSet(3).getFeature(245).setProperty(new Isotope("M+1", 1, 245, 246));
+        container.getFeatureSet(3).getFeature(245).setProperty(new Isotope("M+2", 2, 245, 247));
 
         CompoundSpectrumAdapter adapter = new CompoundSpectrumAdapter();
         List<CompoundSpectrum> cs = adapter.getSpectra(container);

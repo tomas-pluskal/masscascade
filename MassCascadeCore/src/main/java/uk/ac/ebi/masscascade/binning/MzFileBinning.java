@@ -22,11 +22,11 @@
 
 package uk.ac.ebi.masscascade.binning;
 
-import uk.ac.ebi.masscascade.core.raw.RawLevel;
+import uk.ac.ebi.masscascade.core.scan.ScanLevel;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Scan;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -36,12 +36,13 @@ import uk.ac.ebi.masscascade.parameters.ParameterMap;
  * <ul>
  * <li>Parameter <code> MZ WINDOW AMU </code>- The mass window in amu.</li>
  * <li>Parameter <code> AGGREGATION </code>- The preferred binning type (average, sum, min, max).</li>
- * <li>Parameter <code> RAW FILE </code>- The input raw container.</li>
+ * <li>Parameter <code> RAW FILE </code>- The input scan container.</li>
  * </ul>
  */
+@Deprecated
 public class MzFileBinning extends CallableTask {
 
-    private RawContainer rawContainer;
+    private ScanContainer scanContainer;
 
     private double xWidth;
     private MzBinning.BinningType binType;
@@ -71,38 +72,38 @@ public class MzFileBinning extends CallableTask {
 
         this.xWidth = params.get(Parameter.MZ_WINDOW_AMU, Double.class);
         this.binType = params.get(Parameter.AGGREGATION, MzBinning.BinningType.class);
-        this.rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        this.scanContainer = params.get(Parameter.SCAN_CONTAINER, ScanContainer.class);
     }
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .RawContainer} with the processed data.
+     * .ScanContainer} with the processed data.
      *
-     * @return the raw container with the processed data
+     * @return the scan container with the processed data
      */
     @Override
-    public RawContainer call() {
+    public ScanContainer call() {
 
-        String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer outRawContainer = rawContainer.getBuilder().newInstance(RawContainer.class, id, rawContainer);
+        String id = scanContainer.getId() + IDENTIFIER;
+        ScanContainer outScanContainer = scanContainer.getBuilder().newInstance(ScanContainer.class, id, scanContainer);
 
         Scan binnedScan;
         MzBinning binImpl;
 
-        for (RawLevel level : rawContainer.getRawLevels()) {
+        for (ScanLevel level : scanContainer.getScanLevels()) {
 
             if (level.getMsn() == Constants.MSN.MS1) {
-                for (Scan scan : rawContainer) {
+                for (Scan scan : scanContainer) {
                     binImpl = new MzBinning(scan, xWidth, binType);
                     binnedScan = binImpl.call();
-                    outRawContainer.addScan(binnedScan);
+                    outScanContainer.addScan(binnedScan);
                     binImpl = null;
                     binnedScan = null;
                 }
-            } else for (Scan scan : rawContainer.iterator(level.getMsn())) outRawContainer.addScan(scan);
+            } else for (Scan scan : scanContainer.iterator(level.getMsn())) outScanContainer.addScan(scan);
         }
 
-        outRawContainer.finaliseFile(rawContainer.getRawInfo().getDate());
-        return outRawContainer;
+        outScanContainer.finaliseFile(scanContainer.getScanInfo().getDate());
+        return outScanContainer;
     }
 }

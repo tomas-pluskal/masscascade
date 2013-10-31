@@ -24,8 +24,8 @@ package uk.ac.ebi.masscascade.smoothing;
 
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
@@ -33,14 +33,14 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 /**
  * Class implementing a Savitzky Golay smoothing method.
  * <ul>
- * <li>Parameter <code> POLYNOMIAL ORDER </code>- The order of the polynomial function.</li>
- * <li>Parameter <code> DATA WINDOW </code>- The number of data points in the m/z domain.</li>
- * <li>Parameter <code> PROFILE FILE </code>- The input profile container.</li>
+ * <li>Parameter <code> POLYNOMIAL_ORDER </code>- The order of the polynomial function.</li>
+ * <li>Parameter <code> SCAN_WINDOW </code>- The number of data points.</li>
+ * <li>Parameter <code> FEATURE_FILE </code>- The input feature container.</li>
  * </ul>
  */
 public class SavitzkyGolaySmoothing extends CallableTask {
 
-    private ProfileContainer profileContainer;
+    private FeatureContainer featureContainer;
     private int order;
     private int mzWindow;
 
@@ -68,18 +68,18 @@ public class SavitzkyGolaySmoothing extends CallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         order = params.get(Parameter.POLYNOMIAL_ORDER, Integer.class);
-        mzWindow = params.get(Parameter.DATA_WINDOW, Integer.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        mzWindow = params.get(Parameter.SCAN_WINDOW, Integer.class);
+        featureContainer = params.get(Parameter.FEATURE_CONTAINER, FeatureContainer.class);
     }
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .RawContainer} with the processed data.
+     * .ScanContainer} with the processed data.
      *
-     * @return the profile container with the processed data
+     * @return the feature container with the processed data
      */
     @Override
-    public ProfileContainer call() {
+    public FeatureContainer call() {
 
         int nLDp = (int) Math.floor(mzWindow / 2d);
         int nRDp = (int) Math.ceil(mzWindow / 2d);
@@ -87,17 +87,17 @@ public class SavitzkyGolaySmoothing extends CallableTask {
         double[] coeffs = SavitzkyGolayFilter.computeSGCoefficients(nLDp, nRDp, order);
         SavitzkyGolayFilter sgFilter = new SavitzkyGolayFilter(nLDp, nRDp);
 
-        String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer = profileContainer.getBuilder().newInstance(ProfileContainer.class, id,
-                profileContainer.getWorkingDirectory());
+        String id = featureContainer.getId() + IDENTIFIER;
+        FeatureContainer outFeatureContainer = featureContainer.getBuilder().newInstance(FeatureContainer.class, id,
+                featureContainer.getIonMode(), featureContainer.getWorkingDirectory());
 
         double[] y;
         double[] smoothedY;
 
-        Profile smoothedProfile;
-        for (Profile profile : profileContainer) {
+        Feature smoothedFeature;
+        for (Feature feature : featureContainer) {
 
-            y = profile.getTrace(mzWindow).getData().getYs();
+            y = feature.getTrace(mzWindow).getData().getYs();
             smoothedY = sgFilter.smooth(y, coeffs);
             double syMax = 0;
             for (double sy : smoothedY) {
@@ -105,24 +105,24 @@ public class SavitzkyGolaySmoothing extends CallableTask {
                     syMax = sy;
                 }
             }
-            double coeff = profile.getIntensity() / syMax;
+            double coeff = feature.getIntensity() / syMax;
 
-            smoothedProfile = profile.copy();
+            smoothedFeature = feature.copy();
 
             for (int i = mzWindow; i < smoothedY.length - mzWindow - 1; i++)
-                smoothedProfile.addProfilePoint(
-                        new XYPoint(profile.getMzData().get(i - mzWindow + 1).x, smoothedY[i] * coeff),
-                        profile.getTrace().getData().get(i - mzWindow + 1).x);
+                smoothedFeature.addFeaturePoint(
+                        new XYPoint(feature.getMzData().get(i - mzWindow + 1).x, smoothedY[i] * coeff),
+                        feature.getTrace().getData().get(i - mzWindow + 1).x);
 
-            smoothedProfile.closeProfile(profile.getTrace().getData().getLast().x);
-            outProfileContainer.addProfile(smoothedProfile);
+            smoothedFeature.closeFeature(feature.getTrace().getData().getLast().x);
+            outFeatureContainer.addFeature(smoothedFeature);
 
             y = null;
             smoothedY = null;
-            smoothedProfile = null;
+            smoothedFeature = null;
         }
 
-        outProfileContainer.finaliseFile();
-        return outProfileContainer;
+        outFeatureContainer.finaliseFile();
+        return outFeatureContainer;
     }
 }

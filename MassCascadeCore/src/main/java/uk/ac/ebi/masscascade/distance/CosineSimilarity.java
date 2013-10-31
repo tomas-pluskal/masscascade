@@ -31,7 +31,7 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
 /**
- * Calculates the cosine angle between two profiles.
+ * Calculates the cosine angle between two features.
  */
 public class CosineSimilarity {
 
@@ -49,10 +49,10 @@ public class CosineSimilarity {
     }
 
     /**
-     * Calculates the cosine angle between the two profiles using the binned intensity values.
+     * Calculates the cosine angle between the two features using the binned intensity values.
      *
-     * @param traceA the first profile
-     * @param traceB the second profile
+     * @param traceA the first feature
+     * @param traceB the second feature
      * @return the cosine similarity
      */
     public double getDistance(XYList traceA, XYList traceB) {

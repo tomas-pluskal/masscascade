@@ -25,10 +25,11 @@ package uk.ac.ebi.masscascade.alignment;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Level;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Feature;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
+import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.TextUtils;
@@ -48,14 +49,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class for profile aligning using Obiwarp. The class executes the Obiwarp binary with the given parameters and
- * converts its output back into a list of aligned profiles. Input is provided in "lmata" format, which is generated on
- * the fly from the profile container. The reference file, the converted reference profile container, is provided via
+ * Class for feature alignment using Obiwarp. The class executes the Obiwarp binary with the given parameters and
+ * converts its output back into a list of aligned features. Input is provided in "lmata" format, which is generated on
+ * the fly from the feature container. The reference file, the converted reference feature container, is provided via
  * the parameter map. The <link> ObiwarpHelper </link> class can be used to create the file and generate the mz bins.
  * <p/>
  * <ul>
  * <li>Parameter <code> REFERENCE_FILE </code>- The lmata reference file.</li>
- * <li>Parameter <code> PROFILE CONTAINER </code>- The input profile container.</li>
+ * <li>Parameter <code> FEATURE_CONTAINER </code>- The input feature container.</li>
  * <li>Parameter <code> GAP_INIT </code>- The gap penalty for initiating a gap.</li>
  * <li>Parameter <code> GAP_EXTEND </code>- The gap penaly for extending a gap.</li>
  * <li>Parameter <code> RESPONSE </code>- The responsiveness of warping [0 - 100].</li>
@@ -69,7 +70,7 @@ import java.util.Map;
 public class Obiwarp extends CallableTask {
 
     private File referenceFile;
-    private ProfileContainer profileContainer;
+    private FeatureContainer featureContainer;
 
     private ObiwarpHelper obiwarpHelper;
 
@@ -104,7 +105,7 @@ public class Obiwarp extends CallableTask {
     public void setParameters(ParameterMap params) {
 
         referenceFile = params.get(Parameter.REFERENCE_FILE, File.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        featureContainer = params.get(Parameter.FEATURE_CONTAINER, FeatureContainer.class);
 
         gapInit = params.get(Parameter.GAP_INIT, Double.class);
         gapExt = params.get(Parameter.GAP_EXTEND, Double.class);
@@ -122,41 +123,41 @@ public class Obiwarp extends CallableTask {
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .RawContainer} with the processed data.
+     * .ScanContainer} with the processed data.
      *
-     * @return the profile container with the processed data
+     * @return the feature container with the processed data
      */
     @Override
     public Container call() {
 
-        String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer = profileContainer.getBuilder().newInstance(ProfileContainer.class, id,
-                profileContainer.getWorkingDirectory());
+        String id = featureContainer.getId() + IDENTIFIER;
+        FeatureContainer outFeatureContainer = featureContainer.getBuilder().newInstance(FeatureContainer.class, id,
+                featureContainer.getIonMode(), featureContainer.getWorkingDirectory());
 
-        File profFile = obiwarpHelper.buildLmataFile(profileContainer);
+        File profFile = obiwarpHelper.buildLmataFile(featureContainer);
         double[] alignedTimes = align(profFile);
 
-        for (Profile profile : profileContainer) {
+        for (Feature feature : featureContainer) {
 
-            Iterator<XYZPoint> iterator = profile.getData().iterator();
+            Iterator<XYZPoint> iterator = feature.getData().iterator();
             XYZPoint dp = iterator.next();
-            Profile alignedProfile = profile.copy(getInterpolatedTimeValue(dp.x, alignedTimes));
+            Feature alignedFeature = feature.copy(getInterpolatedTimeValue(dp.x, alignedTimes));
 
             while (iterator.hasNext()) {
                 dp = iterator.next();
                 double time = getInterpolatedTimeValue(dp.x, alignedTimes);
-                alignedProfile.addProfilePoint(new XYZPoint(time, dp.y, dp.z));
+                alignedFeature.addFeaturePoint(new XYZPoint(time, dp.y, dp.z));
             }
-            alignedProfile.closeProfile();
-            idToTimeDiff.put(profile.getId(),
-                    new Double[]{alignedProfile.getRetentionTime() - profile.getRetentionTime(),
-                                 alignedProfile.getRetentionTime()});
-            outProfileContainer.addProfile(alignedProfile);
+            alignedFeature.closeFeature();
+            idToTimeDiff.put(feature.getId(),
+                    new Double[]{alignedFeature.getRetentionTime() - feature.getRetentionTime(),
+                                 alignedFeature.getRetentionTime()});
+            outFeatureContainer.addFeature(alignedFeature);
         }
 
-        outProfileContainer.finaliseFile();
+        outFeatureContainer.finaliseFile();
 
-        return outProfileContainer;
+        return outFeatureContainer;
     }
 
     /**
@@ -229,9 +230,9 @@ public class Obiwarp extends CallableTask {
     }
 
     /**
-     * Returns the profile id to time difference map to allow mapping between the raw container and aligned profiles.
+     * Returns the feature id to time difference map to allow mapping between the scan container and aligned features.
      *
-     * @return the profile id to time difference map
+     * @return the feature id to time difference map
      */
     public Map<Integer, Double[]> getTimeDiffMap() {
         return idToTimeDiff;

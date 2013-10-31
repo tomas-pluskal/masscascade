@@ -79,7 +79,7 @@ public class SimpleSpectrum extends ZoomableChart {
     }};
 
     /**
-     * Constructs an empty spectrum chart.
+     * Constructs an empty featureset chart.
      */
     public SimpleSpectrum() {
 

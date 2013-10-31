@@ -23,18 +23,13 @@
 package uk.ac.ebi.masscascade.msn;
 
 import org.apache.commons.math3.util.FastMath;
-import uk.ac.ebi.masscascade.core.PropertyManager;
-import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
-import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
+import uk.ac.ebi.masscascade.core.feature.FeatureImpl;
+import uk.ac.ebi.masscascade.core.featureset.FeatureSetImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.Range;
-import uk.ac.ebi.masscascade.interfaces.Scan;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
-import uk.ac.ebi.masscascade.interfaces.Trace;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.*;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -53,23 +48,23 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * Class implementing an MSn builder method. The method compiles a representative MSn spectra for each profile that has
- * MSn references. The MSn references point to the RAW container. For each MSn level, one MSn spectrum is generated,
+ * Class implementing an MSn builder method. The method compiles a representative MSn spectra for each feature that has
+ * MSn references. The MSn references point to the RAW container. For each MSn level, one MSn featureset is generated,
  * only taking into account signals that are present in all MSn scans of a particular level and that are above the
  * intensity threshold.
  * <ul>
- * <li>Parameter <code> MZ WINDOW PPM </code>- The mass tolerance in ppm.</li>
- * <li>Parameter <code> MIN PROFILE INTENSITY </code>- The minimum profile intensity.</li>
- * <li>Parameter <code> RAW FILE </code>- The input raw container.</li>
- * <li>Parameter <code> SPECTRUM FILE </code>- The input spectrum container.</li>
+ * <li>Parameter <code> MZ_WINDOW_PPM </code>- The mass tolerance in ppm.</li>
+ * <li>Parameter <code> MIN_FEATURE_INTENSITY </code>- The minimum feature intensity.</li>
+ * <li>Parameter <code> SCAN_FILE </code>- The input scan container.</li>
+ * <li>Parameter <code> FEATURE_SET_FILE </code>- The input feature set container.</li>
  * </ul>
  */
 public class MSnBuilder extends CallableTask {
 
     private double ppm;
     private double minIntensity;
-    private RawContainer rawContainer;
-    private SpectrumContainer spectrumContainer;
+    private ScanContainer scanContainer;
+    private FeatureSetContainer featureSetContainer;
 
     private int globalMsnId = 1;
     private final TreeMap<Trace, Boolean> traceToExtended = new TreeMap<>();
@@ -97,44 +92,44 @@ public class MSnBuilder extends CallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
-        minIntensity = params.get(Parameter.MIN_PROFILE_INTENSITY, Double.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
+        minIntensity = params.get(Parameter.MIN_FEATURE_INTENSITY, Double.class);
+        scanContainer = params.get(Parameter.SCAN_CONTAINER, ScanContainer.class);
+        featureSetContainer = params.get(Parameter.FEATURE_SET_CONTAINER, FeatureSetContainer.class);
     }
 
     /**
      * Executes the MSn builder task.
      *
-     * @return the spectrum container
+     * @return the featureset container
      */
     @Override
-    public SpectrumContainer call() {
+    public FeatureSetContainer call() {
 
-        String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer outSpectrumContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
-                spectrumContainer.getWorkingDirectory());
+        String id = featureSetContainer.getId() + IDENTIFIER;
+        FeatureSetContainer outFeatureSetContainer = featureSetContainer.getBuilder().newInstance(FeatureSetContainer.class, id,
+                featureSetContainer.getIonMode(), featureSetContainer.getWorkingDirectory());
 
-        for (Spectrum spectrum : spectrumContainer) {
-            for (Profile profile : spectrum) {
-                if (profile.hasMsnScans()) compileMSnSpectra(profile);
+        for (FeatureSet featureSet : featureSetContainer) {
+            for (Feature feature : featureSet) {
+                if (feature.hasMsnScans()) compileMSnSpectra(feature);
             }
-            outSpectrumContainer.addSpectrum(spectrum);
+            outFeatureSetContainer.addFeatureSet(featureSet);
         }
 
-        outSpectrumContainer.finaliseFile();
-        return outSpectrumContainer;
+        outFeatureSetContainer.finaliseFile();
+        return outFeatureSetContainer;
     }
 
-    private void compileMSnSpectra(Profile profile) {
+    private void compileMSnSpectra(Feature feature) {
 
-        for (Map.Entry<Constants.MSN, Set<Integer>> entry : profile.getMsnScans().entrySet()) {
+        for (Map.Entry<Constants.MSN, Set<Integer>> entry : feature.getMsnScans().entrySet()) {
 
             if (entry.getKey().getLvl() < 2 || entry.getKey().getLvl() > 5) continue;
 
             traceToExtended.clear();
 
             for (int scanId : entry.getValue()) {
-                Scan scan = rawContainer.getScan(scanId);
+                Scan scan = scanContainer.getScan(scanId);
                 if (scan == null) continue;
 
                 double rt = scan.getRetentionTime();
@@ -161,7 +156,7 @@ public class MSnBuilder extends CallableTask {
                 while (iter.hasNext()) iter.next().setValue(false);
             }
 
-            annotateProfile(profile, entry.getKey(), traceToExtended);
+            annotateFeature(feature, entry.getKey(), traceToExtended);
         }
     }
 
@@ -186,37 +181,37 @@ public class MSnBuilder extends CallableTask {
         traceToExtended.put(closestTrace, true);
     }
 
-    private void annotateProfile(Profile profile, Constants.MSN msn, TreeMap<Trace, Boolean> traceToExtended) {
+    private void annotateFeature(Feature feature, Constants.MSN msn, TreeMap<Trace, Boolean> traceToExtended) {
 
-        Set<Profile> spectrumProfiles = new HashSet<>();
+        Set<Feature> spectrumFeatures = new HashSet<>();
         XYList spectrumData = new XYList();
 
-        int totalMsnScans = profile.getMsnScans().get(msn).size();
+        int totalMsnScans = feature.getMsnScans().get(msn).size();
         for (Trace trace : traceToExtended.keySet()) {
             if (trace.size() - 1 != totalMsnScans) continue;
 
             XYZTrace xyzTrace = (XYZTrace) trace;
 
             Range mzRange = new ExtendableRange(xyzTrace.get(0).y);
-            Profile msnProfile = new ProfileImpl(globalMsnId++, xyzTrace.get(0), mzRange);
-            for (int i = 1; i < trace.size(); i++) msnProfile.addProfilePoint(xyzTrace.get(i));
-            msnProfile.closeProfile(((XYZTrace) trace).get(trace.size() - 1).x + 1);
+            Feature msnFeature = new FeatureImpl(globalMsnId++, xyzTrace.get(0), mzRange);
+            for (int i = 1; i < trace.size(); i++) msnFeature.addFeaturePoint(xyzTrace.get(i));
+            msnFeature.closeFeature(((XYZTrace) trace).get(trace.size() - 1).x + 1);
 
-            if (msnProfile.getIntensity() < minIntensity) continue;
+            if (msnFeature.getIntensity() < minIntensity) continue;
 
-            spectrumProfiles.add(msnProfile);
-            spectrumData.add(msnProfile.getMzIntDp());
+            spectrumFeatures.add(msnFeature);
+            spectrumData.add(msnFeature.getMzIntDp());
         }
 
-        if (spectrumProfiles.size() == 0) return;
+        if (spectrumFeatures.size() == 0) return;
 
-        Range rtRange = new ExtendableRange(spectrumProfiles.iterator().next().getRetentionTime());
+        Range rtRange = new ExtendableRange(spectrumFeatures.iterator().next().getRetentionTime());
         double rt = 0;
-        for (Profile msnProfile : spectrumProfiles) rt += msnProfile.getRetentionTime();
-        rt /= spectrumProfiles.size();
+        for (Feature msnFeature : spectrumFeatures) rt += msnFeature.getRetentionTime();
+        rt /= spectrumFeatures.size();
 
-        Spectrum spectrum = new PseudoSpectrum(1, spectrumData, rtRange, rt, spectrumProfiles);
-        spectrum.setParent(profile.getId(), profile.getMz(), 0);
-        profile.addMsnSpectrum(msn, spectrum);
+        FeatureSet featureSet = new FeatureSetImpl(1, spectrumData, rtRange, rt, spectrumFeatures);
+        featureSet.setParent(feature.getId(), feature.getMz(), 0);
+        feature.addMsnSpectrum(msn, featureSet);
     }
 }

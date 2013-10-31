@@ -27,13 +27,13 @@ import org.jgrapht.GraphPath;
 import org.jgrapht.alg.KShortestPaths;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedMultigraph;
-import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
-import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.core.featureset.FeatureSetImpl;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
 import uk.ac.ebi.masscascade.interfaces.Range;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.properties.Isotope;
-import uk.ac.ebi.masscascade.utilities.comparator.ProfileMassComparator;
+import uk.ac.ebi.masscascade.utilities.comparator.FeatureMassComparator;
 import uk.ac.ebi.masscascade.utilities.math.LinearEquation;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 
@@ -48,6 +48,7 @@ import java.util.Set;
 /**
  * Class implementing an isotope search method for a list of profiles.
  */
+@Deprecated
 public class IsotopeDetector {
 
     private static final Logger LOGGER = Logger.getLogger(IsotopeDetector.class);
@@ -99,21 +100,21 @@ public class IsotopeDetector {
     }
 
     /**
-     * Finds identification within the charge range and sets any detected identification as properties in the profile
+     * Finds identification within the charge range and sets any detected identification as properties in the feature
      * object.
      */
-    public void findIsotopes(final Spectrum pseudoSpectrum) {
+    public void findIsotopes(final FeatureSet pseudoFeatureSet) {
 
-        List<Profile> profileList = ((PseudoSpectrum) pseudoSpectrum).getProfileList();
-        Collections.sort(profileList, new ProfileMassComparator());
-        double[][] profileDeltas = getProfileMassDeltas(profileList);
+        List<Feature> featureList = ((FeatureSetImpl) pseudoFeatureSet).getFeaturesList();
+        Collections.sort(featureList, new FeatureMassComparator());
+        double[][] profileDeltas = getProfileMassDeltas(featureList);
 
-        DirectedMultigraph<Profile, DefaultEdge>[] graphs = new DirectedMultigraph[charge];
+        DirectedMultigraph<Feature, DefaultEdge>[] graphs = new DirectedMultigraph[charge];
         for (int i = 0; i < charge; i++)
             graphs[i] = new DirectedMultigraph<>(DefaultEdge.class);
 
         for (int row = 0; row < profileDeltas.length; row++) {
-            Range[] protonDeltas = getProtonDeltas(charge, profileList.get(row).getMz());
+            Range[] protonDeltas = getProtonDeltas(charge, featureList.get(row).getMz());
             for (int col = 0; col < profileDeltas.length; col++) {
 
                 double profileDelta = profileDeltas[row][col];
@@ -122,8 +123,8 @@ public class IsotopeDetector {
                 int chargeCount = 0;
                 for (Range protonDelta : protonDeltas) {
                     if (protonDelta.contains(profileDelta))
-                        JGraphTSync.addEdgeWithVertices(graphs[chargeCount], profileList.get(row),
-                                profileList.get(col));
+                        JGraphTSync.addEdgeWithVertices(graphs[chargeCount], featureList.get(row),
+                                featureList.get(col));
                     chargeCount++;
                 }
             }
@@ -132,7 +133,7 @@ public class IsotopeDetector {
         adjustIsotopeLabels(graphs);
 
         graphs = null;
-        profileList = null;
+        featureList = null;
         profileDeltas = null;
     }
 
@@ -154,39 +155,39 @@ public class IsotopeDetector {
     }
 
     /**
-     * Takes all isotope-detected profiles and sets the nominal isotope positions from the main M profile (0, 1,
+     * Takes all isotope-detected profiles and sets the nominal isotope positions from the main M feature (0, 1,
      * 2, ..).
      */
-    private void adjustIsotopeLabels(DirectedMultigraph<Profile, DefaultEdge>[] graphs) {
+    private void adjustIsotopeLabels(DirectedMultigraph<Feature, DefaultEdge>[] graphs) {
 
-        for (DirectedMultigraph<Profile, DefaultEdge> graph : graphs) {
+        for (DirectedMultigraph<Feature, DefaultEdge> graph : graphs) {
 
-            List<Set<Profile>> connectedSets = JGraphTSync.getConnectedSets(graph);
+            List<Set<Feature>> connectedSets = JGraphTSync.getConnectedSets(graph);
 
-            List<Profile> rootV = new ArrayList<>();
-            List<Profile> leafV = new ArrayList<>();
+            List<Feature> rootV = new ArrayList<>();
+            List<Feature> leafV = new ArrayList<>();
 
-            Profile vertex;
-            for (Set<Profile> profileSet : connectedSets) {
+            Feature vertex;
+            for (Set<Feature> featureSet : connectedSets) {
 
-                for (final Profile profile : profileSet) {
-                    if (graph.inDegreeOf(profile) == 0) rootV.add(profile);
-                    else if (graph.outDegreeOf(profile) == 0) leafV.add(profile);
+                for (final Feature feature : featureSet) {
+                    if (graph.inDegreeOf(feature) == 0) rootV.add(feature);
+                    else if (graph.outDegreeOf(feature) == 0) leafV.add(feature);
                 }
 
-                KShortestPaths<Profile, DefaultEdge> pathFinder;
-                List<GraphPath<Profile, DefaultEdge>> paths;
+                KShortestPaths<Feature, DefaultEdge> pathFinder;
+                List<GraphPath<Feature, DefaultEdge>> paths;
 
-                for (Profile root : rootV) {
+                for (Feature root : rootV) {
                     pathFinder = new KShortestPaths<>(graph, root, MAX_PATH);
-                    for (Profile leaf : leafV) {
+                    for (Feature leaf : leafV) {
                         paths = pathFinder.getPaths(leaf);
                         if (paths == null) continue;
-                        for (GraphPath<Profile, DefaultEdge> path : paths) {
+                        for (GraphPath<Feature, DefaultEdge> path : paths) {
                             int mainId = 0;
                             double maxIntensity = 0;
-                            final List<Profile> pathVertices = JGraphTSync.getPathVertexList(path);
-                            Collections.sort(pathVertices, new ProfileMassComparator());
+                            final List<Feature> pathVertices = JGraphTSync.getPathVertexList(path);
+                            Collections.sort(pathVertices, new FeatureMassComparator());
                             for (int i = 0; i < pathVertices.size(); i++) {
                                 vertex = pathVertices.get(i);
 
@@ -203,7 +204,7 @@ public class IsotopeDetector {
 
                             Map<Integer, Isotope> idToIsotope = new HashMap<>();
                             for (int j = mainId + 1, k = 1; (j < pathVertices.size() && j < 4); j++, k++) {
-                                Profile isoVertex = pathVertices.get(j);
+                                Feature isoVertex = pathVertices.get(j);
                                 double isoIntensityTheory = isotopeToEquation.get(k).getY(isoVertex.getMz() / BIN_SIZE);
 
                                 if (isInRange(k, vertex.getIntensity(), isoVertex.getIntensity(), isoIntensityTheory))
@@ -243,17 +244,17 @@ public class IsotopeDetector {
      * @param peakList the profiles used for the matrix
      * @return the mass difference matrix
      */
-    private double[][] getProfileMassDeltas(List<Profile> peakList) {
+    private double[][] getProfileMassDeltas(List<Feature> peakList) {
 
         double[][] massDeltas = new double[peakList.size()][peakList.size()];
 
         int row = 0;
-        Iterator<Profile> itRow = peakList.iterator();
+        Iterator<Feature> itRow = peakList.iterator();
         while (itRow.hasNext()) {
             double rowMass = itRow.next().getMz();
 
             int col = 0;
-            Iterator<Profile> itCol = peakList.iterator();
+            Iterator<Feature> itCol = peakList.iterator();
             while (itCol.hasNext()) {
                 double colMass = itCol.next().getMz();
 

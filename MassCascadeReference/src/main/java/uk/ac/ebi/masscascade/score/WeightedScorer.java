@@ -23,15 +23,13 @@
 package uk.ac.ebi.masscascade.score;
 
 import org.apache.commons.math3.util.FastMath;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.reference.ReferenceSpectrum;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
-import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 
 import java.util.HashSet;
 import java.util.List;
@@ -60,29 +58,29 @@ public class WeightedScorer {
     }
 
     /**
-     * Calculates the score between the unknown and reference spectrum.
+     * Calculates the score between the unknown and reference featureset.
      *
-     * @param unknownSpectrum   the unknown spectrum
-     * @param referenceSpectrum the reference spectrum
+     * @param unknownFeatureSet   the unknown featureset
+     * @param referenceSpectrum the reference featureset
      * @return the score (0-1000)
      */
-    public double getScore(Spectrum unknownSpectrum, ReferenceSpectrum referenceSpectrum) {
+    public double getScore(FeatureSet unknownFeatureSet, ReferenceSpectrum referenceSpectrum) {
 
-        XYPoint unknownBasePeak = unknownSpectrum.getBasePeak().get(0);
+        XYPoint unknownBasePeak = unknownFeatureSet.getBasePeak().get(0);
         XYPoint referenceBasePeak = referenceSpectrum.getBasePeak();
 
         XYList unknownCommons = new XYList();
         XYList referenceCommons = new XYList();
 
         Set<Double> addedMz = new HashSet<>();
-        for (Profile profile : unknownSpectrum) {
+        for (Feature feature : unknownFeatureSet) {
 
-            XYPoint referenceXY = referenceSpectrum.getMatchingPeak(profile.getMzIntDp(),
-                    amu * Constants.PPM / profile.getMzIntDp().x);
+            XYPoint referenceXY = referenceSpectrum.getMatchingPeak(feature.getMzIntDp(),
+                    amu * Constants.PPM / feature.getMzIntDp().x);
             if (referenceXY == null || addedMz.contains(referenceXY.x)) continue;
 
             addedMz.add(referenceXY.x);
-            unknownCommons.add(new XYPoint(profile.getMz(), profile.getIntensity() / unknownBasePeak.y));
+            unknownCommons.add(new XYPoint(feature.getMz(), feature.getIntensity() / unknownBasePeak.y));
             referenceCommons.add(new XYPoint(referenceXY.x, referenceXY.y / referenceBasePeak.y));
         }
 
@@ -131,7 +129,7 @@ public class WeightedScorer {
         double ratio = sumRatio / nCommons;
 
         // matching factor
-        int nUnknown = unknownSpectrum.size();
+        int nUnknown = unknownFeatureSet.size();
         double mf = ((nUnknown * dotProduct) + (nCommons * ratio)) / (nUnknown + nCommons);
 
 //        LOGGER.log(Level.INFO, "Score: " + mf + "; Fd: " + dotProduct + "; Fr: " + ratio);
@@ -140,7 +138,7 @@ public class WeightedScorer {
     }
 
     /**
-     * Calculates the score between the unknown and reference spectrum.
+     * Calculates the score between the unknown and reference featureset.
      *
      * @param unknown   the unknown data point list
      * @param reference the reference data point list

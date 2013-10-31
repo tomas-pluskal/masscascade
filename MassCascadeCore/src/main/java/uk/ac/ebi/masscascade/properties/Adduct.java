@@ -51,8 +51,8 @@ public class Adduct implements Property {
      *
      * @param mzDifference the mz difference
      * @param name         the adduct name
-     * @param parentId     id of the parent profile
-     * @param childId      id of the annotated profile
+     * @param parentId     id of the parent feature
+     * @param childId      id of the annotated feature
      */
     public Adduct(double mzDifference, String name, int parentId, int childId) {
 
@@ -82,9 +82,9 @@ public class Adduct implements Property {
     }
 
     /**
-     * Returns the id of the annotated profile.
+     * Returns the id of the annotated feature.
      *
-     * @return the profile id
+     * @return the feature id
      */
     public Integer getChildId() {
         return childId;
@@ -100,9 +100,9 @@ public class Adduct implements Property {
     }
 
     /**
-     * Returns the id of the parent profile.
+     * Returns the id of the parent feature.
      *
-     * @return the profile id
+     * @return the feature id
      */
     public Integer getParentId() {
         return parentId;

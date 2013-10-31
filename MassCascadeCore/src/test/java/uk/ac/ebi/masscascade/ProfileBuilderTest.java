@@ -25,15 +25,15 @@ package uk.ac.ebi.masscascade;
 import junit.framework.Assert;
 import org.junit.Test;
 import uk.ac.ebi.masscascade.commons.FileLoader;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
 
 public class ProfileBuilderTest {
 
     @Test
     public void testBuilder() {
 
-        ProfileContainer container = FileLoader.getProfileContainer(FileLoader.TESTFILE.SAMPLE);
+        FeatureContainer container = FileLoader.getProfileContainer(FileLoader.TESTFILE.SAMPLE);
 
-        Assert.assertEquals(137, container.size());
+        Assert.assertEquals(133, container.size());
     }
 }

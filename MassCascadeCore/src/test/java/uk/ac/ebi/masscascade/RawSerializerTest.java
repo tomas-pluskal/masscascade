@@ -26,13 +26,13 @@ import junit.framework.Assert;
 import org.junit.Test;
 import org.xmlcml.cml.element.CMLCml;
 import uk.ac.ebi.masscascade.core.container.file.FileContainerBuilder;
-import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
+import uk.ac.ebi.masscascade.core.container.file.scan.FileScanContainer;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
 import uk.ac.ebi.masscascade.io.PsiMzmlReader;
-import uk.ac.ebi.masscascade.io.cml.RawDeserializer;
-import uk.ac.ebi.masscascade.io.cml.RawSerializer;
+import uk.ac.ebi.masscascade.io.cml.ScanDeserializer;
+import uk.ac.ebi.masscascade.io.cml.ScanSerializer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -52,32 +52,32 @@ public class RawSerializerTest {
         File file = new File(url.getFile());
 
         // build the file-based output data container
-        Container container = FileContainerBuilder.getInstance().newInstance(RawContainer.class, file.getName(),
+        Container container = FileContainerBuilder.getInstance().newInstance(ScanContainer.class, file.getName(),
                 System.getProperty(Constants.JAVA_TMP));
 
         // build the parameter map for the reader task
         ParameterMap params = new ParameterMap();
         params.put(Parameter.DATA_FILE, file);
-        params.put(Parameter.RAW_CONTAINER, container);
+        params.put(Parameter.SCAN_CONTAINER, container);
 
         // create and run the task to read the file
         CallableTask readerTask = new PsiMzmlReader(params);
-        RawContainer outContainer = (RawContainer) readerTask.call();
+        ScanContainer outContainer = (ScanContainer) readerTask.call();
 
         // serialise the container to CML
-        RawSerializer cmlSerializer = new RawSerializer((FileRawContainer) outContainer);
+        ScanSerializer cmlSerializer = new ScanSerializer((FileScanContainer) outContainer);
         CMLCml cml = cmlSerializer.getCml();
 
         // deserialise the CML and create a new data container
-        RawDeserializer cmlDeSerializer = new RawDeserializer(cml.toXML(), System.getProperty(Constants.JAVA_TMP));
+        ScanDeserializer cmlDeSerializer = new ScanDeserializer(cml.toXML(), System.getProperty(Constants.JAVA_TMP));
         outContainer = cmlDeSerializer.getFile();
 
         // assert that no values have changed
-        Assert.assertEquals(2, outContainer.getRawLevels().size());
-        Assert.assertEquals(Constants.ION_MODE.NEGATIVE, outContainer.getRawLevels().get(0).getIonMode());
-        Assert.assertEquals(Constants.ION_MODE.NEGATIVE, outContainer.getRawLevels().get(1).getIonMode());
-        Assert.assertEquals(75.00232696533203, outContainer.getRawLevels().get(1).getMzRange().getLowerBounds());
-        Assert.assertEquals(388.15277099609375, outContainer.getRawLevels().get(1).getMzRange().getUpperBounds());
+        Assert.assertEquals(2, outContainer.getScanLevels().size());
+        Assert.assertEquals(Constants.ION_MODE.NEGATIVE, outContainer.getScanLevels().get(0).getIonMode());
+        Assert.assertEquals(Constants.ION_MODE.NEGATIVE, outContainer.getScanLevels().get(1).getIonMode());
+        Assert.assertEquals(100.1023941040039, outContainer.getScanLevels().get(1).getMzRange().getLowerBounds());
+        Assert.assertEquals(236.0926055908203, outContainer.getScanLevels().get(1).getMzRange().getUpperBounds());
         Assert.assertEquals(502, outContainer.getTicChromatogram(Constants.MSN.MS1).getData().size());
         Assert.assertEquals(99961.515625, outContainer.getBasePeakChromatogram().getData().getFirst().y);
 

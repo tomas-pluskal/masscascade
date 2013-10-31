@@ -188,7 +188,7 @@
         
                     /**
                      * Auto generated method signature
-                     * Returns information about the particular spectrum identified by spc_id parameter
+                     * Returns information about the particular featureset identified by spc_id parameter
                      * @see uk.ac.ebi.masscascade.chemspider.Spectra#getSpectraInfoArray
                      * @param getSpectraInfoArray
                     
@@ -551,7 +551,7 @@
             
                     /**
                      * Auto generated method signature
-                     * Returns information about the particular spectrum identified by spc_id parameter
+                     * Returns information about the particular featureset identified by spc_id parameter
                      * @see uk.ac.ebi.masscascade.chemspider.Spectra#getSpectrumInfo
                      * @param getSpectrumInfo
                     

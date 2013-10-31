@@ -22,7 +22,7 @@
 
 package uk.ac.ebi.masscascade.deconvolution;
 
-import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Feature;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 import uk.ac.ebi.masscascade.utilities.comparator.PointIntensityComparator;
@@ -35,7 +35,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Class to estimate the noise of a given mass trace or peak profile.
+ * Class to estimate the noise of a given mass trace or peak feature.
  */
 public class NoiseEstimation {
 
@@ -58,9 +58,9 @@ public class NoiseEstimation {
      * @param massTrace the mass trace segment
      * @return the noise estimate
      */
-    public double getNoiseEstimate(Profile massTrace) {
+    public double getNoiseEstimate(Feature massTrace) {
 
-        List<Double> nfs = new ArrayList<Double>();
+        List<Double> nfs = new ArrayList<>();
         XYList xicData = massTrace.getTrace().getData();
 
         if (xicData.size() < MIN_WINDOW_SIZE) {

@@ -24,11 +24,11 @@ package uk.ac.ebi.masscascade.identification;
 
 import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.properties.Isotope;
-import uk.ac.ebi.masscascade.utilities.comparator.ProfileMassComparator;
+import uk.ac.ebi.masscascade.utilities.comparator.FeatureMassComparator;
 import uk.ac.ebi.masscascade.utilities.math.LinearEquation;
 
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class implementing an isotope search method for a list of profiles. This class does not use external dependencies.
+ * Class implementing an isotope search method for a list of features. This class does not use external dependencies.
  */
 public class IsotopeDetectorRec {
 
@@ -95,66 +95,66 @@ public class IsotopeDetectorRec {
     }
 
     /**
-     * Finds identification within the charge range and sets any detected identification as properties in the profile
+     * Finds identification within the charge range and sets any detected identification as properties in the feature
      * object.
      */
-    public void findIsotopes(final Spectrum pseudoSpectrum) {
+    public void findIsotopes(final FeatureSet pseudoFeatureSet) {
 
-        List<Profile> profiles = new ArrayList<>(pseudoSpectrum.getProfileMap().values());
-        Collections.sort(profiles, new ProfileMassComparator());
+        List<Feature> features = new ArrayList<>(pseudoFeatureSet.getFeaturesMap().values());
+        Collections.sort(features, new FeatureMassComparator());
 
         Set<Integer> skipSet = new HashSet<>();
 
         for (int c = 1; c <= charge; c++)
-            traverse(profiles, 0, c, skipSet);
+            traverse(features, 0, c, skipSet);
     }
 
     /**
-     * Traverses over all profiles and builds isotopic envelopes.
+     * Traverses over all features and builds isotopic envelopes.
      *
-     * @param profiles the profile list
+     * @param features the feature list
      * @param p        the parent id
      * @param c        the current charge
-     * @param skipSet  ids of already annotated profiles
+     * @param skipSet  ids of already annotated features
      */
-    private void traverse(List<Profile> profiles, int p, int c, Set<Integer> skipSet) {
+    private void traverse(List<Feature> features, int p, int c, Set<Integer> skipSet) {
 
-        if (p == profiles.size()) return;
-        else if (skipSet.contains(p)) { // skip profile is already annotated
-            traverse(profiles, ++p, c, skipSet);
+        if (p == features.size()) return;
+        else if (skipSet.contains(p)) { // skip feature is already annotated
+            traverse(features, ++p, c, skipSet);
             return;
         }
 
         List<Integer[]> paths = new ArrayList<>();
-        // build isotopic envelope for this profile
-        build(profiles, paths, p, 0, 0, c);
-        resolve(profiles, paths, p, c, skipSet);
-        // move to next profile
-        traverse(profiles, ++p, c, skipSet);
+        // build isotopic envelope for this feature
+        build(features, paths, p, 0, 0, c);
+        resolve(features, paths, p, c, skipSet);
+        // move to next feature
+        traverse(features, ++p, c, skipSet);
     }
 
     /**
-     * Builds all possible isotopic envelopes for a given profile
+     * Builds all possible isotopic envelopes for a given feature
      *
-     * @param profiles the profile list
-     * @param paths    all isotope envelopes described as paths with profile ids
+     * @param features the feature list
+     * @param paths    all isotope envelopes described as paths with feature ids
      * @param p        the parent id
      * @param d        the distance to the parent
      * @param pi       the daughter id
      * @param c        the current charge
      */
-    private void build(List<Profile> profiles, List<Integer[]> paths, int p, int d, int pi, int c) {
+    private void build(List<Feature> features, List<Integer[]> paths, int p, int d, int pi, int c) {
 
-        for (int cp = p + 1; cp < profiles.size(); cp++) {
+        for (int cp = p + 1; cp < features.size(); cp++) {
 
-            double nmz = profiles.get(cp).getMz();
+            double nmz = features.get(cp).getMz();
             double ndelta = nmz * ppm / Constants.PPM;
 
-            double pmz = profiles.get(p).getMz();
+            double pmz = features.get(p).getMz();
             double ul = pmz + ISOTOPE_DIFFERENCE / c + ndelta;
             double ll = pmz + ISOTOPE_DIFFERENCE / c - ndelta;
 
-            double r = profiles.get(cp).getIntensity() / profiles.get(p).getIntensity();
+            double r = features.get(cp).getIntensity() / features.get(p).getIntensity();
 
             if (nmz >= ul) {
                 break;
@@ -166,7 +166,7 @@ public class IsotopeDetectorRec {
                 if (d != 0 && paths.get(pi)[0] == null)
                     paths.set(pi, paths.get(pi - 1).clone()); // copy and add isotope array if path branches
                 paths.get(pi)[d] = cp;
-                build(profiles, paths, cp, ++d, pi++, c); // continue to build isotopic envelope
+                build(features, paths, cp, ++d, pi++, c); // continue to build isotopic envelope
                 d--;
             }
         }
@@ -195,16 +195,16 @@ public class IsotopeDetectorRec {
     /**
      * Finds the most likely isotopic envelope from an array of isotope paths.
      *
-     * @param profiles the profile list
-     * @param paths    all isotope envelopes described as paths with profile ids
+     * @param features the feature list
+     * @param paths    all isotope envelopes described as paths with feature ids
      * @param p        the parent id
      * @param c        the current charge
-     * @param skipSet  ids of already annotated profiles
+     * @param skipSet  ids of already annotated features
      */
-    private void resolve(List<Profile> profiles, List<Integer[]> paths, int p, int c, Set<Integer> skipSet) {
+    private void resolve(List<Feature> features, List<Integer[]> paths, int p, int c, Set<Integer> skipSet) {
 
         if (paths.size() == 0 || paths.get(0)[0] == null) {}
-        else if (paths.size() == 1) annotate(profiles, paths.get(0), p, skipSet); // only one isotopic envelope
+        else if (paths.size() == 1) annotate(features, paths.get(0), p, skipSet); // only one isotopic envelope
         else { // multiple isotopic envelopes
             int max = 0;
             // (1) find longest path
@@ -220,16 +220,16 @@ public class IsotopeDetectorRec {
                 }
             }
             // if only one path left: annotate
-            if (paths.size() == 1) annotate(profiles, paths.get(0), p, skipSet);
+            if (paths.size() == 1) annotate(features, paths.get(0), p, skipSet);
             else { // (2) select best path by total min m/z deviation
                 Integer[] bestPath = null;
                 double maxDevSum = Double.MAX_VALUE;
                 for (Integer[] path : paths) {
-                    double pmz = profiles.get(p).getMz();
+                    double pmz = features.get(p).getMz();
                     double devSum = 0;
                     for (Integer i : path) {
                         if (i == null) break;
-                        double nmz = profiles.get(i).getMz();
+                        double nmz = features.get(i).getMz();
                         devSum += FastMath.abs(nmz - pmz - ISOTOPE_DIFFERENCE);
                         pmz = nmz;
                     }
@@ -239,30 +239,30 @@ public class IsotopeDetectorRec {
                     }
                 }
 
-                annotate(profiles, bestPath, p, skipSet);
+                annotate(features, bestPath, p, skipSet);
             }
         }
     }
 
     /**
-     * Annotates the profiles with isotope information from the envelope.
+     * Annotates the features with isotope information from the envelope.
      *
-     * @param profiles the profile list
+     * @param features the feature list
      * @param path     the best isotopic envelope path
      * @param p        the parent id
-     * @param skipSet  ids of already annotated profiles
+     * @param skipSet  ids of already annotated features
      */
-    private void annotate(List<Profile> profiles, Integer[] path, int p, Set<Integer> skipSet) {
+    private void annotate(List<Feature> features, Integer[] path, int p, Set<Integer> skipSet) {
 
-        int pid = profiles.get(p).getId();
+        int pid = features.get(p).getId();
         int depth = 0;
-        profiles.get(p).setProperty(new Isotope("M", depth++, pid, pid));
+        features.get(p).setProperty(new Isotope("M", depth++, pid, pid));
         skipSet.add(p);
 
         for (Integer pi : path) {
             if (pi == null) break;
-            profiles.get(p).setProperty(new Isotope("M+" + depth, depth, pid, profiles.get(pi).getId()));
-            profiles.get(pi).setProperty(new Isotope("M+" + depth, depth++, pid, profiles.get(pi).getId()));
+            features.get(p).setProperty(new Isotope("M+" + depth, depth, pid, features.get(pi).getId()));
+            features.get(pi).setProperty(new Isotope("M+" + depth, depth++, pid, features.get(pi).getId()));
             skipSet.add(pi);
         }
     }

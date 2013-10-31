@@ -27,10 +27,10 @@ import org.apache.log4j.Level;
 import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Feature;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.properties.Identity;
@@ -43,13 +43,14 @@ import java.io.FileWriter;
 import java.util.Set;
 
 /**
- * Class implementing a mzTab writer. Profiles, either from a {@link ProfileContainer} or {@link SpectrumContainer},
- * with identified profiles, are written out in mzTab format.
+ * Class implementing a mzTab writer. Features, either from a {@link uk.ac.ebi.masscascade.interfaces.container.FeatureContainer}
+ * or {@link uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer},
+ * with identified features, are written out in mzTab format.
  * <ul>
- * <li>Parameter <code> OUTPUT DIRECTORY </code>- The m/z tolerance in ppm.</li>
- * <li>Parameter <code> PROFILE CONTAINER </code>- The input profile container.</li>
+ * <li>Parameter <code> OUTPUT_DIRECTORY </code>- The m/z tolerance in ppm.</li>
+ * <li>Parameter <code> FEATURE_CONTAINER </code>- The input feature container.</li>
  * ################### or ###################
- * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input spectrum container.</li>
+ * <li>Parameter <code> FEATURE_SET_CONTAINER </code>- The input feature set container.</li>
  * </ul>
  */
 public class MzTabWriter extends CallableTask {
@@ -81,9 +82,9 @@ public class MzTabWriter extends CallableTask {
         outPath = params.get(Parameter.OUTPUT_DIRECTORY, String.class);
 
         try {
-            container = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+            container = params.get(Parameter.FEATURE_CONTAINER, FeatureContainer.class);
         } catch (MassCascadeException exception) {
-            container = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
+            container = params.get(Parameter.FEATURE_SET_CONTAINER, FeatureSetContainer.class);
         }
     }
 
@@ -99,16 +100,16 @@ public class MzTabWriter extends CallableTask {
         try {
             MzTabFile mzTab = new MzTabFile();
 
-            for (Profile profile : container.profileIterator()) {
+            for (Feature feature : container.featureIterator()) {
 
-                if (!profile.hasProperty(PropertyType.Identity)) continue;
+                if (!feature.hasProperty(PropertyType.Identity)) continue;
 
                 SmallMolecule molecule = new SmallMolecule();
-                molecule.setMassToCharge(profile.getMz());
-                molecule.setRetentionTime(Lists.newArrayList(profile.getRetentionTime()));
+                molecule.setMassToCharge(feature.getMz());
+                molecule.setRetentionTime(Lists.newArrayList(feature.getRetentionTime()));
                 molecule.setReliability(2);
 
-                Set<Identity> identities = profile.getProperty(PropertyType.Identity, Identity.class);
+                Set<Identity> identities = feature.getProperty(PropertyType.Identity, Identity.class);
                 for (Identity identity : identities) {
                     molecule.setDescription(identity.getName());
                     molecule.setIdentifier(Lists.newArrayList(identity.getId()));
@@ -120,9 +121,9 @@ public class MzTabWriter extends CallableTask {
                         molecule.setInchiKey(Lists.newArrayList(""));
                         molecule.setSmiles(Lists.newArrayList(notation));
                     }
-                    molecule.setAbundance(1, profile.getIntensity(), 0.0, 0.0);
+                    molecule.setAbundance(1, feature.getIntensity(), 0.0, 0.0);
                     molecule.setCustomColumn("opt_masscascade_file_id", "" + container.getId());
-                    molecule.setCustomColumn("opt_masscascade_profile_id", "" + profile.getId());
+                    molecule.setCustomColumn("opt_masscascade_feature_id", "" + feature.getId());
                 }
 
                 mzTab.addSmallMolecule(molecule);

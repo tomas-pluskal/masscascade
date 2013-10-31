@@ -24,7 +24,7 @@ package uk.ac.ebi.masscascade.score;
 
 import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Feature;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.reference.ReferenceSpectrum;
@@ -40,7 +40,7 @@ public class MzScorer {
         this.ppm = ppm;
     }
 
-    public double score(Profile unknownProfile, ReferenceSpectrum referenceSpectrum) {
+    public double score(Feature unknownFeature, ReferenceSpectrum referenceSpectrum) {
 
         if (referenceSpectrum.getMzIntList().size() != 1) return 0d;
 
@@ -48,8 +48,8 @@ public class MzScorer {
         Range refRange = new ToleranceRange(refMz, ppm);
 
         double score = 0;
-        if (refRange.contains(unknownProfile.getMz())) {
-            score = FastMath.abs(unknownProfile.getMz() - refMz) * Constants.PPM / unknownProfile.getMz();
+        if (refRange.contains(unknownFeature.getMz())) {
+            score = FastMath.abs(unknownFeature.getMz() - refMz) * Constants.PPM / unknownFeature.getMz();
             score = FastMath.round(-0.001 * score + 1000);
         }
 

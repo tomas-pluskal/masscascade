@@ -24,29 +24,30 @@ package uk.ac.ebi.masscascade.background;
 
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.properties.Score;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZList;
 
 /**
- * Class for profile selection using the CODA algorithm.
+ * Class for feature selection using the CODA algorithm.
  * <p/>
  * Calculates the mass chromatographic quality (MCQ) score for all profiles.
  * Profiles below the threshold will be removed.
  * <ul>
  * <li>Parameter <code> CODA </code>- The CODA threshold.</li>
- * <li>Parameter <code> DATA WINDOW </code>- The size of the rectangular smoothing window.</li>
- * <li>Parameter <code> PROFILE CONTAINER </code>- The input profile container.</li>
+ * <li>Parameter <code> DATA_WINDOW </code>- The size of the rectangular smoothing window.</li>
+ * <li>Parameter <code> FEATURE_CONTAINER </code>- The input feature container.</li>
  * </ul>
  */
+@Deprecated
 public class CodaFilter extends CallableTask {
 
     private double mcqThreshold;
     private int windowSize;
-    private ProfileContainer profileContainer;
+    private FeatureContainer featureContainer;
 
     /**
      * Constructs a coda filter task.
@@ -72,33 +73,33 @@ public class CodaFilter extends CallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         mcqThreshold = params.get(Parameter.CODA, Double.class);
-        windowSize = params.get(Parameter.DATA_WINDOW, Integer.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        windowSize = params.get(Parameter.SCAN_WINDOW, Integer.class);
+        featureContainer = params.get(Parameter.FEATURE_CONTAINER, FeatureContainer.class);
     }
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .ProfileContainer} with the processed data.
+     * .FeatureContainer} with the processed data.
      *
-     * @return the profile container with the processed data
+     * @return the feature container with the processed data
      */
     @Override
-    public ProfileContainer call() {
+    public FeatureContainer call() {
 
-        String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer = profileContainer.getBuilder().newInstance(ProfileContainer.class, id,
-                profileContainer.getWorkingDirectory());
+        String id = featureContainer.getId() + IDENTIFIER;
+        FeatureContainer outFeatureContainer = featureContainer.getBuilder().newInstance(FeatureContainer.class, id,
+                featureContainer.getIonMode(), featureContainer.getWorkingDirectory());
 
-        for (Profile profile : profileContainer) {
-            double mcq = getMCQ(profile.getData());
+        for (Feature feature : featureContainer) {
+            double mcq = getMCQ(feature.getData());
             if (mcq >= mcqThreshold) {
-                profile.setProperty(new Score("mcq", mcq));
-                outProfileContainer.addProfile(profile);
+                feature.setProperty(new Score("mcq", mcq));
+                outFeatureContainer.addFeature(feature);
             }
         }
 
-        outProfileContainer.finaliseFile();
-        return outProfileContainer;
+        outFeatureContainer.finaliseFile();
+        return outFeatureContainer;
     }
 
     /**

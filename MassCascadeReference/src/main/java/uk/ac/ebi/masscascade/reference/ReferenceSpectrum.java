@@ -29,7 +29,7 @@ import java.io.Serializable;
 import java.util.TreeSet;
 
 /**
- * Class implementing a library or reference spectrum.
+ * Class implementing a library or reference featureset.
  */
 public class ReferenceSpectrum implements Serializable {
 
@@ -60,7 +60,7 @@ public class ReferenceSpectrum implements Serializable {
     private XYPoint basePeak;
 
     /**
-     * Constructs a fully parameterized reference spectrum.
+     * Constructs a fully parameterized reference featureset.
      *
      * @param id the identifier
      * @param title the title (e.g., as found in the database)

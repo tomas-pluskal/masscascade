@@ -30,7 +30,7 @@ public class BlessTableModel extends AbstractTableModel {
     public static final int DELETE_COLUMN = 9;
 
     private String[] header =
-            new String[]{"Compound Spectrum", "Compounds", "Molecule", "Annotations", "Score", "Status", "MSI", "MSn",
+            new String[]{"Compound FeatureSetImpl", "Compounds", "Molecule", "Annotations", "Score", "Status", "MSI", "MSn",
                          "MSn Annotations", "Remove"};
 
     private List<CompoundSpectrum> spectra;

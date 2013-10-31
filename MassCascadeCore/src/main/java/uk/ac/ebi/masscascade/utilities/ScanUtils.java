@@ -24,14 +24,12 @@ package uk.ac.ebi.masscascade.utilities;
 
 import org.xmlcml.cml.element.CMLArray;
 import org.xmlcml.cml.element.CMLSpectrum;
-import uk.ac.ebi.masscascade.core.raw.ScanImpl;
+import uk.ac.ebi.masscascade.core.scan.ScanImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Scan;
-import uk.ac.ebi.masscascade.interfaces.Trace;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.utilities.buffer.Base64;
-import uk.ac.ebi.masscascade.utilities.math.MathUtils;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
@@ -40,19 +38,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 /**
- * Class providing utility methods for spectrum operations.
+ * Class providing utility methods for featureset operations.
  */
 public class ScanUtils {
 
@@ -65,15 +57,15 @@ public class ScanUtils {
      */
     public static final int BYTES_32_PRECISION = 4;
     /**
-     * Defines the number of data points a spectrum must have to qualify as acquired in profile mode.
+     * Defines the number of data points a featureset must have to qualify as acquired in feature mode.
      */
     private static final int MIN_PROFILE = 10;
 
     /**
-     * Checks if the spectrum is centroided.
+     * Checks if the featureset is centroided.
      *
-     * @param xyList a spectrum m/z-intensity list
-     * @return boolean whether the spectrum is centroided
+     * @param xyList a featureset m/z-intensity list
+     * @return boolean whether the featureset is centroided
      */
     public static boolean isCentroided(XYList xyList) {
 
@@ -110,9 +102,9 @@ public class ScanUtils {
     /**
      * Removes data points with zero intensity from the data set.
      *
-     * @param xyList          a spectrum m/z-intensity list
+     * @param xyList          a featureset m/z-intensity list
      * @param acquisitionMode an acquisition mode
-     * @return the cleaned spectrum data set
+     * @return the cleaned featureset data set
      */
     public static XYList removeZeroAndDuplicateDataPoints(XYList xyList, Constants.ACQUISITION_MODE acquisitionMode) {
 
@@ -261,7 +253,7 @@ public class ScanUtils {
      *
      * @param value       a data value to convert
      * @param compress    option to compress the binary data
-     * @param cmlSpectrum a CML spectrum object
+     * @param cmlSpectrum a CML featureset object
      * @return the encoded bit length
      */
     public static int set64BitLongArrayAsBinaryData(Long[] value, boolean compress, CMLSpectrum cmlSpectrum) {

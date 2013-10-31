@@ -30,9 +30,9 @@ import uk.ac.ebi.masscascade.deconvolution.BiehmanDeconvolution;
 import uk.ac.ebi.masscascade.deconvolution.SavitzkyGolayDeconvolution;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -82,17 +82,17 @@ public class TaskChain implements Callable<Container> {
 
                 Class<? extends CallableTask> taskClass = taskEntry.getKey();
                 ParameterMap params = taskEntry.getValue();
-                if (container instanceof RawContainer) {
+                if (container instanceof ScanContainer) {
                     lastRawContainer = container;
-                    params.put(Parameter.RAW_CONTAINER, container);
-                } else if (container instanceof ProfileContainer) {
-                    params.put(Parameter.PROFILE_CONTAINER, container);
-                } else if (container instanceof SpectrumContainer) {
-                    params.put(Parameter.SPECTRUM_CONTAINER, container);
+                    params.put(Parameter.SCAN_CONTAINER, container);
+                } else if (container instanceof FeatureContainer) {
+                    params.put(Parameter.FEATURE_CONTAINER, container);
+                } else if (container instanceof FeatureSetContainer) {
+                    params.put(Parameter.FEATURE_SET_CONTAINER, container);
                 }
 
                 if (taskClass == BiehmanDeconvolution.class || taskClass == SavitzkyGolayDeconvolution.class) {
-                    params.put(Parameter.RAW_CONTAINER, lastRawContainer);
+                    params.put(Parameter.SCAN_CONTAINER, lastRawContainer);
                 }
 
                 Constructor<?> cstr = taskEntry.getKey().getConstructor(ParameterMap.class);
@@ -126,12 +126,12 @@ public class TaskChain implements Callable<Container> {
         ParameterMap params = new ParameterMap();
         params.put(Parameter.DATA_FILE, file);
         if (tmpDir != null) {
-            params.put(Parameter.RAW_CONTAINER,
-                    FileContainerBuilder.getInstance().newInstance(RawContainer.class, name + Constants.DELIMITER,
+            params.put(Parameter.SCAN_CONTAINER,
+                    FileContainerBuilder.getInstance().newInstance(ScanContainer.class, name + Constants.DELIMITER,
                             tmpDir.getAbsolutePath()));
         } else {
-            params.put(Parameter.RAW_CONTAINER,
-                    MemoryContainerBuilder.getInstance().newInstance(RawContainer.class, name + Constants.DELIMITER));
+            params.put(Parameter.SCAN_CONTAINER,
+                    MemoryContainerBuilder.getInstance().newInstance(ScanContainer.class, name + Constants.DELIMITER));
         }
 
         Constructor<?> cstr = ioClass.getConstructor(ParameterMap.class);

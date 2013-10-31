@@ -26,9 +26,9 @@ import com.google.common.collect.TreeMultimap;
 import uk.ac.ebi.masscascade.binning.MzBinning;
 import uk.ac.ebi.masscascade.identification.AdductSingle;
 import uk.ac.ebi.masscascade.interfaces.Option;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 
 import java.io.File;
@@ -50,14 +50,14 @@ public enum Parameter implements Option {
     COLLISION_ENERGY("Collision energy", 20),
 
     /*
-     * File parameters for the raw, profile, and spectrum entities.
+     * File parameters for the scan, feature, and featureset entities.
      */
-    RAW_CONTAINER("Raw file", null, RawContainer.class),
-    REFERENCE_RAW_CONTAINER("Reference raw file", null, RawContainer.class),
-    REFERENCE_RAW_MAP("Reference raw map", null, TreeMultimap.class),
-    PROFILE_CONTAINER("Profile file", null, ProfileContainer.class),
-    REFERENCE_PROFILE_CONTAINER("Reference profile file", null, ProfileContainer.class),
-    SPECTRUM_CONTAINER("Spectrum file", null, SpectrumContainer.class),
+    SCAN_CONTAINER("Raw file", null, ScanContainer.class),
+    REFERENCE_SCAN_CONTAINER("Reference scan file", null, ScanContainer.class),
+    REFERENCE_SCAN_MAP("Reference scan map", null, TreeMultimap.class),
+    FEATURE_CONTAINER("Feature file", null, FeatureContainer.class),
+    FEATURE_SET_CONTAINER("FeatureSetImpl file", null, FeatureSetContainer.class),
+    REFERENCE_FEATURE_CONTAINER("Reference feature file", null, FeatureContainer.class),
 
     /*
      * Additional file parameters for generic data and reference pointers.
@@ -68,9 +68,7 @@ public enum Parameter implements Option {
     /*
      * Parameters for the intensity domain.
      */
-    NOISE_INTENSITY("Noise intensity [units]", 1000d),
-    MIN_PROFILE_INTENSITY("Min. profile intensity [units]", 1000d),
-    DIF_PROFILE_INTENSITY("Min. profile intensity [units]", 1000d),
+    MIN_FEATURE_INTENSITY("Min. feature intensity [units]", 1000d),
 
     /*
      * Parameters for the m/z domain.
@@ -91,18 +89,10 @@ public enum Parameter implements Option {
     TIME_WINDOW("Time window [s]", 5d),
     TIME_FACTOR("Time gap factor", 2.5),
     SCAN_WINDOW("Time window [scans]", 5),
-    DATA_WINDOW("Data points window", 10),
-    MIN_PROFILE_WIDTH("Min. profile width [scans]", 6),
-    MAX_PROFILE_WIDTH("Max. profile width [scans]", 10),
+    MIN_FEATURE_WIDTH("Min. feature width [scans]", 6),
+    MAX_FEATURE_WIDTH("Max. feature width [scans]", 10),
     TIME_RANGE("Time range [s]", new ExtendableRange(0, 60)),
-    PROFILE_RANGE("Profile range [scans]", new ExtendableRange(1, 10)),
-
-    /*
-     * Parameters for visualisation.
-     */
-    AUTOCONFIGURE("Auto configure", true),
-    MASS_RESOLUTION("Mass resolution", 150),
-    TIME_RESOLUTION("Time resolution", 150),
+    FEATURE_RANGE("Feature range [scans]", new ExtendableRange(1, 10)),
 
     /*
      * Descriptive spectra parameters.
@@ -110,7 +100,6 @@ public enum Parameter implements Option {
     MS_LEVEL("MSn level", Constants.MSN.MS1),
     POSITIVE_MODE("Positive ion mode", true),
     NEGATIVE_MODE("Negative ion mode", false),
-    NEUTRAL_LOSS("Neutral loss", false),
 
     /*
      * Column parameters for the KNIME workflow environment.
@@ -121,9 +110,9 @@ public enum Parameter implements Option {
     PEAK_COLUMN("Peak column", ""),
     LABEL_COLUMN("Label column", ""),
     VALUE_COLUMN("Value column", ""),
-    SPECTRUM_COLUMN("Spectrum column", ""),
+    FEATURE_SET_COLUMN("FeatureSetImpl column", ""),
     REFERENCE_COLUMN("Reference column", ""),
-    REFERENCE_PROFILE_COLUMN("Reference column", ""),
+    REFERENCE_FEATURE_COLUMN("Reference column", ""),
 
     /*
      * List parameters.
@@ -148,7 +137,7 @@ public enum Parameter implements Option {
     RESULTS("Max results", 50),
     INSTRUMENTS("Instruments", new ArrayList<String>()),
     DATABASES("Databases", new String[0]),
-    CENTER("Center profiles", true),
+    CENTER("Center features", true),
     CODA("Chromatogram quality", 0.5),
     DURBIN("Durbin-Watson threshold", 0.5),
     ESTIMATE_NOISE("Estimate noise", false),
@@ -159,7 +148,7 @@ public enum Parameter implements Option {
     SG_LEVEL("SG Filter Level", 3),
     SCORE("Minimum Score", 0.8),
     SCORE_METLIN("Minimum Metlin Score", 80),
-    MIN_PROFILES("Minimum no. of profiles", 3),
+    MIN_FEATURES("Minimum no. of features", 3),
     GAP_FILL("Fill gaps", false),
     MISSINGNESS("Missingness [%]", 25),
     DEFAULT("Default Intensity", 10000),

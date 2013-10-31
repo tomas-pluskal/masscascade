@@ -36,7 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Judge rationalising the MS2 information provided for compound entities of a compound spectrum.
+ * Judge rationalising the MS2 information provided for compound entities of a compound featureset.
  * <p/>
  * The judge can increase the total score of a compound entity by a maximum of 500.
  */

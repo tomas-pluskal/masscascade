@@ -26,25 +26,20 @@ import org.apache.commons.cli.Option;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import uk.ac.ebi.masscascade.alignment.Obiwarp;
-import uk.ac.ebi.masscascade.alignment.ObiwarpHelper;
 import uk.ac.ebi.masscascade.background.DurbinWatsonFilter;
 import uk.ac.ebi.masscascade.background.NoiseReduction;
 import uk.ac.ebi.masscascade.deconvolution.BiehmanDeconvolution;
 import uk.ac.ebi.masscascade.distance.BiehmanSimilarity;
-import uk.ac.ebi.masscascade.distance.CosineSimilarity;
-import uk.ac.ebi.masscascade.distance.CosineSimilarityDistance;
-import uk.ac.ebi.masscascade.filter.MzFilter;
-import uk.ac.ebi.masscascade.filter.ProfileFilter;
-import uk.ac.ebi.masscascade.filter.SpectrumFilter;
-import uk.ac.ebi.masscascade.identification.AdductDetector;
-import uk.ac.ebi.masscascade.identification.AdductFinder;
+import uk.ac.ebi.masscascade.featurebuilder.SequentialFeatureBuilder;
+import uk.ac.ebi.masscascade.filter.FeatureFilter;
+import uk.ac.ebi.masscascade.filter.FeatureSetFilter;
+import uk.ac.ebi.masscascade.filter.IonFilter;
 import uk.ac.ebi.masscascade.identification.IsotopeFinder;
 import uk.ac.ebi.masscascade.io.PsiMzmlReader;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.server.TaskRunner;
 import uk.ac.ebi.masscascade.smoothing.SavitzkyGolaySmoothing;
-import uk.ac.ebi.masscascade.tracebuilder.ProfileBuilder;
 import uk.ac.ebi.masscascade.utilities.TextUtils;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.range.SimpleRange;
@@ -132,9 +127,9 @@ public class TaskExec extends CommandLineMain {
 
         params = new ParameterMap();
         params.put(Parameter.MZ_WINDOW_PPM, 10);
-        params.put(Parameter.MIN_PROFILE_INTENSITY, 10000);
-        params.put(Parameter.MIN_PROFILE_WIDTH, 6);
-        runner.add(ProfileBuilder.class, params);
+        params.put(Parameter.MIN_FEATURE_INTENSITY, 10000);
+        params.put(Parameter.MIN_FEATURE_WIDTH, 6);
+        runner.add(SequentialFeatureBuilder.class, params);
 
         params = new ParameterMap();
         params.put(Parameter.DURBIN, 2.38);
@@ -154,10 +149,10 @@ public class TaskExec extends CommandLineMain {
         params = new ParameterMap();
         params.put(Parameter.TIME_RANGE, new SimpleRange(0, 1000));
         params.put(Parameter.MZ_RANGE, new SimpleRange(0, 1000));
-        params.put(Parameter.PROFILE_RANGE, new SimpleRange(0, 100));
-        params.put(Parameter.MIN_PROFILE_INTENSITY, 10000);
+        params.put(Parameter.FEATURE_RANGE, new SimpleRange(0, 100));
+        params.put(Parameter.MIN_FEATURE_INTENSITY, 10000);
         params.put(Parameter.KEEP_ISOTOPES, true);
-        runner.add(ProfileFilter.class, params);
+        runner.add(FeatureFilter.class, params);
 
         params = new ParameterMap();
         params.put(Parameter.GAP_INIT, 0.3);
@@ -174,7 +169,7 @@ public class TaskExec extends CommandLineMain {
         params = new ParameterMap();
         params.put(Parameter.MZ_WINDOW_PPM, 20);
         params.put(Parameter.MZ_FOR_REMOVAL, getInterferents());
-        runner.add(MzFilter.class, params);
+        runner.add(IonFilter.class, params);
 
         params = new ParameterMap();
         params.put(Parameter.TIME_WINDOW, 10);
@@ -188,9 +183,9 @@ public class TaskExec extends CommandLineMain {
         params = new ParameterMap();
         params.put(Parameter.TIME_RANGE, new SimpleRange(80, 750));
         params.put(Parameter.MZ_RANGE, new SimpleRange(0, 1000));
-        params.put(Parameter.MIN_PROFILE_INTENSITY, 100000);
+        params.put(Parameter.MIN_FEATURE_INTENSITY, 100000);
         params.put(Parameter.KEEP_ISOTOPES, true);
-        runner.add(SpectrumFilter.class, params);
+        runner.add(FeatureSetFilter.class, params);
     }
 
     private TreeSet<Double> getInterferents() {

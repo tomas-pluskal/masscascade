@@ -35,7 +35,7 @@ element cml {
 
     # a RELAX NG compact syntax pattern for a list of spectra
     element spectrumList {
-        element spectrum {
+        element featureSet {
             attribute id { text },
             element metadataList {
                 element metadata {

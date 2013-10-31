@@ -124,7 +124,7 @@ public class MassBankAPIStub extends org.apache.axis2.client.Stub {
 
         __operation = new org.apache.axis2.description.OutInAxisOperation();
 
-        __operation.setName(new javax.xml.namespace.QName("http://api.massbank", "getProfile"));
+        __operation.setName(new javax.xml.namespace.QName("http://api.massbank", "getFeature"));
         _service.addOperation(__operation);
 
         _operations[8] = __operation;
@@ -973,7 +973,7 @@ public class MassBankAPIStub extends org.apache.axis2.client.Stub {
             org.apache.axiom.soap.SOAPEnvelope env = null;
 
             //Style is taken to be "document". No input parameters
-            // according to the WS-Basic profile in this case we have to send an empty soap message
+            // according to the WS-Basic feature in this case we have to send an empty soap message
             org.apache.axiom.soap.SOAPFactory factory = getFactory(_operationClient.getOptions().getSoapVersionURI());
             env = factory.getDefaultEnvelope();
 
@@ -1069,7 +1069,7 @@ public class MassBankAPIStub extends org.apache.axis2.client.Stub {
         try {
             org.apache.axis2.client.OperationClient _operationClient =
                     _serviceClient.createClient(_operations[8].getName());
-            _operationClient.getOptions().setAction("urn:getProfile");
+            _operationClient.getOptions().setAction("urn:getFeature");
             _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
 
             addPropertyToOperationClient(_operationClient,
@@ -1082,8 +1082,8 @@ public class MassBankAPIStub extends org.apache.axis2.client.Stub {
             org.apache.axiom.soap.SOAPEnvelope env = null;
 
             env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()), getPeak,
-                    optimizeContent(new javax.xml.namespace.QName("http://api.massbank", "getProfile")),
-                    new javax.xml.namespace.QName("http://api.massbank", "getProfile"));
+                    optimizeContent(new javax.xml.namespace.QName("http://api.massbank", "getFeature")),
+                    new javax.xml.namespace.QName("http://api.massbank", "getFeature"));
 
             //adding SOAP soap_headers
             _serviceClient.addHeadersToEnvelope(env);
@@ -1110,16 +1110,16 @@ public class MassBankAPIStub extends org.apache.axis2.client.Stub {
             org.apache.axiom.om.OMElement faultElt = f.getDetail();
             if (faultElt != null) {
                 if (faultExceptionNameMap.containsKey(
-                        new org.apache.axis2.client.FaultMapKey(faultElt.getQName(), "getProfile"))) {
+                        new org.apache.axis2.client.FaultMapKey(faultElt.getQName(), "getFeature"))) {
                     //make the fault by reflection
                     try {
                         String exceptionClassName = (String) faultExceptionClassNameMap.get(
-                                new org.apache.axis2.client.FaultMapKey(faultElt.getQName(), "getProfile"));
+                                new org.apache.axis2.client.FaultMapKey(faultElt.getQName(), "getFeature"));
                         Class exceptionClass = Class.forName(exceptionClassName);
                         Exception ex = (Exception) exceptionClass.newInstance();
                         //message class
                         String messageClassName = (String) faultMessageMap.get(
-                                new org.apache.axis2.client.FaultMapKey(faultElt.getQName(), "getProfile"));
+                                new org.apache.axis2.client.FaultMapKey(faultElt.getQName(), "getFeature"));
                         Class messageClass = Class.forName(messageClassName);
                         Object messageObject = fromOM(faultElt, messageClass, null);
                         java.lang.reflect.Method m =
@@ -1735,7 +1735,7 @@ public class MassBankAPIStub extends org.apache.axis2.client.Stub {
     public static class GetPeak implements org.apache.axis2.databinding.ADBBean {
 
         public static final javax.xml.namespace.QName MY_QNAME =
-                new javax.xml.namespace.QName("http://api.massbank", "getProfile", "ns2");
+                new javax.xml.namespace.QName("http://api.massbank", "getFeature", "ns2");
 
         /**
          * field for Ids
@@ -1837,9 +1837,9 @@ public class MassBankAPIStub extends org.apache.axis2.client.Stub {
                 String namespacePrefix = registerPrefix(xmlWriter, "http://api.massbank");
                 if ((namespacePrefix != null) && (namespacePrefix.trim().length() > 0)) {
                     writeAttribute("xsi", "http://www.w3.org/2001/XMLSchema-instance", "type",
-                            namespacePrefix + ":getProfile", xmlWriter);
+                            namespacePrefix + ":getFeature", xmlWriter);
                 } else {
-                    writeAttribute("xsi", "http://www.w3.org/2001/XMLSchema-instance", "type", "getProfile", xmlWriter);
+                    writeAttribute("xsi", "http://www.w3.org/2001/XMLSchema-instance", "type", "getFeature", xmlWriter);
                 }
             }
             if (localIdsTracker) {
@@ -2118,7 +2118,7 @@ public class MassBankAPIStub extends org.apache.axis2.client.Stub {
 
                             String type = fullTypeName.substring(fullTypeName.indexOf(":") + 1);
 
-                            if (!"getProfile".equals(type)) {
+                            if (!"getFeature".equals(type)) {
                                 //find namespace for the prefix
                                 String nsUri = reader.getNamespaceContext().getNamespaceURI(nsPrefix);
                                 return (GetPeak) ExtensionMapper.getTypeObject(nsUri, type, reader);

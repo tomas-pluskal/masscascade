@@ -22,11 +22,11 @@
 
 package uk.ac.ebi.masscascade.identification;
 
-import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
+import uk.ac.ebi.masscascade.core.featureset.FeatureSetImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -36,17 +36,15 @@ import java.util.ArrayList;
 /**
  * Class implementing an adduct finder method. The initial adduct map is empty and needs to be populated first.
  * <ul>
- * <li>Parameter <code> MZ WINDOW PPM </code>- The mass tolerance in ppm.</li>
- * <li>Parameter <code> ION MODE </code>- The ion mode.</li>
- * <li>Parameter <code> NEUTRAL LOSS </code>- If the input is a list of neutral losses.</li>
- * <li>Parameter <code> ADDUCT LIST </code>- The adducts to be searched for.</li>
- * <li>Parameter <code> SPECTRUM FILE </code>- The input spectrum container.</li>
+ * <li>Parameter <code> MZ_WINDOW_PPM </code>- The mass tolerance in ppm.</li>
+ * <li>Parameter <code> ADDUCT_LIST </code>- The adducts to be searched for.</li>
+ * <li>Parameter <code> FEATURE_SET_FILE </code>- The input feature set container.</li>
  * </ul>
  */
 public class AdductFinder extends CallableTask {
 
     private AdductDetector adductDetector;
-    private SpectrumContainer spectrumContainer;
+    private FeatureSetContainer featureSetContainer;
 
     /**
      * Constructor for a adduct finder task.
@@ -70,10 +68,9 @@ public class AdductFinder extends CallableTask {
      */
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
+        featureSetContainer = params.get(Parameter.FEATURE_SET_CONTAINER, FeatureSetContainer.class);
         adductDetector = new AdductDetector(params.get(Parameter.MZ_WINDOW_PPM, Double.class),
-                params.get(Parameter.ION_MODE, Constants.ION_MODE.class),
-                params.get(Parameter.NEUTRAL_LOSS, Boolean.class));
+                params.get(Parameter.ION_MODE, Constants.ION_MODE.class));
         adductDetector.setAdductList(params.get(Parameter.ADDUCT_LIST, (new ArrayList<AdductSingle>()).getClass()));
     }
 
@@ -83,18 +80,18 @@ public class AdductFinder extends CallableTask {
      * @return the isotope-detected profiles
      */
     @Override
-    public SpectrumContainer call() {
+    public FeatureSetContainer call() {
 
-        String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer outSpectrumContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
-                spectrumContainer.getWorkingDirectory());
+        String id = featureSetContainer.getId() + IDENTIFIER;
+        FeatureSetContainer outFeatureSetContainer = featureSetContainer.getBuilder().newInstance(FeatureSetContainer.class, id,
+                featureSetContainer.getIonMode(), featureSetContainer.getWorkingDirectory());
 
-        for (Spectrum spectrum : spectrumContainer) {
-            adductDetector.findAdducts(((PseudoSpectrum) spectrum).getProfileList());
-            outSpectrumContainer.addSpectrum(spectrum);
+        for (FeatureSet featureSet : featureSetContainer) {
+            adductDetector.findAdducts(((FeatureSetImpl) featureSet).getFeaturesList());
+            outFeatureSetContainer.addFeatureSet(featureSet);
         }
 
-        outSpectrumContainer.finaliseFile();
-        return outSpectrumContainer;
+        outFeatureSetContainer.finaliseFile();
+        return outFeatureSetContainer;
     }
 }

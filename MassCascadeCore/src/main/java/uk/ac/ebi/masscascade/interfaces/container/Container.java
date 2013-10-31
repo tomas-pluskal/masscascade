@@ -22,11 +22,9 @@
 
 package uk.ac.ebi.masscascade.interfaces.container;
 
-import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Feature;
 
 import java.io.File;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * This is a container holding data.
@@ -76,9 +74,9 @@ public interface Container {
     ContainerBuilder getBuilder();
 
     /**
-     * Returns a profile iterator.
+     * Returns a feature iterator.
      *
-     * @return the profile iterator
+     * @return the feature iterator
      */
-    Iterable<Profile> profileIterator();
+    Iterable<Feature> featureIterator();
 }

@@ -24,14 +24,14 @@ package uk.ac.ebi.masscascade.bless.commons;
 
 import uk.ac.ebi.masscascade.core.container.memory.MemoryContainerBuilder;
 import uk.ac.ebi.masscascade.distance.CosineSimilarityDistance;
+import uk.ac.ebi.masscascade.featurebuilder.SequentialFeatureBuilder;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
 import uk.ac.ebi.masscascade.io.PsiMzmlReader;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
-import uk.ac.ebi.masscascade.tracebuilder.ProfileBuilder;
 
 import java.io.File;
 import java.net.URL;
@@ -53,41 +53,41 @@ public class FileLoader {
         }
     }
 
-    public static RawContainer getRawContainer(TESTFILE testFile) {
+    public static ScanContainer getRawContainer(TESTFILE testFile) {
 
         URL url = FileLoader.class.getResource(testFile.getPath());
         File file = new File(url.getFile());
 
-        RawContainer container = MemoryContainerBuilder.getInstance().newInstance(RawContainer.class, file.getName());
+        ScanContainer container = MemoryContainerBuilder.getInstance().newInstance(ScanContainer.class, file.getName());
 
         ParameterMap params = new ParameterMap();
         params.put(Parameter.DATA_FILE, file);
-        params.put(Parameter.RAW_CONTAINER, container);
+        params.put(Parameter.SCAN_CONTAINER, container);
 
         CallableTask task = new PsiMzmlReader(params);
-        return (RawContainer) task.call();
+        return (ScanContainer) task.call();
     }
 
-    public static ProfileContainer getProfileContainer(TESTFILE testFile) {
+    public static FeatureContainer getProfileContainer(TESTFILE testFile) {
 
         ParameterMap params = new ParameterMap();
         params.put(Parameter.MZ_WINDOW_PPM, 10d);
-        params.put(Parameter.MIN_PROFILE_INTENSITY, 1000d);
-        params.put(Parameter.MIN_PROFILE_WIDTH, 4);
-        params.put(Parameter.RAW_CONTAINER, getRawContainer(testFile));
+        params.put(Parameter.MIN_FEATURE_INTENSITY, 1000d);
+        params.put(Parameter.MIN_FEATURE_WIDTH, 4);
+        params.put(Parameter.SCAN_CONTAINER, getRawContainer(testFile));
 
-        CallableTask task = new ProfileBuilder(params);
-        return (ProfileContainer) task.call();
+        CallableTask task = new SequentialFeatureBuilder(params);
+        return (FeatureContainer) task.call();
     }
 
-    public static SpectrumContainer getSpectrumContainer(TESTFILE testFile) {
+    public static FeatureSetContainer getSpectrumContainer(TESTFILE testFile) {
 
         ParameterMap params = new ParameterMap();
         params.put(Parameter.BINS, 10);
         params.put(Parameter.CORRELATION_THRESHOLD, 0.99);
-        params.put(Parameter.PROFILE_CONTAINER, getProfileContainer(testFile));
+        params.put(Parameter.FEATURE_CONTAINER, getProfileContainer(testFile));
 
         CallableTask task = new CosineSimilarityDistance(params);
-        return (SpectrumContainer) task.call();
+        return (FeatureSetContainer) task.call();
     }
 }

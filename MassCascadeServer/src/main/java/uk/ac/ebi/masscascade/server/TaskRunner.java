@@ -26,8 +26,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.alignment.ProfileBinTableModel;
-import uk.ac.ebi.masscascade.alignment.profilebins.ProfileBin;
+import uk.ac.ebi.masscascade.alignment.FeatureBinTableModel;
+import uk.ac.ebi.masscascade.alignment.featurebins.FeatureBin;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
@@ -35,7 +35,7 @@ import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.TextUtils;
-import uk.ac.ebi.masscascade.utilities.comparator.ProfileBinTimeComparator;
+import uk.ac.ebi.masscascade.utilities.comparator.FeatureBinTimeComparator;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -175,14 +175,14 @@ public class TaskRunner {
             double missing = outputParams.get(Parameter.MISSINGNESS, Double.class);
             double defaultValue = outputParams.get(Parameter.DEFAULT, Double.class);
 
-            ProfileBinTableModel model = new ProfileBinTableModel(results, ppm, sec, missing);
+            FeatureBinTableModel model = new FeatureBinTableModel(results, ppm, sec, missing);
 
-            List<ProfileBin> rows = model.getRows();
-            Collections.sort(rows, new ProfileBinTimeComparator());
+            List<FeatureBin> rows = model.getRows();
+            Collections.sort(rows, new FeatureBinTimeComparator());
 
             writer = new FileWriter(outDirectory + File.separator + "masscascade_taskRunner.csv");
 
-            for (ProfileBin row : rows) {
+            for (FeatureBin row : rows) {
 
                 writer.write(row.getMz() + ",");
                 writer.write(row.getRt() + ",");
@@ -191,7 +191,7 @@ public class TaskRunner {
                 writer.write(row.getMzDev() + ",");
 
                 for (int i = 6; i < model.getColumnCount(); i++) {
-                    double intensity = row.isPresent(i - ProfileBin.COLUMNS);
+                    double intensity = row.isPresent(i - FeatureBin.COLUMNS);
                     if (intensity > 0) {
                         writer.write(intensity + ",");
                     } else {

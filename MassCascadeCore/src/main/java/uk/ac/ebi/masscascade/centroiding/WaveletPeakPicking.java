@@ -22,12 +22,12 @@
 
 package uk.ac.ebi.masscascade.centroiding;
 
-import uk.ac.ebi.masscascade.core.raw.RawLevel;
-import uk.ac.ebi.masscascade.core.raw.ScanImpl;
+import uk.ac.ebi.masscascade.core.scan.ScanLevel;
+import uk.ac.ebi.masscascade.core.scan.ScanImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Scan;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -38,24 +38,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class implementing a signal detection method using a continuous wavelet transform.
- * <ul>
- * <li>Parameter <code> NOISE INTENSITY </code>- The estimate of the background noise.</li>
- * <li>Parameter <code> SCALE FACTOR </code>- The scale of the wavelet.</li>
- * <li>Parameter <code> WAVELET WIDTH </code>- The width of the wavelet.</li>
- * <li>Parameter <code> RAW FILE </code>- The input raw container.</li>
- * </ul>
+ * Class implementing a signal detection method using a continuous wavelet transform. <ul> <li>Parameter <code>
+ * NOISE_INTENSITY </code>- The estimate of the background noise.</li> <li>Parameter <code> SCALE_FACTOR </code>- The
+ * scale of the wavelet.</li> <li>Parameter <code> WAVELET_WIDTH </code>- The width of the wavelet.</li> <li>Parameter
+ * <code> SCAN_FILE </code>- The input scan container.</li> </ul>
  */
 public class WaveletPeakPicking extends CallableTask {
 
     private int scaleLevel;
     private double noiseLevel;
     private double windowSize;
-    private RawContainer rawContainer;
+    private ScanContainer scanContainer;
 
     /**
-     * Parameter of the wavelet, NPOINTS is the number of wavelet values to use
-     * The WAVELET_ESL & WAVELET_ESL indicates the Effective Support boundaries
+     * Parameter of the wavelet, NPOINTS is the number of wavelet values to use The WAVELET_ESL & WAVELET_ESL indicates
+     * the Effective Support boundaries
      */
     private static final double NPOINTS = 60000;
     private static final int WAVELET_ESL = -5;
@@ -83,25 +80,25 @@ public class WaveletPeakPicking extends CallableTask {
      */
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        noiseLevel = params.get(Parameter.NOISE_INTENSITY, Double.class);
+        noiseLevel = params.get(Parameter.MIN_FEATURE_INTENSITY, Double.class);
         scaleLevel = params.get(Parameter.SCALE_FACTOR, Integer.class);
         windowSize = params.get(Parameter.WAVELET_WIDTH, Double.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        scanContainer = params.get(Parameter.SCAN_CONTAINER, ScanContainer.class);
     }
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .RawContainer} with the processed data.
+     * .ScanContainer} with the processed data.
      *
-     * @return the raw container with the processed data
+     * @return the scan container with the processed data
      */
     @Override
-    public RawContainer call() {
+    public ScanContainer call() {
 
-        String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer outRawContainer = rawContainer.getBuilder().newInstance(RawContainer.class, id, rawContainer);
+        String id = scanContainer.getId() + IDENTIFIER;
+        ScanContainer outScanContainer = scanContainer.getBuilder().newInstance(ScanContainer.class, id, scanContainer);
 
-        for (RawLevel level : rawContainer.getRawLevels()) {
+        for (ScanLevel level : scanContainer.getScanLevels()) {
 
             List<XYPoint> dataDataPoints;
             XYList processedData;
@@ -109,7 +106,7 @@ public class WaveletPeakPicking extends CallableTask {
 
             if (level.getMsn() == Constants.MSN.MS1) {
 
-                for (Scan scan : rawContainer) {
+                for (Scan scan : scanContainer) {
 
                     dataDataPoints = scan.getData();
                     processedData = new XYList();
@@ -153,12 +150,12 @@ public class WaveletPeakPicking extends CallableTask {
                         intensity /= sqrtScaleLevel;
                         // Eliminate the negative part of the wavelet map
                         if (intensity < 0) intensity = 0;
-                        waveletDataPoints.add(new XYPoint(dataDataPoints.get(dx).x, (double) intensity));
+                        waveletDataPoints.add(new XYPoint(dataDataPoints.get(dx).x, intensity));
                     }
 
                     int peakMaxInd = 0;
                     int stopInd = waveletDataPoints.size() - 1;
-                    List<XYPoint> rawDataPoints = new ArrayList<XYPoint>();
+                    List<XYPoint> scanDataPoints = new ArrayList<>();
 
                     for (int ind = 0; ind <= stopInd; ind++) {
 
@@ -170,13 +167,13 @@ public class WaveletPeakPicking extends CallableTask {
                             break;
                         }
 
-                        // While profile is on
+                        // While feature is on
                         while ((ind <= stopInd) && (waveletDataPoints.get(ind).y > 0)) {
-                            // Check if this is the maximum point of the profile
+                            // Check if this is the maximum point of the feature
                             if (waveletDataPoints.get(ind).y > waveletDataPoints.get(peakMaxInd).y) {
                                 peakMaxInd = ind;
                             }
-                            rawDataPoints.add(dataDataPoints.get(ind));
+                            scanDataPoints.add(dataDataPoints.get(ind));
                             ind++;
                         }
 
@@ -184,30 +181,30 @@ public class WaveletPeakPicking extends CallableTask {
                             break;
                         }
 
-                        rawDataPoints.add(dataDataPoints.get(ind));
+                        scanDataPoints.add(dataDataPoints.get(ind));
 
                         if (dataDataPoints.get(peakMaxInd).y > noiseLevel) {
                             XYPoint peakDataDataPoint =
-                                    new XYPoint(dataDataPoints.get(peakMaxInd).x, calcAproxIntensity(rawDataPoints));
+                                    new XYPoint(dataDataPoints.get(peakMaxInd).x, calcAproxIntensity(scanDataPoints));
 
                             processedData.add(peakDataDataPoint);
                         }
 
-                        rawDataPoints.clear();
+                        scanDataPoints.clear();
                     }
 
                     if (processedData.size() == 0) continue;
 
-                    outRawContainer.addScan(
+                    outScanContainer.addScan(
                             new ScanImpl(scan.getIndex(), scan.getMsn(), scan.getIonMode(), processedData,
                                     scan.getRetentionTime(), scan.getParentScan(), scan.getParentCharge(),
                                     scan.getParentMz()));
                 }
-            } else for (Scan scan : rawContainer.iterator(level.getMsn())) outRawContainer.addScan(scan);
+            } else for (Scan scan : scanContainer.iterator(level.getMsn())) outScanContainer.addScan(scan);
         }
 
-        outRawContainer.finaliseFile(rawContainer.getRawInfo().getDate());
-        return outRawContainer;
+        outScanContainer.finaliseFile(scanContainer.getScanInfo().getDate());
+        return outScanContainer;
     }
 
     /**
@@ -215,7 +212,7 @@ public class WaveletPeakPicking extends CallableTask {
      *
      * @param x step of the wavelet
      * @param a window width of the wavelet
-     * @param b offset from the center of the profile
+     * @param b offset from the center of the feature
      */
     private double cwtMEXHATreal(double x, double a, double b) {
         /* c = 2 / ( sqrt(3) * pi^(1/4) ) */
@@ -232,14 +229,14 @@ public class WaveletPeakPicking extends CallableTask {
     /**
      * Calculates the maximum intensity of the set of points.
      *
-     * @param rawDataPoints set of points
+     * @param scanDataPoints set of points
      * @return the maximum intensity
      */
-    private double calcAproxIntensity(List<XYPoint> rawDataPoints) {
+    private double calcAproxIntensity(List<XYPoint> scanDataPoints) {
 
         double aproxIntensity = 0;
 
-        for (XYPoint d : rawDataPoints) {
+        for (XYPoint d : scanDataPoints) {
             if (d.y > aproxIntensity) aproxIntensity = d.y;
         }
 

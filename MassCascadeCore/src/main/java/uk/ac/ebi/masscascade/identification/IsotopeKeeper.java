@@ -23,14 +23,13 @@
 package uk.ac.ebi.masscascade.identification;
 
 import uk.ac.ebi.masscascade.core.PropertyType;
-import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
+import uk.ac.ebi.masscascade.core.featureset.FeatureSetImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.Property;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
 import uk.ac.ebi.masscascade.interfaces.Range;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.properties.Adduct;
@@ -44,16 +43,16 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class to filter for profiles that have an isotope annotation.
- * * <ul>
- * <li>Parameter <code> TIME WINDOW </code>- The scan window for the alignment in scans.</li>
- * <li>Parameter <code> REFERENCE FILE </code>- The input raw reference container.</li>
- * <li>Parameter <code> SPECTRUM FILE </code>- The input spectrum container.</li>
+ * Class to filter for features that have an isotope annotation.
+ * <ul>
+ * <li>Parameter <code> TIME_WINDOW </code>- The scan window for the alignment in scans.</li>
+ * <li>Parameter <code> REFERENCE_FILE </code>- The input scan reference container.</li>
+ * <li>Parameter <code> FEATURE_SET_FILE </code>- The input feature set container.</li>
  * </ul>
  */
 public class IsotopeKeeper extends CallableTask {
 
-    private SpectrumContainer spectrumContainer;
+    private FeatureSetContainer featureSetContainer;
 
     /**
      * Constructs an isotope keeper task.
@@ -77,74 +76,74 @@ public class IsotopeKeeper extends CallableTask {
      */
     @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
+        featureSetContainer = params.get(Parameter.FEATURE_SET_CONTAINER, FeatureSetContainer.class);
     }
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .RawContainer} with the processed data.
+     * .ScanContainer} with the processed data.
      *
-     * @return the spectrum container with the processed data
+     * @return the featureset container with the processed data
      */
     @Override
-    public SpectrumContainer call() {
+    public FeatureSetContainer call() {
 
-        String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer outSpectrumContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
-                spectrumContainer.getWorkingDirectory());
+        String id = featureSetContainer.getId() + IDENTIFIER;
+        FeatureSetContainer outFeatureSetContainer = featureSetContainer.getBuilder().newInstance(FeatureSetContainer.class, id,
+                featureSetContainer.getIonMode(), featureSetContainer.getWorkingDirectory());
 
         XYList xyList;
         Range rtRange;
-        Profile exProfile;
-        Set<Profile> profileSet;
+        Feature exFeature;
+        Set<Feature> features;
 
-        for (Spectrum spectrum : spectrumContainer) {
+        for (FeatureSet featureSet : featureSetContainer) {
 
             Set<Integer> idSet = new HashSet<>();
             List<Integer> adductParentIds = new ArrayList<>();
 
-            for (Profile profile : ((PseudoSpectrum) spectrum).getProfileList()) {
+            for (Feature feature : ((FeatureSetImpl) featureSet).getFeaturesList()) {
 
-                if (profile.hasProperty(PropertyType.Isotope)) {
-                    idSet.add(profile.getId());
-                    for (Isotope propI : profile.getProperty(PropertyType.Isotope, Isotope.class)) {
-                        if (propI.getValue(Integer.class) == 0 && profile.hasProperty(
+                if (feature.hasProperty(PropertyType.Isotope)) {
+                    idSet.add(feature.getId());
+                    for (Isotope propI : feature.getProperty(PropertyType.Isotope, Isotope.class)) {
+                        if (propI.getValue(Integer.class) == 0 && feature.hasProperty(
                                 PropertyType.Adduct))
-                            adductParentIds.add(profile.getId());
+                            adductParentIds.add(feature.getId());
                     }
                 }
             }
 
-            for (Profile profile : ((PseudoSpectrum) spectrum).getProfileList()) {
+            for (Feature feature : ((FeatureSetImpl) featureSet).getFeaturesList()) {
 
-                if (profile.hasProperty(PropertyType.Adduct)) {
-                    for (Adduct propA : profile.getProperty(PropertyType.Adduct, Adduct.class))
-                        if (adductParentIds.contains((propA).getParentId())) idSet.add(profile.getId());
+                if (feature.hasProperty(PropertyType.Adduct)) {
+                    for (Adduct propA : feature.getProperty(PropertyType.Adduct, Adduct.class))
+                        if (adductParentIds.contains((propA).getParentId())) idSet.add(feature.getId());
                 }
             }
 
             rtRange = new ExtendableRange();
             xyList = new XYList();
-            profileSet = new HashSet<>();
+            features = new HashSet<>();
 
-            for (int profileId : idSet) {
+            for (int featureId : idSet) {
 
-                exProfile = spectrum.getProfile(profileId);
+                exFeature = featureSet.getFeature(featureId);
 
-                if (exProfile == null) continue;
+                if (exFeature == null) continue;
 
-                profileSet.add(exProfile);
-                xyList.add(exProfile.getMzIntDp());
-                rtRange.extendRange(exProfile.getRetentionTime());
+                features.add(exFeature);
+                xyList.add(exFeature.getMzIntDp());
+                rtRange.extendRange(exFeature.getRetentionTime());
             }
 
             if (xyList.isEmpty()) continue;
 
-            outSpectrumContainer.addSpectrum(
-                    new PseudoSpectrum(spectrum.getIndex(), xyList, rtRange, spectrum.getRetentionTime(), profileSet));
+            outFeatureSetContainer.addFeatureSet(
+                    new FeatureSetImpl(featureSet.getIndex(), xyList, rtRange, featureSet.getRetentionTime(), features));
         }
 
-        outSpectrumContainer.finaliseFile();
-        return outSpectrumContainer;
+        outFeatureSetContainer.finaliseFile();
+        return outFeatureSetContainer;
     }
 }

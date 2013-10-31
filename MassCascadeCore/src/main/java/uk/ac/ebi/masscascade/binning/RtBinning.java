@@ -22,15 +22,13 @@
 
 package uk.ac.ebi.masscascade.binning;
 
-import uk.ac.ebi.masscascade.core.container.file.raw.FileRawContainer;
-import uk.ac.ebi.masscascade.core.raw.RawLevel;
-import uk.ac.ebi.masscascade.core.raw.ScanImpl;
+import uk.ac.ebi.masscascade.core.scan.ScanLevel;
+import uk.ac.ebi.masscascade.core.scan.ScanImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Scan;
-import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
@@ -38,18 +36,18 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
 
 /**
  * Class implementing binning for the time domain.
  * <ul>
  * <li>Parameter <code> SCAN WINDOW </code>- The time window.</li>
- * <li>Parameter <code> RAW FILE </code>- The input raw container.</li>
+ * <li>Parameter <code> RAW FILE </code>- The input scan container.</li>
  * </ul>
  */
+@Deprecated
 public class RtBinning extends CallableTask {
 
-    private RawContainer rawContainer;
+    private ScanContainer scanContainer;
 
     private double timeWindow;
     private Scan tmpScan;
@@ -79,26 +77,26 @@ public class RtBinning extends CallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         timeWindow = params.get(Parameter.SCAN_WINDOW, Double.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        scanContainer = params.get(Parameter.SCAN_CONTAINER, ScanContainer.class);
 
         scanIndex = 1;
     }
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .RawContainer} with the processed data.
+     * .ScanContainer} with the processed data.
      *
-     * @return the raw container with the processed data
+     * @return the scan container with the processed data
      */
     @Override
-    public RawContainer call() {
+    public ScanContainer call() {
 
-        String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer outRawContainer = rawContainer.getBuilder().newInstance(RawContainer.class, id, rawContainer);
+        String id = scanContainer.getId() + IDENTIFIER;
+        ScanContainer outScanContainer = scanContainer.getBuilder().newInstance(ScanContainer.class, id, scanContainer);
 
-        for (RawLevel level : rawContainer.getRawLevels()) {
+        for (ScanLevel level : scanContainer.getScanLevels()) {
 
-            Iterator<Scan> scanIter = rawContainer.iterator(level.getMsn()).iterator();
+            Iterator<Scan> scanIter = scanContainer.iterator(level.getMsn()).iterator();
 
             Scan pScan = scanIter.next();
             Scan cScan;
@@ -110,14 +108,14 @@ public class RtBinning extends CallableTask {
                 if ((cScan.getRetentionTime() - pRetentionTime) < timeWindow) {
                     pScan = combineScans(cScan, pScan);
                     if (!scanIter.hasNext()) {
-                        outRawContainer.addScan(getScanCopy(pScan));
+                        outScanContainer.addScan(getScanCopy(pScan));
                     }
                 } else {
-                    outRawContainer.addScan(getScanCopy(pScan));
+                    outScanContainer.addScan(getScanCopy(pScan));
                     pRetentionTime = cScan.getRetentionTime();
                     pScan = cScan;
                     if (!scanIter.hasNext()) {
-                        outRawContainer.addScan(getScanCopy(cScan));
+                        outScanContainer.addScan(getScanCopy(cScan));
                     }
                 }
 
@@ -125,8 +123,8 @@ public class RtBinning extends CallableTask {
                 tmpScan = null;
             }
         }
-        outRawContainer.finaliseFile(rawContainer.getRawInfo().getDate());
-        return outRawContainer;
+        outScanContainer.finaliseFile(scanContainer.getScanInfo().getDate());
+        return outScanContainer;
     }
 
     /**

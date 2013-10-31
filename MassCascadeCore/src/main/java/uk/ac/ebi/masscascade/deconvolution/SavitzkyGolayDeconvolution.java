@@ -23,12 +23,12 @@
 package uk.ac.ebi.masscascade.deconvolution;
 
 import org.apache.commons.math3.util.FastMath;
-import uk.ac.ebi.masscascade.core.profile.ProfileImpl;
+import uk.ac.ebi.masscascade.core.feature.FeatureImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -47,11 +47,11 @@ import java.util.List;
  * first derivative is used to determine the peak's range, and the second derivative to determine the intensity of
  * the peak.
  * <ul>
- * <li>Parameter <code> SCAN WINDOW </code>- The number of scans defining the time window.</li>
- * <li>Parameter <code> MIN PROFILE INTENSITY </code>- The minimum intensity of the deconvoluted profiles.</li>
- * <li>Parameter <code> DERIVATIVE THRESHOLD </code>- The minimum intensity of the 2nd derivative.</li>
- * <li>Parameter <code> RAW FILE </code>- The input raw container.</li>
- * <li>Parameter <code> PROFILE FILE </code>- The input profile container.</li>
+ * <li>Parameter <code> SCAN_WINDOW </code>- The number of scans defining the time window.</li>
+ * <li>Parameter <code> MIN_FEATURE_INTENSITY </code>- The minimum intensity of the deconvoluted features.</li>
+ * <li>Parameter <code> DERIVATIVE_THRESHOLD </code>- The minimum intensity of the 2nd derivative.</li>
+ * <li>Parameter <code> SCAN_FILE </code>- The input raw container.</li>
+ * <li>Parameter <code> FEATURE_FILE </code>- The input feature container.</li>
  * </ul>
  */
 public class SavitzkyGolayDeconvolution extends CallableTask {
@@ -60,15 +60,15 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
     private int width;
     private double intensity;
     private int sgFilterWidth;
-    private int profileIndex;
+    private int featureIndex;
 
-    private ProfileContainer profileContainer;
-    private RawContainer rawContainer;
+    private FeatureContainer featureContainer;
+    private ScanContainer scanContainer;
 
     private static final double RAD_ANGLE_IV = -2.0 * FastMath.PI / 180.0;
 
     /**
-     * Constructor for a profile deconvolution task.
+     * Constructor for a feature deconvolution task.
      *
      * @param params the parameter map
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
@@ -81,7 +81,7 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
     }
 
     /**
-     * Sets the parameters for the profile deconvolution task.
+     * Sets the parameters for the feature deconvolution task.
      *
      * @param params the new parameters value
      * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
@@ -90,83 +90,83 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         width = params.get(Parameter.SCAN_WINDOW, Integer.class);
-        intensity = params.get(Parameter.MIN_PROFILE_INTENSITY, Double.class);
+        intensity = params.get(Parameter.MIN_FEATURE_INTENSITY, Double.class);
         intensityThreshold = params.get(Parameter.DERIVATIVE_THRESHOLD, Double.class);
         sgFilterWidth = params.get(Parameter.SG_LEVEL, Integer.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        scanContainer = params.get(Parameter.SCAN_CONTAINER, ScanContainer.class);
+        featureContainer = params.get(Parameter.FEATURE_CONTAINER, FeatureContainer.class);
 
-        profileIndex = 1;
+        featureIndex = 1;
     }
 
     /**
-     * Executes the profile deconvolution method.
+     * Executes the feature deconvolution method.
      *
-     * @return the deconvoluted profile collection
+     * @return the deconvoluted feature collection
      */
     @Override
-    public ProfileContainer call() {
+    public FeatureContainer call() {
 
-        String id = profileContainer.getId() + IDENTIFIER;
-        ProfileContainer outProfileContainer = profileContainer.getBuilder().newInstance(ProfileContainer.class, id,
-                profileContainer.getWorkingDirectory());
+        String id = featureContainer.getId() + IDENTIFIER;
+        FeatureContainer outFeatureContainer = featureContainer.getBuilder().newInstance(FeatureContainer.class, id,
+                featureContainer.getIonMode(), featureContainer.getWorkingDirectory());
 
-        XYList profileData;
-        for (Profile profile : profileContainer) {
+        XYList featureData;
+        for (Feature feature : featureContainer) {
 
-            profileData = profile.getTrace(sgFilterWidth).getData();
+            featureData = feature.getTrace(sgFilterWidth).getData();
 
             // Calculate intensity statistics.
             double minIntensity = 0.0;
             double maxIntensity = 0.0;
             double avgIntensity = 0.0;
-            for (final XYPoint dp : profileData) {
+            for (final XYPoint dp : featureData) {
 
                 minIntensity = FastMath.min(dp.y, minIntensity);
                 maxIntensity = FastMath.max(dp.y, maxIntensity);
                 avgIntensity += dp.y;
             }
 
-            avgIntensity /= (double) profileData.size();
-            final List<Profile> resolvedPeaks = new ArrayList<>(2);
+            avgIntensity /= (double) featureData.size();
+            final List<Feature> resolvedPeaks = new ArrayList<>(2);
 
             // If the current chromatogram has characteristics of background or just noise return an empty array.
             if (avgIntensity > maxIntensity / 2.0) continue;
 
             // Calculate second derivatives of intensity values.
             final double[] secondDerivative =
-                    SavitzkyGolayDerivative.calculateDerivative(profileData, false, sgFilterWidth);
+                    SavitzkyGolayDerivative.calculateDerivative(featureData, false, sgFilterWidth);
 
             // Calculate noise threshold.
             final double noiseThreshold = calcDerivativeThreshold(secondDerivative, intensityThreshold);
 
             // Search for peaks.
-            final List<Profile> resolvedOriginalPeaks = peaksSearch(profile, secondDerivative, noiseThreshold);
+            final List<Feature> resolvedOriginalPeaks = peaksSearch(feature, secondDerivative, noiseThreshold);
 
             // Apply final filter of detected peaks, according with setup parameters.
-            for (final Profile p : resolvedOriginalPeaks) {
+            for (final Feature p : resolvedOriginalPeaks) {
 
                 if (p.getData().size() >= width && p.getDifIntensity() - p.getMinIntensity() >= intensity)
-                    outProfileContainer.addProfile(p);
+                    outFeatureContainer.addFeature(p);
             }
         }
 
-        outProfileContainer.finaliseFile();
-        return outProfileContainer;
+        outFeatureContainer.finaliseFile();
+        return outFeatureContainer;
     }
 
     /**
      * Deconvolutes the given mass trace.
      *
-     * @param profile                 the original profile
+     * @param feature                 the original feature
      * @param derivativeOfIntensities the derived intensity values
      * @param intensityThreshold      the intensity threshold
      * @return the deconvoluted trace components
      */
-    private List<Profile> peaksSearch(final Profile profile, final double[] derivativeOfIntensities,
-            final double intensityThreshold) {
+    private List<Feature> peaksSearch(final Feature feature, final double[] derivativeOfIntensities,
+                                      final double intensityThreshold) {
 
-        List<Profile> profileList = new ArrayList<>();
+        List<Feature> featureList = new ArrayList<>();
 
         // Flag to identify the current and next overlapped peak.
         boolean activeFirstPeak = false;
@@ -248,7 +248,7 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
             // the chromatogram.
             if (corEnd - corStart > 0 && !activeFirstPeak) {
 
-                XYZList data = profile.getData();
+                XYZList data = feature.getData();
                 if (corStart < 0) corStart = 0;
                 if (data.get(corStart).z > data.get(corStart + 1).z) while (isFoward(corStart, data)) corStart++;
                 else while (isBackward(corStart, data)) corStart--;
@@ -264,24 +264,24 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
                 pCorStart = corStart;
                 pCorEnd = corEnd;
 
-                Profile deconProfile;
+                Feature deconFeature;
                 if (data.get(corStart).z == Constants.MIN_ABUNDANCE)
-                    deconProfile = new ProfileImpl(profileIndex, data.get(corStart), profile.getMzRange());
+                    deconFeature = new FeatureImpl(featureIndex, data.get(corStart), feature.getMzRange());
                 else {
-                    deconProfile =
-                            new ProfileImpl(profileIndex, new YMinPoint(data.get(corStart).y), data.get(corStart - 1).x,
-                                    profile.getMzRange());
-                    deconProfile.addProfilePoint(data.get(corStart));
+                    deconFeature =
+                            new FeatureImpl(featureIndex, new YMinPoint(data.get(corStart).y), data.get(corStart - 1).x,
+                                    feature.getMzRange());
+                    deconFeature.addFeaturePoint(data.get(corStart));
                 }
                 corStart++;
-                profileIndex++;
+                featureIndex++;
 
                 for (int current = corStart; current < corEnd; current++)
-                    deconProfile.addProfilePoint(data.get(current));
-                if (data.get(corEnd - 1).z == Constants.MIN_ABUNDANCE) deconProfile.closeProfile();
-                else deconProfile.closeProfile(data.get(corEnd).x);
-                deconProfile.setMsnScans(profile.getMsnScans(rawContainer, deconProfile.getRtRange()));
-                profileList.add(deconProfile);
+                    deconFeature.addFeaturePoint(data.get(current));
+                if (data.get(corEnd - 1).z == Constants.MIN_ABUNDANCE) deconFeature.closeFeature();
+                else deconFeature.closeFeature(data.get(corEnd).x);
+                deconFeature.setMsnScans(feature.getMsnScans(scanContainer, deconFeature.getRtRange()));
+                featureList.add(deconFeature);
                 // If exists next overlapped peak, swap the indexes between next and current, and clean ending index
                 // for this new current peak.
                 if (activeSecondPeak) {
@@ -300,15 +300,14 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
             }
         }
 
-        return profileList;
+        return featureList;
     }
 
     /**
-     * Checks whether the current profile data index moves one forward:
-     * atan2 in IV from 0 - -pi/2
+     * Checks whether the current feature data index moves one forward: atan2 in IV from 0 - -pi/2
      *
-     * @param curr the current profile data index
-     * @param data the profile data
+     * @param curr the current feature data index
+     * @param data the feature data
      * @return whether to move one forward
      */
     private boolean isFoward(int curr, XYZList data) {
@@ -317,11 +316,11 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
     }
 
     /**
-     * Checks whether the current profile data index moves one back:
-     * atan2 in III from -pi/2 - -pi transformed to atan2 in IV from 0 - -pi/2 via x-axis inversion
+     * Checks whether the current feature data index moves one back: atan2 in III from -pi/2 - -pi transformed to atan2
+     * in IV from 0 - -pi/2 via x-axis inversion
      *
-     * @param curr the current profile data index
-     * @param data the profile data
+     * @param curr the current feature data index
+     * @param data the feature data
      * @return whether to move one back
      */
     private boolean isBackward(int curr, XYZList data) {
@@ -337,7 +336,7 @@ public class SavitzkyGolayDeconvolution extends CallableTask {
      * @return double derivative threshold level.
      */
     private double calcDerivativeThreshold(final double[] derivativeIntensities,
-            final double comparativeThresholdLevel) {
+                                           final double comparativeThresholdLevel) {
 
         final int length = derivativeIntensities.length;
         final double[] intensities = new double[length];

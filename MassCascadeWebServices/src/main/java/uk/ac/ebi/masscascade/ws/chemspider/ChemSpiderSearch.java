@@ -27,21 +27,17 @@ import com.google.common.collect.Multimap;
 import com.google.common.primitives.Ints;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Level;
-import uk.ac.ebi.masscascade.core.container.file.profile.FileProfileContainer;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableWebservice;
-import uk.ac.ebi.masscascade.interfaces.Profile;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.properties.Identity;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +56,7 @@ import java.util.concurrent.Future;
  * <li>Parameter <code> ION MODE </code>- The ion mode.</li>
  * <li>Parameter <code> DATABASES </code>- The databases to be queried.</li>
  * <li>Parameter <code> SECURITY TOKEN </code>- The ChemSpider security token.</li>
- * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input spectrum container.</li>
+ * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input featureset container.</li>
  * </ul>
  */
 public class ChemSpiderSearch extends CallableWebservice {
@@ -70,7 +66,7 @@ public class ChemSpiderSearch extends CallableWebservice {
     private double massTolerance;
     private String[] databases;
     private ChemSpiderWrapper wrapper;
-    private SpectrumContainer spectrumContainer;
+    private FeatureSetContainer featureSetContainer;
 
     /**
      * Constructs a web task for the ChemSpider web service.
@@ -98,30 +94,30 @@ public class ChemSpiderSearch extends CallableWebservice {
         massTolerance = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         ionMode = params.get(Parameter.ION_MODE, Constants.ION_MODE.class);
         token = params.get(Parameter.SECURITY_TOKEN, String.class);
-        spectrumContainer = params.get(Parameter.SPECTRUM_CONTAINER, SpectrumContainer.class);
+        featureSetContainer = params.get(Parameter.FEATURE_SET_CONTAINER, FeatureSetContainer.class);
         databases = params.get(Parameter.DATABASES, (new String[0]).getClass());
     }
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .SpectrumContainer} with the processed data.
+     * .FeatureSetContainer} with the processed data.
      *
-     * @return the spectrum container with the processed data
+     * @return the featureset container with the processed data
      */
-    public SpectrumContainer call() {
+    public FeatureSetContainer call() {
 
-        String id = spectrumContainer.getId() + IDENTIFIER;
-        SpectrumContainer outContainer = spectrumContainer.getBuilder().newInstance(SpectrumContainer.class, id,
-                spectrumContainer.getWorkingDirectory());
+        String id = featureSetContainer.getId() + IDENTIFIER;
+        FeatureSetContainer outContainer = featureSetContainer.getBuilder().newInstance(FeatureSetContainer.class, id,
+                featureSetContainer.getIonMode(), featureSetContainer.getWorkingDirectory());
 
         wrapper = new ChemSpiderWrapper();
 
         ExecutorService executor = Executors.newFixedThreadPool(Constants.NTHREADS);
         List<Future<Multimap<Integer, Integer>>> futureList = new ArrayList<>();
 
-        for (Profile profile : spectrumContainer.profileIterator()) {
+        for (Feature feature : featureSetContainer.featureIterator()) {
 
-            Callable<Multimap<Integer, Integer>> css = new Searcher(profile);
+            Callable<Multimap<Integer, Integer>> css = new Searcher(feature);
             futureList.add(executor.submit(css));
         }
 
@@ -143,11 +139,11 @@ public class ChemSpiderSearch extends CallableWebservice {
                 wrapper.getMassSpecAPIGetExtendedCompoundInfoArrayResults(Ints.toArray(allUniqueCsids), token);
 
         Map<String, String> propMap;
-        for (Spectrum spectrum : spectrumContainer) {
-            for (Profile profile : spectrum) {
-                if (profileIdToCsids.containsKey(profile.getId())) {
+        for (FeatureSet featureSet : featureSetContainer) {
+            for (Feature feature : featureSet) {
+                if (profileIdToCsids.containsKey(feature.getId())) {
                     Set<String> inchis = new HashSet<>();
-                    for (int csid : profileIdToCsids.get(profile.getId())) {
+                    for (int csid : profileIdToCsids.get(feature.getId())) {
                         propMap = csidMap.get(csid);
                         String ident = propMap.get("CSID");
                         String name = propMap.get("CommonName");
@@ -155,7 +151,7 @@ public class ChemSpiderSearch extends CallableWebservice {
                         double identMass = Double.parseDouble(propMap.get("MonoisotopicMass"));
 
                         // mass difference to query mass in ppm
-                        double mass = profile.getMz();
+                        double mass = feature.getMz();
                         if (ionMode == Constants.ION_MODE.POSITIVE) mass -= Constants.PARTICLES.PROTON.getMass();
                         else if (ionMode == Constants.ION_MODE.NEGATIVE) mass += Constants.PARTICLES.PROTON.getMass();
                         double score = FastMath.abs((mass - identMass) * Constants.PPM / mass);
@@ -164,12 +160,12 @@ public class ChemSpiderSearch extends CallableWebservice {
 
                         if (inchis.contains(notation)) continue;
 
-                        profile.setProperty(identity);
+                        feature.setProperty(identity);
                         inchis.add(notation);
                     }
                 }
             }
-            outContainer.addSpectrum(spectrum);
+            outContainer.addFeatureSet(featureSet);
         }
 
         outContainer.finaliseFile();
@@ -177,32 +173,32 @@ public class ChemSpiderSearch extends CallableWebservice {
     }
 
     /**
-     * Runs ChemSpider's <code> SearchByMass </code> web service on the query profile.
+     * Runs ChemSpider's <code> SearchByMass </code> web service on the query feature.
      */
     class Searcher implements Callable<Multimap<Integer, Integer>> {
 
-        private Profile profile;
+        private Feature feature;
 
         /**
          * Constructs a ChemSpider search helper.
          *
-         * @param profile the profile for the query.
+         * @param feature the feature for the query.
          */
-        public Searcher(Profile profile) {
-            this.profile = profile;
+        public Searcher(Feature feature) {
+            this.feature = feature;
         }
 
         /**
-         * Converts the profile into a ChemSpider compatible format and queries ChemSpider for compounds matching the
+         * Converts the feature into a ChemSpider compatible format and queries ChemSpider for compounds matching the
          * mass.
          *
-         * @return the profile id to ChemSpider Ids map
+         * @return the feature id to ChemSpider Ids map
          * @throws Exception if unable to run the web service
          */
         @Override
         public Multimap<Integer, Integer> call() throws Exception {
 
-            double mass = profile.getMz();
+            double mass = feature.getMz();
             if (ionMode == Constants.ION_MODE.POSITIVE) mass -= Constants.PARTICLES.PROTON.getMass();
             else if (ionMode == Constants.ION_MODE.NEGATIVE) mass += Constants.PARTICLES.PROTON.getMass();
 
@@ -212,7 +208,7 @@ public class ChemSpiderSearch extends CallableWebservice {
             int[] csids = wrapper.getSearchGetAsyncSearchResultResults(result, token);
 
             Multimap<Integer, Integer> profileIdToCsids = HashMultimap.create();
-            if (csids != null) profileIdToCsids.putAll(profile.getId(), Ints.asList(csids));
+            if (csids != null) profileIdToCsids.putAll(feature.getId(), Ints.asList(csids));
             return profileIdToCsids;
         }
     }

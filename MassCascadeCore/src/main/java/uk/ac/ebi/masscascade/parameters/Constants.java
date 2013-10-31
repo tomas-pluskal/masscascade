@@ -91,7 +91,7 @@ public class Constants {
      * Values for ion mode.
      */
     public enum ION_MODE {
-        POSITIVE, NEGATIVE, IN_SILICO, NEUTRAL
+        POSITIVE, NEGATIVE, UNKNOWN, NEUTRAL
     }
 
     /*

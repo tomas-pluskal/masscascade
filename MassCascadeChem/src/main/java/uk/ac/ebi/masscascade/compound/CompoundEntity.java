@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A chemical entity associated with a signal of a compound spectrum.
+ * A chemical entity associated with a signal of a compound featureset.
  */
 public class CompoundEntity {
 

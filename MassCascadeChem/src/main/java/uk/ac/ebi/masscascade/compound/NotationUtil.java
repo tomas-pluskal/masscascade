@@ -83,7 +83,7 @@ public class NotationUtil {
     }
 
     /**
-     * Converts a SMILES or InChI line notation into a raw CDK molecule with 2D layout.
+     * Converts a SMILES or InChI line notation into a scan CDK molecule with 2D layout.
      *
      * @param notation the SMILES or InChI
      * @return the layout CDK molecule
@@ -113,7 +113,7 @@ public class NotationUtil {
     }
 
     /**
-     * Converts a SMILES or InChI line notation into a raw CDK molecule.
+     * Converts a SMILES or InChI line notation into a scan CDK molecule.
      *
      * @param notation the SMILES or InChI
      * @return the CDK molecule

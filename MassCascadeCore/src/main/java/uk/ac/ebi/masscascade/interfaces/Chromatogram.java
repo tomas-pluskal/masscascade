@@ -26,7 +26,7 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
 /**
- * This is a chromatogram that describes a chromatographic profile.
+ * This is a chromatogram that describes a chromatographic feature.
  */
 public interface Chromatogram {
 

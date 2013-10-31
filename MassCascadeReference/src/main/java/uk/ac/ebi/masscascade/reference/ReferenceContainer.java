@@ -23,7 +23,7 @@
 package uk.ac.ebi.masscascade.reference;
 
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
-import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Feature;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.interfaces.container.ContainerBuilder;
 import uk.ac.ebi.masscascade.parameters.Constants;
@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -95,10 +94,10 @@ public class ReferenceContainer implements Container, Iterable<ReferenceSpectrum
     }
 
     /**
-     * Adds a reference spectrum to the container. The spectrum is only added if the spectrum id is not already present
+     * Adds a reference featureset to the container. The featureset is only added if the featureset id is not already present
      * in the container.
      *
-     * @param spectrum the reference spectrum
+     * @param spectrum the reference featureset
      */
     public void addSpectrum(ReferenceSpectrum spectrum) {
 
@@ -194,12 +193,12 @@ public class ReferenceContainer implements Container, Iterable<ReferenceSpectrum
     }
 
     /**
-     * Returns a profile iterator.
+     * Returns a feature iterator.
      *
-     * @return the profile iterator
+     * @return the feature iterator
      */
     @Override
-    public Iterable<Profile> profileIterator() {
+    public Iterable<Feature> featureIterator() {
         throw new MassCascadeException("Method not implemented");
     }
 }

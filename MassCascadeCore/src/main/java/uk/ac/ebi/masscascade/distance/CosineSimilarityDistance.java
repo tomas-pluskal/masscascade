@@ -26,15 +26,15 @@ import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
-import uk.ac.ebi.masscascade.core.spectrum.PseudoSpectrum;
+import uk.ac.ebi.masscascade.core.featureset.FeatureSetImpl;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.identification.JGraphTSync;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Feature;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
 import uk.ac.ebi.masscascade.interfaces.Range;
-import uk.ac.ebi.masscascade.interfaces.Spectrum;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
-import uk.ac.ebi.masscascade.interfaces.container.SpectrumContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
@@ -52,13 +52,13 @@ import java.util.Set;
  * <ul>
  * <li>Parameter <code> BINS </code>- The number of bins.</li>
  * <li>Parameter <code> CORRELATION THRESHOLD </code>- The similarity threshold.</li>
- * <li>Parameter <code> PROFILE FILE </code>- The input profile container.</li>
+ * <li>Parameter <code> PROFILE FILE </code>- The input feature container.</li>
  * </ul>
  */
 public class CosineSimilarityDistance extends CallableTask {
 
-    private ProfileContainer profileContainer;
-    private SpectrumContainer spectrumContainer;
+    private FeatureContainer featureContainer;
+    private FeatureSetContainer featureSetContainer;
 
     private int bins;
     private double threshold;
@@ -88,7 +88,7 @@ public class CosineSimilarityDistance extends CallableTask {
     @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        profileContainer = params.get(Parameter.PROFILE_CONTAINER, ProfileContainer.class);
+        featureContainer = params.get(Parameter.FEATURE_CONTAINER, FeatureContainer.class);
         threshold = params.get(Parameter.CORRELATION_THRESHOLD, Double.class);
         bins = params.get(Parameter.BINS, Integer.class);
 
@@ -97,85 +97,85 @@ public class CosineSimilarityDistance extends CallableTask {
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .RawContainer} with the processed data.
+     * .ScanContainer} with the processed data.
      *
-     * @return the spectrum container with the processed data
+     * @return the featureset container with the processed data
      */
     @Override
-    public SpectrumContainer call() {
+    public FeatureSetContainer call() {
 
-        String id = profileContainer.getId() + IDENTIFIER;
-        spectrumContainer = profileContainer.getBuilder().newInstance(SpectrumContainer.class, id,
-                profileContainer.getWorkingDirectory());
+        String id = featureContainer.getId() + IDENTIFIER;
+        featureSetContainer = featureContainer.getBuilder().newInstance(FeatureSetContainer.class, id,
+                featureContainer.getIonMode(), featureContainer.getWorkingDirectory());
 
-        correlate(profileContainer.getProfileList());
+        correlate(featureContainer.getFeatureList());
 
-        spectrumContainer.finaliseFile();
-        return spectrumContainer;
+        featureSetContainer.finaliseFile();
+        return featureSetContainer;
     }
 
     /**
      * Performs a pairwise correlation of all profiles in the list and finds connected components above the threshold
      * in the resulting matrix. Connected and unconnected components are parsed into separated pseudospectra.
      *
-     * @param profileList the list of profiles
+     * @param featureList the list of profiles
      */
     @SuppressWarnings("deprecation")
-    public void correlate(List<Profile> profileList) {
+    public void correlate(List<Feature> featureList) {
 
         double vectorDistance;
         XYList rowData;
         XYList colData;
 
         UndirectedGraph graph = new SimpleGraph(DefaultEdge.class);
-        for (int row = 0; row < profileList.size(); row++) {
+        for (int row = 0; row < featureList.size(); row++) {
             for (int column = 0; column < row; column++) {
 
-                rowData = profileList.get(row).getTrace().getData();
-                colData = profileList.get(column).getTrace().getData();
+                rowData = featureList.get(row).getTrace().getData();
+                colData = featureList.get(column).getTrace().getData();
 
                 if (!isOverlapping(rowData, colData)) continue;
 
                 vectorDistance = cosineSimilarity.getDistance(rowData, colData);
                 if (vectorDistance >= threshold)
-                    JGraphTSync.addEdgeWithVertices(graph, profileList.get(row), profileList.get(column));
+                    JGraphTSync.addEdgeWithVertices(graph, featureList.get(row), featureList.get(column));
             }
         }
 
         ConnectivityInspector connectivityChecker = new ConnectivityInspector(graph);
-        List<Set<Profile>> connectedProfiles = connectivityChecker.connectedSets();
+        List<Set<Feature>> connectedProfiles = connectivityChecker.connectedSets();
 
         int index = 1;
 
-        for (Set<Profile> profileSet : connectedProfiles) {
+        for (Set<Feature> featureSet : connectedProfiles) {
 
-            double rt = profileSet.iterator().next().getRetentionTime();
+            double rt = featureSet.iterator().next().getRetentionTime();
             Range range = new ExtendableRange(rt);
             XYList spectrumData = new XYList();
             rt = 0;
-            for (Profile profile : profileSet) {
-                spectrumData.add(profile.getMzIntDp());
-                range.extendRange(profile.getRetentionTime());
-                rt += profile.getRetentionTime();
+            for (Feature feature : featureSet) {
+                spectrumData.add(feature.getMzIntDp());
+                range.extendRange(feature.getRetentionTime());
+                rt += feature.getRetentionTime();
             }
-            rt /= profileSet.size();
+            rt /= featureSet.size();
 
             Collections.sort(spectrumData);
-            Spectrum pseudoSpectrum = new PseudoSpectrum(index++, spectrumData, range, rt, profileSet);
+            FeatureSet pseudoFeatureSet = new FeatureSetImpl(index++, spectrumData, range, rt, featureSet);
 
-            spectrumContainer.addSpectrum(pseudoSpectrum);
+            featureSetContainer.addFeatureSet(pseudoFeatureSet);
         }
 
-        profileList.removeAll(graph.vertexSet());
-        for (Profile profile : profileList) {
+        featureList.removeAll(graph.vertexSet());
+        for (Feature feature : featureList) {
             XYList spectrumData = new XYList();
-            spectrumData.add(profile.getMzIntDp());
-            Range range = new ExtendableRange(profile.getRetentionTime(), profile.getRetentionTime());
-            Set<Profile> pSet = new HashSet<>();
-            pSet.add(profile);
-            Spectrum pseudoSpectrum =
-                    new PseudoSpectrum(index++, spectrumData, range, profile.getRetentionTime(), pSet);
-            spectrumContainer.addSpectrum(pseudoSpectrum);
+            spectrumData.add(feature.getMzIntDp());
+            Range range = new ExtendableRange(feature.getRetentionTime(), feature.getRetentionTime());
+            Set<Feature> pSet = new HashSet<>();
+            pSet.add(feature);
+            FeatureSet pseudoFeatureSet =
+                    new FeatureSetImpl(index++, spectrumData, range, feature.getRetentionTime(), pSet);
+            featureSetContainer.addFeatureSet(pseudoFeatureSet);
         }
     }
 

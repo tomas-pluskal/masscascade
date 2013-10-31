@@ -25,31 +25,21 @@ package uk.ac.ebi.masscascade.alignment;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import uk.ac.ebi.masscascade.interfaces.Profile;
+import uk.ac.ebi.masscascade.interfaces.Feature;
 import uk.ac.ebi.masscascade.interfaces.Range;
-import uk.ac.ebi.masscascade.interfaces.Trace;
-import uk.ac.ebi.masscascade.interfaces.container.ProfileContainer;
+import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
-import uk.ac.ebi.masscascade.utilities.DataUtils;
 import uk.ac.ebi.masscascade.utilities.TextUtils;
-import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
-import uk.ac.ebi.masscascade.utilities.xyz.XYTrace;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
- * Helper class for the Obiwarp task. The class provides methods to generate mz and time bins from the list of profiles
- * to be aligned and convert <link> ProfileContainer </link> into lmata files.
+ * Helper class for the Obiwarp task. The class provides methods to generate mz and time bins from the list of features
+ * to be aligned and converts <link> FeatureContainer </link> into lmata files.
  */
 public class ObiwarpHelper {
 
@@ -75,20 +65,20 @@ public class ObiwarpHelper {
     }
 
     /**
-     * Builds a lmata file from the profile container.
+     * Builds a lmata file from the feature container.
      *
-     * @param container the profile container
+     * @param container the feature container
      * @return the lmata file
      */
-    public File buildLmataFile(ProfileContainer container) {
+    public File buildLmataFile(FeatureContainer container) {
 
         int nMzBins = (int) FastMath.ceil((mzRange.getUpperBounds() - mzRange.getLowerBounds()) / mzBinSize);
 
         double zMax = 0;
         double[][] lmataArray = new double[nTimeBins][nMzBins];
-        for (Profile profile : container) {
-            int mzBin = (int) FastMath.floor((profile.getMz() - mzRange.getLowerBounds()) / mzBinSize);
-            for (XYZPoint dp : profile.getData()) {
+        for (Feature feature : container) {
+            int mzBin = (int) FastMath.floor((feature.getMz() - mzRange.getLowerBounds()) / mzBinSize);
+            for (XYZPoint dp : feature.getData()) {
                 int timeBin = (int) FastMath.floor((dp.x - timeRange.getLowerBounds()) / timeBinSize);
                 if (timeBin < 0) timeBin = 0;
                 if (timeBin >= nTimeBins) timeBin = nTimeBins - 1;

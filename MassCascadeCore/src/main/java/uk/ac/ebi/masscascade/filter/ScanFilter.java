@@ -22,13 +22,13 @@
 
 package uk.ac.ebi.masscascade.filter;
 
-import uk.ac.ebi.masscascade.core.raw.RawLevel;
+import uk.ac.ebi.masscascade.core.scan.ScanLevel;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
-import uk.ac.ebi.masscascade.interfaces.container.RawContainer;
+import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
 import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
@@ -40,9 +40,9 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 /**
  * Class to filter a collection of scans by the given mass and time range.
  * <ul>
- * <li>Parameter <code> MZ RANGE </code>- The mass range used for filtering in amu.</li>
- * <li>Parameter <code> TIME RANGE </code>- The retention time range used for filtering in seconds.</li>
- * <li>Parameter <code> RAW FILE </code>- The input raw container.</li>
+ * <li>Parameter <code> MZ_RANGE </code>- The mass range used for filtering in amu.</li>
+ * <li>Parameter <code> TIME_RANGE </code>- The retention time range used for filtering in seconds.</li>
+ * <li>Parameter <code> SCAN_FILE </code>- The input scan container.</li>
  * </ul>
  */
 public class ScanFilter extends CallableTask {
@@ -50,7 +50,7 @@ public class ScanFilter extends CallableTask {
     private Range timeRange;
     private Range massRange;
 
-    private RawContainer rawContainer;
+    private ScanContainer scanContainer;
 
     /**
      * Constructs a scan filter task.
@@ -77,26 +77,26 @@ public class ScanFilter extends CallableTask {
 
         massRange = params.get(Parameter.MZ_RANGE, ExtendableRange.class);
         timeRange = params.get(Parameter.TIME_RANGE, ExtendableRange.class);
-        rawContainer = params.get(Parameter.RAW_CONTAINER, RawContainer.class);
+        scanContainer = params.get(Parameter.SCAN_CONTAINER, ScanContainer.class);
     }
 
     /**
      * Executes the task. The <code> Callable </code> returns a {@link uk.ac.ebi.masscascade.interfaces.container
-     * .RawContainer} with the processed data.
+     * .ScanContainer} with the processed data.
      *
-     * @return the raw container with the processed data
+     * @return the scan container with the processed data
      */
     @Override
     public Container call() {
 
-        String id = rawContainer.getId() + IDENTIFIER;
-        RawContainer outRawContainer = rawContainer.getBuilder().newInstance(RawContainer.class, id, rawContainer);
+        String id = scanContainer.getId() + IDENTIFIER;
+        ScanContainer outScanContainer = scanContainer.getBuilder().newInstance(ScanContainer.class, id, scanContainer);
 
-        for (RawLevel level : rawContainer.getRawLevels()) {
+        for (ScanLevel level : scanContainer.getScanLevels()) {
 
             if (level.getMsn() == Constants.MSN.MS1) {
 
-                for (Scan scan : rawContainer) {
+                for (Scan scan : scanContainer) {
                     XYList xyList = new XYList();
                     if (timeRange.contains(scan.getRetentionTime())) {
 
@@ -104,17 +104,17 @@ public class ScanFilter extends CallableTask {
                             if (massRange.contains(xyPoint.x)) xyList.add(xyPoint);
 
                         Scan processedScan = ScanUtils.getModifiedScan(scan, xyList);
-                        outRawContainer.addScan(processedScan);
+                        outScanContainer.addScan(processedScan);
 
                         processedScan = null;
                     }
                 }
             } else {
-                for (Scan scan : rawContainer.iterator(level.getMsn())) outRawContainer.addScan(scan);
+                for (Scan scan : scanContainer.iterator(level.getMsn())) outScanContainer.addScan(scan);
             }
         }
 
-        outRawContainer.finaliseFile(rawContainer.getRawInfo().getDate());
-        return outRawContainer;
+        outScanContainer.finaliseFile(scanContainer.getScanInfo().getDate());
+        return outScanContainer;
     }
 }
