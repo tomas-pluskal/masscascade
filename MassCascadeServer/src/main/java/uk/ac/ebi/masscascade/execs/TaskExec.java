@@ -137,7 +137,7 @@ public class TaskExec extends CommandLineMain {
 
         params = new ParameterMap();
         params.put(Parameter.POLYNOMIAL_ORDER, 3);
-        params.put(Parameter.DATA_WINDOW, 4);
+        params.put(Parameter.SCAN_WINDOW, 4);
         runner.add(SavitzkyGolaySmoothing.class, params);
 
         params = new ParameterMap();

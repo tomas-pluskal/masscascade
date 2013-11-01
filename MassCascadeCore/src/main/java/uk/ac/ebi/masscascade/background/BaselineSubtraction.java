@@ -31,6 +31,8 @@ import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 
+import java.util.Arrays;
+
 /**
  * Baseline subtraction according to the vHGW Top-Hat algorithm (morphological filter).
  * <p/>
@@ -105,6 +107,7 @@ public class BaselineSubtraction extends CallableTask {
 
         XYZList xyz = feature.getData();
 
+//        int n = xyz.size() - 2;
         int n = xyz.size();
         int q = halfWindowWidth;
         int k = 2 * q + 1;
@@ -115,12 +118,15 @@ public class BaselineSubtraction extends CallableTask {
             return feature;
         }
 
-        double[] es = erosion(xyz.getXZSlice().getYs(), q, n, k, fn);
+//        double[] yn = Arrays.copyOfRange(xyz.getXZSlice().getYs(), 1, xyz.size() - 1);
+        double[] yn = xyz.getXZSlice().getYs();
+        double[] es = erosion(yn, q, n, k, fn);
         double[] ys = dilation(es, q, n, k, fn);
 
         Feature corFeature = feature.copy();
         for (int i = 0; i < ys.length; i++) {
-            XYZPoint xyzPoint = new XYZPoint(xyz.get(i).x, xyz.get(i).y, ys[i]);
+            XYZPoint xyzOri = xyz.get(i);
+            XYZPoint xyzPoint = new XYZPoint(xyzOri.x, xyzOri.y, xyzOri.z - ys[i]);
             corFeature.addFeaturePoint(xyzPoint);
         }
         corFeature.closeFeature();
@@ -156,7 +162,7 @@ public class BaselineSubtraction extends CallableTask {
         // instantiate left extrema
         for (int i = 0; i < q; i++) {
             ys[i] = ys[q];
-            hs[i] = hs[q];
+            hs[i] = ys[q];
         }
         // instantiate right extrema
         int ri = q + n - 1;
@@ -210,7 +216,7 @@ public class BaselineSubtraction extends CallableTask {
         // instantiate left extrema
         for (int i = 0; i < q; i++) {
             ys[i] = ys[q];
-            hs[i] = hs[q];
+            hs[i] = ys[q];
         }
         // instantiate right extrema
         int ri = q + n - 1;
