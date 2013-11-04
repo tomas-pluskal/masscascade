@@ -71,13 +71,13 @@ public class ScanDeserializer extends ACmlDeserializer {
     private double ionEnergy;
     private Constants.MSN level;
     private Long basePeakNumber;
-    private List<ScanLevel> scanLevels = new ArrayList<ScanLevel>();
+    private List<ScanLevel> scanLevels = new ArrayList<>();
     private LinkedHashMap<Constants.MSN, Long> ticNumbers = new LinkedHashMap<Constants.MSN, Long>();
     private List<LinkedHashMap<Integer, Long>> scanNumbers = new ArrayList<LinkedHashMap<Integer, Long>>();
 
     // scan information
     private Constants.MSN conditionLevel = Constants.MSN.MS1;
-    private Map<Constants.MSN, String> ionMode = new HashMap<Constants.MSN, String>();
+    private Map<Constants.MSN, String> ionMode = new HashMap<>();
 
     // Tandem information
     private int parentCharge = 0;
@@ -96,7 +96,6 @@ public class ScanDeserializer extends ACmlDeserializer {
      * @param cmlFile a cml file to read
      */
     public ScanDeserializer(String id, File cmlFile, String workingDirectory) throws IOException {
-
         super(id, cmlFile, workingDirectory);
     }
 
@@ -107,7 +106,6 @@ public class ScanDeserializer extends ACmlDeserializer {
      * @throws IOException unexpected behaviour
      */
     public ScanDeserializer(String cmlString, String workingDirectory) throws IOException {
-
         super(cmlString, workingDirectory);
     }
 
@@ -118,7 +116,6 @@ public class ScanDeserializer extends ACmlDeserializer {
      * @throws IOException unexpected behaviour
      */
     public ScanDeserializer(InputStream stream, String workingDirectory) throws IOException {
-
         super(stream, workingDirectory);
     }
 

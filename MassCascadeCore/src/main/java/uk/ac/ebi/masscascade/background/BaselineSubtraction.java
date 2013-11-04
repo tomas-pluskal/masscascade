@@ -57,7 +57,7 @@ public class BaselineSubtraction extends CallableTask {
      */
     public BaselineSubtraction(ParameterMap params) throws MassCascadeException {
 
-        super(DurbinWatsonFilter.class);
+        super(BaselineSubtraction.class);
         setParameters(params);
     }
 
@@ -123,8 +123,9 @@ public class BaselineSubtraction extends CallableTask {
         double[] es = erosion(yn, q, n, k, fn);
         double[] ys = dilation(es, q, n, k, fn);
 
+        // creates a copy of the feature including its starting data point
         Feature corFeature = feature.copy();
-        for (int i = 0; i < ys.length; i++) {
+        for (int i = 1; i < ys.length; i++) {
             XYZPoint xyzOri = xyz.get(i);
             XYZPoint xyzPoint = new XYZPoint(xyzOri.x, xyzOri.y, xyzOri.z - ys[i]);
             corFeature.addFeaturePoint(xyzPoint);
