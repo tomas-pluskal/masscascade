@@ -48,7 +48,6 @@ public class FeatureFilter extends CallableTask {
     private Range mzRange;
     private Range featureWidthRange;
     private double minIntensity;
-    private boolean keepIsotopes;
     private FeatureContainer featureContainer;
 
     /**
@@ -79,7 +78,6 @@ public class FeatureFilter extends CallableTask {
         featureWidthRange = params.get(Parameter.FEATURE_RANGE, ExtendableRange.class);
         minIntensity = params.get(Parameter.MIN_FEATURE_INTENSITY, Double.class);
         featureContainer = params.get(Parameter.FEATURE_CONTAINER, FeatureContainer.class);
-        keepIsotopes = params.get(Parameter.KEEP_ISOTOPES, Boolean.class);
     }
 
     /**
@@ -99,8 +97,9 @@ public class FeatureFilter extends CallableTask {
 
             if (timeRange.contains(feature.getRetentionTime()) && mzRange.contains(feature.getMz()) &&
                     featureWidthRange.contains(feature.getData().size() - 2)) {
-                if (feature.getDifIntensity() >= minIntensity || (keepIsotopes && feature.hasProperty(
-                        PropertyType.Isotope))) outFeatureContainer.addFeature(feature);
+                if (feature.getDifIntensity() >= minIntensity) {
+                    outFeatureContainer.addFeature(feature);
+                }
             }
         }
         outFeatureContainer.finaliseFile();

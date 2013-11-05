@@ -107,10 +107,10 @@ public enum Parameter implements Option {
      */
     ION_COLUMN("Ion column", ""),
     DATA_COLUMN("Data column", ""),
-    PEAK_COLUMN("Peak column", ""),
+    FEATURE_COLUMN("Feature column", ""),
     LABEL_COLUMN("Label column", ""),
     VALUE_COLUMN("Value column", ""),
-    FEATURE_SET_COLUMN("FeatureSetImpl column", ""),
+    FEATURE_SET_COLUMN("Feature Set column", ""),
     REFERENCE_COLUMN("Reference column", ""),
     REFERENCE_FEATURE_COLUMN("Reference column", ""),
 
