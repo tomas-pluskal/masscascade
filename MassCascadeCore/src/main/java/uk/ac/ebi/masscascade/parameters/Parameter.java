@@ -68,31 +68,31 @@ public enum Parameter implements Option {
     /*
      * Parameters for the intensity domain.
      */
-    MIN_FEATURE_INTENSITY("Min. feature intensity [units]", 1000d),
+    MIN_FEATURE_INTENSITY("Min. intensity [units]", 1000d),
 
     /*
      * Parameters for the m/z domain.
      */
-    MZ_RANGE("m/z range", new ExtendableRange(0, 100)),
-    MZ_WINDOW_PPM("m/z window [ppm]", 10d),
-    MZ_WINDOW_AMU("m/z window [amu]", 10d),
+    MZ_RANGE("m/z range (from - to)", new ExtendableRange(50, 500)),
+    MZ_WINDOW_PPM("m/z tolerance [ppm]", 10d),
+    MZ_WINDOW_AMU("m/z tolerance [amu]", 10d),
 
     /*
      * Wavelet parameters.
      */
-    SCALE_FACTOR("Scale [units]", 3),
-    WAVELET_WIDTH("Width of the wavelet [%]", 0.02),
+    SCALE_FACTOR("Scale [units]", 2),
+    WAVELET_WIDTH("Width of the wavelet (0-1)", 0.02),
 
     /*
      * Parameters for the chromatographic domain.
      */
-    TIME_WINDOW("Time window [s]", 5d),
+    TIME_WINDOW("Length [s]", 5d),
     TIME_FACTOR("Time gap factor", 2.5),
-    SCAN_WINDOW("Time window [scans]", 5),
-    MIN_FEATURE_WIDTH("Min. feature width [scans]", 6),
+    SCAN_WINDOW("Length [scans]", 5),
+    MIN_FEATURE_WIDTH("Min. length [scans]", 6),
     MAX_FEATURE_WIDTH("Max. feature width [scans]", 10),
-    TIME_RANGE("Time range [s]", new ExtendableRange(0, 60)),
-    FEATURE_RANGE("Feature range [scans]", new ExtendableRange(1, 10)),
+    TIME_RANGE("Time range [s] (from - to)", new ExtendableRange(60, 300)),
+    FEATURE_RANGE("Width range [scans] (from - to)", new ExtendableRange(5, 50)),
 
     /*
      * Descriptive spectra parameters.
