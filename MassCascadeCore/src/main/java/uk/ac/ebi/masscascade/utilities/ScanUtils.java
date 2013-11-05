@@ -133,7 +133,7 @@ public class ScanUtils {
             prevDp = xyPoint;
 
             if (xyPoint.y > 0) {
-                newXYList.add(new XYPoint(xyPoint.x, xyPoint.x));
+                newXYList.add(new XYPoint(xyPoint.x, xyPoint.y));
                 continue;
             }
 

@@ -121,10 +121,18 @@ public class TextUtils {
      * Returns a cleaned container id. The id is split on the delimiter '~'.
      *
      * @param id the container identifier
-     * @return the cleaned id
+     * @return the cleaned id: identifier [0] and tasks [1]
      */
-    public static String cleanId(String id) {
+    public static String[] cleanId(String id) {
         int lastIndex = id.lastIndexOf(Constants.DELIMITER);
-        return (lastIndex == -1) ? id : id.substring(0, lastIndex);
+        if (lastIndex == -1) {
+            return new String[]{id, id};
+        } else {
+            if (id.length() > lastIndex + 2) {
+                return new String[]{id.substring(0, lastIndex), id.substring(lastIndex + 2)};
+            } else {
+                return new String[]{id.substring(0, lastIndex), ""};
+            }
+        }
     }
 }

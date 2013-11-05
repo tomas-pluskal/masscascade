@@ -80,7 +80,7 @@ public enum Parameter implements Option {
     /*
      * Wavelet parameters.
      */
-    SCALE_FACTOR("Scale [units]", 10d),
+    SCALE_FACTOR("Scale [units]", 3),
     WAVELET_WIDTH("Width of the wavelet [%]", 0.02),
 
     /*

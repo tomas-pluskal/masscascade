@@ -171,7 +171,7 @@ public class PsiMzmlReader extends CallableTask {
                 }
             }
 
-            List<double[]> dataContainer = new ArrayList<double[]>();
+            List<double[]> dataContainer = new ArrayList<>();
             for (BinaryDataArray bda : bdaList) {
                 double[] numberArray = new double[bda.getBinaryDataAsNumberArray().length];
                 int i = 0;
