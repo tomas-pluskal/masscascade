@@ -71,26 +71,10 @@ public class TracePainterSpline extends ATracePainter {
     @Override
     public void endPaintIteration(final Graphics g2d) {
 
-        if (g2d == null) return;
-
-        if (xPoints.size() < 3) {
-            final int[] x = new int[xPoints.size() + 1];
-            int count = 0;
-            for (final Integer xpoint : xPoints) {
-                x[count] = xpoint;
-                count++;
-            }
-            x[count] = this.getPreviousX();
-
-            final int[] y = new int[yPoints.size() + 1];
-            count = 0;
-            for (final Integer ypoint : yPoints) {
-                y[count] = ypoint;
-                count++;
-            }
-            y[count] = this.getPreviousY();
-
-            g2d.drawPolyline(x, y, x.length);
+        if (g2d == null) {
+            return;
+        } else if (xPoints.size() < 5) {
+            drawStraightPolyline(g2d);
         } else {
             // construct spline, adapted from JFreeChart
             xPoints.add(getPreviousX());
@@ -155,8 +139,33 @@ public class TracePainterSpline extends ATracePainter {
                     }
                 }
             }
-            g2d.drawPolyline(g2dXPoints, g2dYPoints, g2dXPoints.length);
+            // hack to avoid random paint action by g2d
+            if (g2dYPoints.length > 5 && g2dYPoints[3] == 0 && g2dYPoints[4] == 0) {
+                drawStraightPolyline(g2d);
+            } else {
+                g2d.drawPolyline(g2dXPoints, g2dYPoints, g2dXPoints.length);
+            }
         }
+    }
+
+    private void drawStraightPolyline(Graphics g2d) {
+        final int[] xAlt = new int[xPoints.size() + 1];
+        int count = 0;
+        for (final Integer xpoint : xPoints) {
+            xAlt[count] = xpoint;
+            count++;
+        }
+        xAlt[count] = this.getPreviousX();
+
+        final int[] yAlt = new int[yPoints.size() + 1];
+        count = 0;
+        for (final Integer ypoint : yPoints) {
+            yAlt[count] = ypoint;
+            count++;
+        }
+        yAlt[count] = this.getPreviousY();
+
+        g2d.drawPolyline(xAlt, yAlt, xAlt.length);
     }
 
     private void solveTridiag(float[] sub, float[] diag, float[] sup, float[] b, int n) {
@@ -226,7 +235,7 @@ public class TracePainterSpline extends ATracePainter {
      */
     @Override
     public void paintPoint(final int absoluteX, final int absoluteY, final int nextX, final int nextY, final Graphics g,
-            final ITracePoint2D original) {
+                           final ITracePoint2D original) {
 
         super.paintPoint(absoluteX, absoluteY, nextX, nextY, g, original);
 

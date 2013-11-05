@@ -29,6 +29,7 @@ import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
+import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 
 /**
  * Class implementing a Savitzky Golay smoothing method.
@@ -109,12 +110,11 @@ public class SavitzkyGolaySmoothing extends CallableTask {
 
             smoothedFeature = feature.copy();
 
-            for (int i = mzWindow; i < smoothedY.length - mzWindow - 1; i++)
-                smoothedFeature.addFeaturePoint(
-                        new XYPoint(feature.getMzData().get(i - mzWindow + 1).x, smoothedY[i] * coeff),
-                        feature.getTrace().getData().get(i - mzWindow + 1).x);
-
-            smoothedFeature.closeFeature(feature.getTrace().getData().getLast().x);
+            for (int i = mzWindow; i < smoothedY.length - mzWindow; i++) {
+                XYZPoint xyz = feature.getData().get(i - mzWindow + 1);
+                smoothedFeature.addFeaturePoint(new XYPoint(xyz.y, smoothedY[i] * coeff), xyz.x);
+            }
+            smoothedFeature.closeFeature(feature.getData().get(smoothedY.length - 2 * mzWindow).x);
             outFeatureContainer.addFeature(smoothedFeature);
 
             y = null;

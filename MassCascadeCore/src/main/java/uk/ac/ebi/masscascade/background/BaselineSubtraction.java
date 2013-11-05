@@ -48,6 +48,8 @@ public class BaselineSubtraction extends CallableTask {
     private int halfWindowWidth;
     private FeatureContainer featureContainer;
 
+    private static final int BASE_INTENSITY = 10;
+
     /**
      * Constructs a baseline subtraction task.
      *
@@ -127,7 +129,7 @@ public class BaselineSubtraction extends CallableTask {
         Feature corFeature = feature.copy();
         for (int i = 1; i < ys.length; i++) {
             XYZPoint xyzOri = xyz.get(i);
-            XYZPoint xyzPoint = new XYZPoint(xyzOri.x, xyzOri.y, xyzOri.z - ys[i]);
+            XYZPoint xyzPoint = new XYZPoint(xyzOri.x, xyzOri.y, xyzOri.z - ys[i] + BASE_INTENSITY);
             corFeature.addFeaturePoint(xyzPoint);
         }
         corFeature.closeFeature();
