@@ -151,6 +151,7 @@ public enum Parameter implements Option {
     MIN_FEATURES("Minimum no. of features", 3),
     GAP_FILL("Fill gaps", false),
     MISSINGNESS("Missingness [%]", 25),
+    NORM_METHOD("Method", Constants.NORM_METHOD.TOTAL_SIGNAL),
     DEFAULT("Default Intensity", 10000),
 
     /*

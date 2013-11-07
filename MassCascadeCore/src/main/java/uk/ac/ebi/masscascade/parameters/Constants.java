@@ -101,6 +101,13 @@ public class Constants {
         CENTROID, PROFILE
     }
 
+    /**
+     * Normalization methods.
+     */
+    public enum NORM_METHOD {
+        TOTAL_SIGNAL
+    }
+
     /*
      * MSn mode.
      */

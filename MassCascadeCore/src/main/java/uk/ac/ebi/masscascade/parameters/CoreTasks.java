@@ -50,6 +50,7 @@ import uk.ac.ebi.masscascade.io.MzTabWriter;
 import uk.ac.ebi.masscascade.io.PsiMzmlReader;
 import uk.ac.ebi.masscascade.io.XCaliburReader;
 import uk.ac.ebi.masscascade.msn.MSnBuilder;
+import uk.ac.ebi.masscascade.normalization.Normalizer;
 import uk.ac.ebi.masscascade.smoothing.RunningMedianSmoothing;
 import uk.ac.ebi.masscascade.smoothing.SavitzkyGolaySmoothing;
 import uk.ac.ebi.masscascade.featurebuilder.ProfileJoiner;
@@ -79,6 +80,7 @@ public enum CoreTasks implements Index {
     SPECTRUM_FILTER(FeatureSetFilter.class, "PSF"),
 
     // utilities
+    NORM(Normalizer.class, "NO"),
     FAST_DTW(FastDtwAlignment.class, "DTW"),
     OBIWARP(Obiwarp.class, "OB"),
     RETENTION_TIME(RtBinning.class, "RT"),

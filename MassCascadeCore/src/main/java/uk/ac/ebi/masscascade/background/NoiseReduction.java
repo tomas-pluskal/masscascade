@@ -93,7 +93,7 @@ public class NoiseReduction extends CallableTask {
     @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
-        minTraceWidth = params.get(Parameter.SCAN_WINDOW, Integer.class);
+        minTraceWidth = params.get(Parameter.MIN_FEATURE_WIDTH, Integer.class);
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         scanContainer = params.get(Parameter.SCAN_CONTAINER, ScanContainer.class);
     }

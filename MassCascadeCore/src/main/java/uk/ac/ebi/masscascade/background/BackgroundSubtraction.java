@@ -141,7 +141,7 @@ public class BackgroundSubtraction extends CallableTask {
         for (Scan scan : scanContainer) {
             double rt = scan.getRetentionTime();
 
-            Range timeRange = new ExtendableRange(rt - timeWindow / 2d, rt + timeWindow / 2d);
+            Range timeRange = new ExtendableRange(rt - timeWindow, rt + timeWindow);
 
             TreeSet<Trace> referenceSlice = new TreeSet<Trace>();
             for (Range range : reference.keySet()) {
