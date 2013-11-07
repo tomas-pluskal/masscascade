@@ -143,7 +143,7 @@ public enum Parameter implements Option {
     ESTIMATE_NOISE("Estimate noise", false),
     NOISE_FACTOR("Noise factor", 5),
     POLYNOMIAL_ORDER("Polynomial order", 3),
-    CORRELATION_THRESHOLD("Correlation threshold", 0.75),
+    CORRELATION_THRESHOLD("Correlation threshold", 0.95),
     DERIVATIVE_THRESHOLD("Derivative threshold", 0.2),
     SG_LEVEL("SG Filter Level", 3),
     SCORE("Minimum Score", 0.8),
@@ -166,7 +166,7 @@ public enum Parameter implements Option {
     /*
      * Parameters for binning.
      */
-    BINS("Number of bins", 10),
+    BINS("Bins", 10),
     BIN_WIDTH("Bin width", 1.5),
     BIN_WIDTH_MZ("m/z bin width", 0.5),
     BIN_WIDTH_RT("Time bin width", 1.5),

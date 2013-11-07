@@ -102,7 +102,7 @@ public class BiehmanSimilarity extends CallableTask {
 
         String id = featureContainer.getId() + IDENTIFIER;
         featureSetContainer = featureContainer.getBuilder().newInstance(FeatureSetContainer.class, id,
-                featureSetContainer.getIonMode(), featureContainer.getWorkingDirectory());
+                featureContainer.getIonMode(), featureContainer.getWorkingDirectory());
 
         SortedSet<Double> rtSet = featureContainer.getTimes().keySet();
         Range rtRange = new ExtendableRange(rtSet.first(), rtSet.last());
