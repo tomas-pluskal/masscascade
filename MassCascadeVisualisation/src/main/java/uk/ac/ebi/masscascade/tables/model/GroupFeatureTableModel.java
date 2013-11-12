@@ -28,7 +28,6 @@ package uk.ac.ebi.masscascade.tables.model;
 public class GroupFeatureTableModel extends ATableModel {
 
     public GroupFeatureTableModel() {
-
         super(new String[]{"id", "rt [s]"});
     }
 }

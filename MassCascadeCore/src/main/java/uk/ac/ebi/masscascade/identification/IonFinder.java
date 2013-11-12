@@ -42,6 +42,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Map;
 import java.util.TreeMap;
 
 /**
@@ -65,7 +66,7 @@ public class IonFinder extends CallableTask {
 
     private FeatureSetContainer featureSetContainer;
     private double ppm;
-    private TreeMap<Double, String> ionMzs = new TreeMap<Double, String>();
+    private TreeMap<Double, String> ionMzs = new TreeMap<>();
 
     /**
      * Text constants for the adduct file format.
@@ -93,10 +94,22 @@ public class IonFinder extends CallableTask {
     /**
      * Sets a new ion list.
      *
-     * @param ionMzs the ion list
+     * @param exMass the ion list
      */
-    public void setIonList(TreeMap<Double, String> ionMzs) {
-        this.ionMzs = ionMzs;
+    public void setExactMassList(TreeMap<Double, String> exMass) {
+
+        double delta = 0;
+        if (featureSetContainer.getIonMode() == Constants.ION_MODE.POSITIVE) {
+            delta = Constants.PARTICLES.PROTON.getMass();
+        } else if (featureSetContainer.getIonMode() == Constants.ION_MODE.NEGATIVE) {
+            delta = Constants.PARTICLES.PROTON.getMass() * -1;
+        }
+
+        TreeMap<Double, String> adductMap = new TreeMap<>();
+        for (Map.Entry<Double, String> entry : exMass.entrySet()) {
+            adductMap.put(entry.getKey() + delta, entry.getValue());
+        }
+        this.ionMzs = adductMap;
     }
 
     /**
@@ -145,7 +158,7 @@ public class IonFinder extends CallableTask {
 
         featureSetContainer = params.get(Parameter.FEATURE_SET_CONTAINER, FeatureSetContainer.class);
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
-        setIonList(params.get(Parameter.ION_LIST, (new TreeMap<Double, String>()).getClass()));
+        setExactMassList(params.get(Parameter.EXACT_MASS_LIST, TreeMap.class));
     }
 
     /**

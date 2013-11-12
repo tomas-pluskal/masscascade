@@ -56,7 +56,7 @@ public enum Parameter implements Option {
     REFERENCE_SCAN_CONTAINER("Reference scan file", null, ScanContainer.class),
     REFERENCE_SCAN_MAP("Reference scan map", null, TreeMultimap.class),
     FEATURE_CONTAINER("Feature file", null, FeatureContainer.class),
-    FEATURE_SET_CONTAINER("FeatureSetImpl file", null, FeatureSetContainer.class),
+    FEATURE_SET_CONTAINER("Feature Set file", null, FeatureSetContainer.class),
     REFERENCE_FEATURE_CONTAINER("Reference feature file", null, FeatureContainer.class),
 
     /*
@@ -117,7 +117,7 @@ public enum Parameter implements Option {
     /*
      * List parameters.
      */
-    ION_LIST("Ion list", new TreeMap<Double, String>()),
+    EXACT_MASS_LIST("Exact mass list", new TreeMap<Double, String>()),
     ADDUCT_LIST("Adduct list", new ArrayList<AdductSingle>()),
     MZ_FOR_REMOVAL("Masses for removal", new TreeSet<Double>()),
 

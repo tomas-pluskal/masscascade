@@ -70,8 +70,8 @@ public class AdductFinder extends CallableTask {
 
         featureSetContainer = params.get(Parameter.FEATURE_SET_CONTAINER, FeatureSetContainer.class);
         adductDetector = new AdductDetector(params.get(Parameter.MZ_WINDOW_PPM, Double.class),
-                params.get(Parameter.ION_MODE, Constants.ION_MODE.class));
-        adductDetector.setAdductList(params.get(Parameter.ADDUCT_LIST, (new ArrayList<AdductSingle>()).getClass()));
+                featureSetContainer.getIonMode());
+        adductDetector.setAdductList(params.get(Parameter.ADDUCT_LIST, (new ArrayList<>()).getClass()));
     }
 
     /**

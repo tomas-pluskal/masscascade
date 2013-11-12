@@ -48,7 +48,7 @@ import java.util.Set;
 public class FeatureSetImpl extends ScanImpl implements uk.ac.ebi.masscascade.interfaces.FeatureSet {
 
     private final PropertyManager propertyManager;
-    private final Map<Integer, Feature> profileMap;
+    private final Map<Integer, Feature> featureMap;
     private final Range rtRange;
 
     /**
@@ -56,7 +56,7 @@ public class FeatureSetImpl extends ScanImpl implements uk.ac.ebi.masscascade.in
      */
     public FeatureSetImpl() {
 
-        profileMap = null;
+        featureMap = null;
         rtRange = null;
         propertyManager = null;
     }
@@ -73,7 +73,7 @@ public class FeatureSetImpl extends ScanImpl implements uk.ac.ebi.masscascade.in
 
         super(scanIndex, Constants.MSN.MS1, Constants.ION_MODE.UNKNOWN, xyList, rt, -1, 0, -1);
 
-        profileMap = new HashMap();
+        featureMap = new HashMap<>();
         this.rtRange = rtRange;
         propertyManager = new PropertyManager();
 
@@ -87,7 +87,7 @@ public class FeatureSetImpl extends ScanImpl implements uk.ac.ebi.masscascade.in
      */
     public void addProfile(Feature feature) {
 
-        profileMap.put(feature.getId(), feature);
+        featureMap.put(feature.getId(), feature);
         rtRange.extendRange(feature.getRetentionTime());
     }
 
@@ -112,7 +112,7 @@ public class FeatureSetImpl extends ScanImpl implements uk.ac.ebi.masscascade.in
      */
     public Feature getFeature(int profileId) {
 
-        if (profileMap.containsKey(profileId)) return profileMap.get(profileId);
+        if (featureMap.containsKey(profileId)) return featureMap.get(profileId);
         return null;
     }
 
@@ -122,7 +122,7 @@ public class FeatureSetImpl extends ScanImpl implements uk.ac.ebi.masscascade.in
      * @return the feature list
      */
     public List<Feature> getFeaturesList() {
-        return new ArrayList<>(profileMap.values());
+        return new ArrayList<>(featureMap.values());
     }
 
     /**
@@ -131,7 +131,7 @@ public class FeatureSetImpl extends ScanImpl implements uk.ac.ebi.masscascade.in
      * @return the id - feature map
      */
     public Map<Integer, Feature> getFeaturesMap() {
-        return profileMap;
+        return featureMap;
     }
 
     /**
@@ -204,7 +204,7 @@ public class FeatureSetImpl extends ScanImpl implements uk.ac.ebi.masscascade.in
      */
     @Override
     public Iterator<Feature> iterator() {
-        return profileMap.values().iterator();
+        return featureMap.values().iterator();
     }
 
     /**
@@ -213,6 +213,6 @@ public class FeatureSetImpl extends ScanImpl implements uk.ac.ebi.masscascade.in
      * @return the size
      */
     public int size() {
-        return profileMap.size();
+        return featureMap.size();
     }
 }

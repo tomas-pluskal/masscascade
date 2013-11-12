@@ -67,8 +67,6 @@ public class AdductDetector {
     private static final String COMMENT = "#";
     private static final String SEPARATOR = ",";
 
-    private final String MH;
-
     private List<Feature> featureList;
     private List<AdductSingle> adductList;
 
@@ -94,10 +92,6 @@ public class AdductDetector {
 
         this.ppm = ppm;
         this.ionMode = ionMode;
-
-        if (ionMode.equals(Constants.ION_MODE.POSITIVE)) MH = "M+H";
-        else if (ionMode.equals(Constants.ION_MODE.NEGATIVE)) MH = "M-H";
-        else MH = "";
 
         adductList = new ArrayList<>();
     }

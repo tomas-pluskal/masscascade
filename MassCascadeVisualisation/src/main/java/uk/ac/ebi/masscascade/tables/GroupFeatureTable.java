@@ -38,7 +38,6 @@ public class GroupFeatureTable extends JTable {
     public GroupFeatureTable() {
 
         super();
-
         this.setAutoCreateRowSorter(true);
     }
 
@@ -50,7 +49,6 @@ public class GroupFeatureTable extends JTable {
     public void setModel(AbstractTableModel tableModel) {
 
         super.setModel(tableModel);
-
         this.getColumnModel().getColumn(1).setCellRenderer(new NumberCellRenderer());
     }
 }

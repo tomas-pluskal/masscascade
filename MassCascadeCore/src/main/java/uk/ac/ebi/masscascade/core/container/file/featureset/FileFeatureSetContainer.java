@@ -25,6 +25,7 @@ package uk.ac.ebi.masscascade.core.container.file.featureset;
 import uk.ac.ebi.masscascade.core.container.file.FileContainer;
 import uk.ac.ebi.masscascade.core.container.file.FileManager;
 import uk.ac.ebi.masscascade.core.featureset.FeatureSetFeatureIterator;
+import uk.ac.ebi.masscascade.core.featureset.FeatureSetImpl;
 import uk.ac.ebi.masscascade.core.featureset.FeatureSetIterator;
 import uk.ac.ebi.masscascade.interfaces.Feature;
 import uk.ac.ebi.masscascade.interfaces.FeatureSet;
@@ -176,7 +177,7 @@ public class FileFeatureSetContainer extends FileContainer implements FeatureSet
         long featureSetIndex = -1;
         if (featureSetMap.containsKey(featureSetId)) featureSetIndex = featureSetMap.get(featureSetId);
         if (featureSetIndex == -1) return null;
-        FeatureSet featureSet = fileManager.read(featureSetIndex, FeatureSet.class);
+        FeatureSet featureSet = fileManager.read(featureSetIndex, FeatureSetImpl.class);
 
         return featureSet;
     }
