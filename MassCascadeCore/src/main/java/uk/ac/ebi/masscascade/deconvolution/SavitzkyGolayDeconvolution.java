@@ -50,8 +50,8 @@ import java.util.List;
  * <li>Parameter <code> SCAN_WINDOW </code>- The number of scans defining the time window.</li>
  * <li>Parameter <code> MIN_FEATURE_INTENSITY </code>- The minimum intensity of the deconvoluted features.</li>
  * <li>Parameter <code> DERIVATIVE_THRESHOLD </code>- The minimum intensity of the 2nd derivative.</li>
- * <li>Parameter <code> SCAN_FILE </code>- The input raw container.</li>
- * <li>Parameter <code> FEATURE_FILE </code>- The input feature container.</li>
+ * <li>Parameter <code> SCAN_CONTAINER </code>- The input raw container.</li>
+ * <li>Parameter <code> FEATURE_CONTAINER </code>- The input feature container.</li>
  * </ul>
  */
 public class SavitzkyGolayDeconvolution extends CallableTask {

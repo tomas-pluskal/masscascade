@@ -45,9 +45,7 @@ import java.util.Set;
 /**
  * Class to filter for features that have an isotope annotation.
  * <ul>
- * <li>Parameter <code> TIME_WINDOW </code>- The scan window for the alignment in scans.</li>
- * <li>Parameter <code> REFERENCE_FILE </code>- The input scan reference container.</li>
- * <li>Parameter <code> FEATURE_SET_FILE </code>- The input feature set container.</li>
+ * <li>Parameter <code> FEATURE_SET_CONTAINER </code>- The input feature set container.</li>
  * </ul>
  */
 public class IsotopeKeeper extends CallableTask {

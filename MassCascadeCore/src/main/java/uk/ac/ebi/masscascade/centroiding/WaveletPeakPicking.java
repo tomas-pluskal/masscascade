@@ -38,10 +38,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class implementing a signal detection method using a continuous wavelet transform. <ul> <li>Parameter <code>
- * NOISE_INTENSITY </code>- The estimate of the background noise.</li> <li>Parameter <code> SCALE_FACTOR </code>- The
- * scale of the wavelet.</li> <li>Parameter <code> WAVELET_WIDTH </code>- The width of the wavelet.</li> <li>Parameter
- * <code> SCAN_FILE </code>- The input scan container.</li> </ul>
+ * Class implementing a signal detection method using a continuous wavelet transform.
+ * <ul>
+ *     <li>Parameter <code> MIN_FEATURE_INTENSITY </code>- The estimate of the background noise.</li>
+ *     <li>Parameter <code> SCALE_FACTOR </code>- The scale of the wavelet.</li>
+ *     <li>Parameter <code> WAVELET_WIDTH </code>- The width of the wavelet.</li>
+ *     <li>Parameter <code> SCAN_CONTAINER </code>- The input scan container.</li>
+ * </ul>
  */
 public class WaveletPeakPicking extends CallableTask {
 

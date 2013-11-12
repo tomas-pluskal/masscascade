@@ -58,8 +58,8 @@ import java.util.TreeMap;
  * format.
  * <ul>
  * <li>Parameter <code> MZ_TOLERANCE_PPM </code>- The mz tolerance in ppm.</li>
- * <li>Parameter <code> ADDUCT_LIST </code>- The adducts to be searched for.</li>
- * <li>Parameter <code> FEATURE_SET_FILE </code>- The input feature set container.</li>
+ * <li>Parameter <code> EXACT_MASS_LIST </code>- The adducts to be searched for.</li>
+ * <li>Parameter <code> FEATURE_SET_CONTAINER </code>- The input feature set container.</li>
  * </ul>
  */
 public class IonFinder extends CallableTask {

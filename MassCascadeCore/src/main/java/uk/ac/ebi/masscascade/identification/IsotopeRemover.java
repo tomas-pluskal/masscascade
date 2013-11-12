@@ -42,9 +42,7 @@ import java.util.Set;
 /**
  * Class to remove features that have an isotope annotation. The method does not remove the major isotope species.
  * <ul>
- * <li>Parameter <code> TIME_WINDOW </code>- The scan window for the alignment in scans.</li>
- * <li>Parameter <code> REFERENCE_FILE </code>- The input scan reference container.</li>
- * <li>Parameter <code> FEATURE_FILE </code>- The input feature container.</li>
+ * <li>Parameter <code> FEATURE_SET_CONTAINER </code>- The input feature container.</li>
  * </ul>
  */
 public class IsotopeRemover extends CallableTask {

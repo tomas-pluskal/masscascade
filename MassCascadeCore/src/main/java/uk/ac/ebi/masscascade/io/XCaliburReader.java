@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
  * Class for reading XCalibur RAW files.
  * <ul>
  * <li>Parameter <code> DATA_FILE </code>- The data file to be read.</li>
- * <li>Parameter <code> SCAN_FILE </code>- The target scan container.</li>
+ * <li>Parameter <code> SCAN_CONTAINER </code>- The target scan container.</li>
  * </ul>
  */
 public class XCaliburReader extends CallableTask {

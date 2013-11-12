@@ -51,10 +51,10 @@ import java.util.TreeSet;
 /**
  * Class implementing deconvolution using a modified Biller Biehman algorithm.
  * <ul>
- * <li>Parameter <code> SCAN_WINDOW </code>- The number of scans defining the time window.</li>
+ * <li>Parameter <code> NOISE_FACTOR </code>- The S/N ratio threshold.</li>
  * <li>Parameter <code> CENTER </code>- If found peaks should be centered around their apex.</li>
- * <li>Parameter <code> SCAN_FILE </code>- The input scan container.</li>
- * <li>Parameter <code> FEATURE_FILE </code>- The input feature container.</li>
+ * <li>Parameter <code> SCAN_CONTAINER </code>- The input scan container.</li>
+ * <li>Parameter <code> FEATURE_CONTAINER </code>- The input feature container.</li>
  * </ul>
  */
 public class BiehmanDeconvolution extends CallableTask {

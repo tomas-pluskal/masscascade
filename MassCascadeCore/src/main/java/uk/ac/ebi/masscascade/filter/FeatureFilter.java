@@ -38,7 +38,7 @@ import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
  * <li>Parameter <code> MZ_RANGE </code>- The mz range used for filtering in amu.</li>
  * <li>Parameter <code> TIME_RANGE </code>- The time range used for filtering in seconds.</li>
  * <li>Parameter <code> FEATURE_RANGE </code>- The feature minimum and maximum width in scans.</li>
- * <li>Parameter <code> FEATURE_FILE </code>- The input feature container.</li>
+ * <li>Parameter <code> FEATURE_CONTAINER </code>- The input feature container.</li>
  * </ul>
  */
 public class FeatureFilter extends CallableTask {

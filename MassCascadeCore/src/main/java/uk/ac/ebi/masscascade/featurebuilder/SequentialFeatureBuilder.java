@@ -57,7 +57,7 @@ import java.util.TreeSet;
  * <ul>
  * <li>Parameter <code> MZ_WINDOW_PPM </code>- The mass window in ppm.</li>
  * <li>Parameter <code> MIN_FEATURE_INTENSITY </code>- The minimum feature intensity.</li>
- * <li>Parameter <code> SCAN_FILE </code>- The input scan container.</li>
+ * <li>Parameter <code> SCAN_CONTAINER </code>- The input scan container.</li>
  * <li>Parameter <code> MIN_FEATURE_WIDTH </code>- The minimum feature width in scans.</li>
  * </ul>
  */

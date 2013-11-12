@@ -50,7 +50,7 @@ import java.util.List;
 
 /**
  * Class for reading PSI mzML files. <ul> <li>Parameter <code> DATA FILE </code>- The data file to be read.</li>
- * <li>Parameter <code> RAW FILE </code>- The target scan container.</li> </ul>
+ * <li>Parameter <code> SCAN_CONTAINER </code>- The target scan container.</li> </ul>
  */
 public class PsiMzmlReader extends CallableTask {
 

@@ -52,17 +52,15 @@ import java.util.concurrent.Future;
  * Web task to query ChemSpider for compounds that match the major isotopic mass of a given ion. ChemSpider requires
  * users to provide a token for certain web services which must be provided for the web task to work.
  * <ul>
- * <li>Parameter <code> MZ WINDOW PPM </code>- The m/z tolerance value in ppm.</li>
- * <li>Parameter <code> ION MODE </code>- The ion mode.</li>
+ * <li>Parameter <code> MZ_WINDOW_PPM </code>- The m/z tolerance value in ppm.</li>
  * <li>Parameter <code> DATABASES </code>- The databases to be queried.</li>
- * <li>Parameter <code> SECURITY TOKEN </code>- The ChemSpider security token.</li>
- * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input featureset container.</li>
+ * <li>Parameter <code> SECURITY_TOKEN </code>- The ChemSpider security token.</li>
+ * <li>Parameter <code> FEATURE_SET_CONTAINER </code>- The input featureset container.</li>
  * </ul>
  */
 public class ChemSpiderSearch extends CallableWebservice {
 
     private String token;
-    private Constants.ION_MODE ionMode;
     private double massTolerance;
     private String[] databases;
     private ChemSpiderWrapper wrapper;
@@ -92,7 +90,6 @@ public class ChemSpiderSearch extends CallableWebservice {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         massTolerance = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
-        ionMode = params.get(Parameter.ION_MODE, Constants.ION_MODE.class);
         token = params.get(Parameter.SECURITY_TOKEN, String.class);
         featureSetContainer = params.get(Parameter.FEATURE_SET_CONTAINER, FeatureSetContainer.class);
         databases = params.get(Parameter.DATABASES, (new String[0]).getClass());
@@ -110,6 +107,8 @@ public class ChemSpiderSearch extends CallableWebservice {
         FeatureSetContainer outContainer = featureSetContainer.getBuilder().newInstance(FeatureSetContainer.class, id,
                 featureSetContainer.getIonMode(), featureSetContainer.getWorkingDirectory());
 
+        Constants.ION_MODE ionMode = featureSetContainer.getIonMode();
+
         wrapper = new ChemSpiderWrapper();
 
         ExecutorService executor = Executors.newFixedThreadPool(Constants.NTHREADS);
@@ -117,7 +116,7 @@ public class ChemSpiderSearch extends CallableWebservice {
 
         for (Feature feature : featureSetContainer.featureIterator()) {
 
-            Callable<Multimap<Integer, Integer>> css = new Searcher(feature);
+            Callable<Multimap<Integer, Integer>> css = new Searcher(feature, ionMode);
             futureList.add(executor.submit(css));
         }
 
@@ -145,11 +144,14 @@ public class ChemSpiderSearch extends CallableWebservice {
                     Set<String> inchis = new HashSet<>();
                     for (int csid : profileIdToCsids.get(feature.getId())) {
                         propMap = csidMap.get(csid);
+                        if (!propMap.containsKey("CSID") || !propMap.containsKey("InChI")
+                                || !propMap.containsKey("CommonName") || !propMap.containsKey("MonoisotopicMass")) {
+                            continue;
+                        }
                         String ident = propMap.get("CSID");
                         String name = propMap.get("CommonName");
                         String notation = propMap.get("InChI");
                         double identMass = Double.parseDouble(propMap.get("MonoisotopicMass"));
-
                         // mass difference to query mass in ppm
                         double mass = feature.getMz();
                         if (ionMode == Constants.ION_MODE.POSITIVE) mass -= Constants.PARTICLES.PROTON.getMass();
@@ -158,7 +160,9 @@ public class ChemSpiderSearch extends CallableWebservice {
                         score = FastMath.round(-0.001 * score + 1000);
                         Identity identity = new Identity(ident, name, notation, score, "ChemSpider", "m/z", "");
 
-                        if (inchis.contains(notation)) continue;
+                        if (inchis.contains(notation)) {
+                            continue;
+                        }
 
                         feature.setProperty(identity);
                         inchis.add(notation);
@@ -178,14 +182,16 @@ public class ChemSpiderSearch extends CallableWebservice {
     class Searcher implements Callable<Multimap<Integer, Integer>> {
 
         private Feature feature;
+        private Constants.ION_MODE ionMode;
 
         /**
          * Constructs a ChemSpider search helper.
          *
          * @param feature the feature for the query.
          */
-        public Searcher(Feature feature) {
+        public Searcher(Feature feature, Constants.ION_MODE ionMode) {
             this.feature = feature;
+            this.ionMode = ionMode;
         }
 
         /**

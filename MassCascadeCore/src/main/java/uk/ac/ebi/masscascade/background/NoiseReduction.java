@@ -52,7 +52,7 @@ import java.util.TreeMap;
  * For every m/z in every scan, the algorithm checks m/z values in subsequent scans for similar values within the
  * tolerance window. Only values that are part of a m/z trace exceeding the minimum trace width are kept.
  * <ul>
- * <li>Parameter <code> SCAN_WINDOW </code>- The scan window in scans.</li>
+ * <li>Parameter <code> MIN_FEATURE_WIDTH </code>- The scan window in scans.</li>
  * <li>Parameter <code> MZ_WINDOW_PPM </code>- The mass window in ppm.</li>
  * <li>Parameter <code> SCAN_CONTAINER </code>- The input scan container.</li>
  * </ul>

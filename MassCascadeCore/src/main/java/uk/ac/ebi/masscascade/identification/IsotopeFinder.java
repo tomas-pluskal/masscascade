@@ -33,7 +33,7 @@ import uk.ac.ebi.masscascade.parameters.ParameterMap;
  * Class implementing an isotope finder method.
  * <ul>
  * <li>Parameter <code> MZ_WINDOW_PPM </code>- The m/z tolerance in ppm.</li>
- * <li>Parameter <code> FEATURE_SET_FILE </code>- The input feature set container.</li>
+ * <li>Parameter <code> FEATURE_SET_CONTAINER </code>- The input feature set container.</li>
  * </ul>
  */
 public class IsotopeFinder extends CallableTask {

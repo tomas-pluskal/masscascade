@@ -60,19 +60,17 @@ import java.util.concurrent.Future;
  * Web task to query Metlin, matching MS2 spectra where possible. Metlin requires
  * users to provide a token for certain web services which must be provided for the web task to work.
  * <ul>
- * <li>Parameter <code> MZ WINDOW PPM </code>- The m/z tolerance value for the precursor ions in ppm (1-100).</li>
- * <li>Parameter <code> MZ WINDOW AMU </code>- The m/z tolerance value for the MS2 signals in dalton (0.001-0.5).</li>
- * <li>Parameter <code> ION MODE </code>- The ion mode.</li>
- * <li>Parameter <code> SCORE METLIN </code>- The minimum Metlin query score.</li>
- * <li>Parameter <code> COLLISION ENERGY </code>- The collision energy.</li>
- * <li>Parameter <code> SECURITY TOKEN </code>- The Metlin security token.</li>
- * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input featureset container.</li>
+ * <li>Parameter <code> MZ_WINDOW_PPM </code>- The m/z tolerance value for the precursor ions in ppm (1-100).</li>
+ * <li>Parameter <code> MZ_WINDOW_AMU </code>- The m/z tolerance value for the MS2 signals in dalton (0.001-0.5).</li>
+ * <li>Parameter <code> SCORE_METLIN </code>- The minimum Metlin query score.</li>
+ * <li>Parameter <code> COLLISION_ENERGY </code>- The collision energy.</li>
+ * <li>Parameter <code> SECURITY_TOKEN </code>- The Metlin security token.</li>
+ * <li>Parameter <code> FEATURE_SET_CONTAINER CONTAINER </code>- The input featureset container.</li>
  * </ul>
  */
 public class MetlinSearch extends CallableWebservice {
 
     private String token;
-    private String ionMode;
     private int collisionEnergy;
     private double ppmMS1;
     private double ppmMS2;
@@ -108,9 +106,6 @@ public class MetlinSearch extends CallableWebservice {
         minScore = params.get(Parameter.SCORE_METLIN, Integer.class);
         collisionEnergy = params.get(Parameter.COLLISION_ENERGY, Integer.class);
         featureSetContainer = params.get(Parameter.FEATURE_SET_CONTAINER, FeatureSetContainer.class);
-
-        Constants.ION_MODE mode = params.get(Parameter.ION_MODE, Constants.ION_MODE.class);
-        ionMode = (mode == Constants.ION_MODE.POSITIVE) ? "pos" : "neg";
     }
 
     /**
@@ -174,14 +169,17 @@ public class MetlinSearch extends CallableWebservice {
         @Override
         public FeatureSet call() throws Exception {
 
+            String ionMode = (featureSet.getIonMode() == Constants.ION_MODE.POSITIVE) ? "pos" : "neg";
             for (Feature feature : featureSet) {
-                if (feature.hasMsnSpectra(Constants.MSN.MS2)) queryMetlin(feature);
+                if (feature.hasMsnSpectra(Constants.MSN.MS2)) {
+                    queryMetlin(feature, ionMode);
+                }
             }
 
             return featureSet;
         }
 
-        private void queryMetlin(Feature feature) {
+        private void queryMetlin(Feature feature, String ionMode) {
 
             String urlPrefix = "http://metlin.scripps.edu/REST/match/index.php?";
             String urlToken = "token=" + token;

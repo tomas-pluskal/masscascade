@@ -36,7 +36,7 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
  * <ul>
  * <li>Parameter <code> POLYNOMIAL_ORDER </code>- The order of the polynomial function.</li>
  * <li>Parameter <code> SCAN_WINDOW </code>- The number of data points.</li>
- * <li>Parameter <code> FEATURE_FILE </code>- The input feature container.</li>
+ * <li>Parameter <code> FEATURE_CONTAINER </code>- The input feature container.</li>
  * </ul>
  */
 public class SavitzkyGolaySmoothing extends CallableTask {

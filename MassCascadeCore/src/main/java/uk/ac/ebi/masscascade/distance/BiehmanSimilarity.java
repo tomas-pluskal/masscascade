@@ -50,7 +50,7 @@ import java.util.SortedSet;
  * <ul>
  * <li>Parameter <code> FEATURE_CONTAINER </code>- The input scan container.</li>
  * <li>Parameter <code> BINS </code>- The number of bins.</li>
- * <li>Parameter <code> TIME WINDOW </code>- The approximate distance between two scans in seconds.</li>
+ * <li>Parameter <code> TIME_WINDOW </code>- The approximate distance between two scans in seconds.</li>
  * </ul>
  */
 public class BiehmanSimilarity extends CallableTask {

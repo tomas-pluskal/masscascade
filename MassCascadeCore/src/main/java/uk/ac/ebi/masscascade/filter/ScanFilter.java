@@ -42,7 +42,7 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
  * <ul>
  * <li>Parameter <code> MZ_RANGE </code>- The mass range used for filtering in amu.</li>
  * <li>Parameter <code> TIME_RANGE </code>- The retention time range used for filtering in seconds.</li>
- * <li>Parameter <code> SCAN_FILE </code>- The input scan container.</li>
+ * <li>Parameter <code> SCAN_CONTAINER </code>- The input scan container.</li>
  * </ul>
  */
 public class ScanFilter extends CallableTask {

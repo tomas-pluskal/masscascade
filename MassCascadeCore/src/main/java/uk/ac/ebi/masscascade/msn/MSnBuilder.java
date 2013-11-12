@@ -56,7 +56,7 @@ import java.util.TreeMap;
  * <li>Parameter <code> MZ_WINDOW_PPM </code>- The mass tolerance in ppm.</li>
  * <li>Parameter <code> MIN_FEATURE_INTENSITY </code>- The minimum feature intensity.</li>
  * <li>Parameter <code> SCAN_FILE </code>- The input scan container.</li>
- * <li>Parameter <code> FEATURE_SET_FILE </code>- The input feature set container.</li>
+ * <li>Parameter <code> FEATURE_SET_CONTAINER </code>- The input feature set container.</li>
  * </ul>
  */
 public class MSnBuilder extends CallableTask {

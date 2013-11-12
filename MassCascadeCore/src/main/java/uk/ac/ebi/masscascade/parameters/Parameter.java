@@ -75,7 +75,7 @@ public enum Parameter implements Option {
      */
     MZ_RANGE("m/z range (from - to)", new ExtendableRange(50, 500)),
     MZ_WINDOW_PPM("m/z tolerance [ppm]", 10d),
-    MZ_WINDOW_AMU("m/z tolerance [amu]", 10d),
+    MZ_WINDOW_AMU("m/z tolerance [amu]", 0.1),
 
     /*
      * Wavelet parameters.

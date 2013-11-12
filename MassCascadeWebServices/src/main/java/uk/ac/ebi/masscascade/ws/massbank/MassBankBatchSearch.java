@@ -50,13 +50,12 @@ import java.util.TreeSet;
 /**
  * Web task to run a featureset search against MassBank using the MassBank's batch web service.
  * <ul>
- * <li>Parameter <code> MZ WINDOW PPM </code>- The m/z tolerance value for the precursor ions in ppm.</li>
+ * <li>Parameter <code> MZ_WINDOW_PPM </code>- The m/z tolerance value for the precursor ions in ppm.</li>
  * <li>Parameter <code> SCORE </code>- The minimum score per hit (min-0, max=1).</li>
- * <li>Parameter <code> ION MODE </code>- The ion mode.</li>
  * <li>Parameter <code> RESULTS </code>- The max. number of retrieved results.</li>
  * <li>Parameter <code> INSTRUMENTS </code>- The instruments to be included in the query.</li>
  * <li>Parameter <code> RESULTS </code>- The max. number of results per featureset.</li>
- * <li>Parameter <code> SPECTRUM CONTAINER </code>- The input featureset container.</li>
+ * <li>Parameter <code> FEATURE_SET_CONTAINER </code>- The input featureset container.</li>
  * </ul>
  */
 public class MassBankBatchSearch extends CallableWebservice {
@@ -65,7 +64,6 @@ public class MassBankBatchSearch extends CallableWebservice {
     private double score;
     private int maxNumOfResults;
     private List<String> instruments;
-    private Constants.ION_MODE ionMode;
     private Constants.MSN msn;
     private double ppm;
 
@@ -102,7 +100,6 @@ public class MassBankBatchSearch extends CallableWebservice {
     public void setParameters(ParameterMap params) throws MassCascadeException {
 
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
-        ionMode = params.get(Parameter.ION_MODE, Constants.ION_MODE.class);
         instruments = params.get(Parameter.INSTRUMENTS, (new ArrayList<String>()).getClass());
         minNumOfProfiles = params.get(Parameter.MIN_FEATURES, Integer.class);
         score = params.get(Parameter.SCORE, Double.class);
@@ -122,6 +119,8 @@ public class MassBankBatchSearch extends CallableWebservice {
         String id = featureSetContainer.getId() + IDENTIFIER;
         FeatureSetContainer outContainer = featureSetContainer.getBuilder().newInstance(FeatureSetContainer.class, id,
                 featureSetContainer.getIonMode(), featureSetContainer.getWorkingDirectory());
+
+        Constants.ION_MODE ionMode = featureSetContainer.getIonMode();
 
         try {
             List<String> queries = buildQuery();

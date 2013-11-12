@@ -52,7 +52,7 @@ import java.util.Set;
  * <ul>
  * <li>Parameter <code> BINS </code>- The number of bins.</li>
  * <li>Parameter <code> CORRELATION THRESHOLD </code>- The similarity threshold.</li>
- * <li>Parameter <code> PROFILE FILE </code>- The input feature container.</li>
+ * <li>Parameter <code> FEATURE_CONTAINER </code>- The input feature container.</li>
  * </ul>
  */
 public class CosineSimilarityDistance extends CallableTask {

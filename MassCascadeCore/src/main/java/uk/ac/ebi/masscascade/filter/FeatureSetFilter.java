@@ -44,7 +44,8 @@ import java.util.Set;
  * <li>Parameter <code> MZ_RANGE </code>- The mz range used for filtering in amu.</li>
  * <li>Parameter <code> TIME_RANGE </code>- The time range used for filtering in seconds.</li>
  * <li>Parameter <code> MIN_INTENSITY </code>- The minimum intensity for a feature.</li>
- * <li>Parameter <code> FEATURE_SET_FILE </code>- The input feature set container.</li>
+ * <li>Parameter <code> KEEP_ISOTOPES </code>- If isotopes should be excluded from the min. intensity criterion.</li>
+ * <li>Parameter <code> FEATURE_SET_CONTAINER </code>- The input feature set container.</li>
  * </ul>
  */
 public class FeatureSetFilter extends CallableTask {
