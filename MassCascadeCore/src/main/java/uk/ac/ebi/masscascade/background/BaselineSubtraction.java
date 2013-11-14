@@ -129,7 +129,13 @@ public class BaselineSubtraction extends CallableTask {
         Feature corFeature = feature.copy();
         for (int i = 1; i < ys.length; i++) {
             XYZPoint xyzOri = xyz.get(i);
-            XYZPoint xyzPoint = new XYZPoint(xyzOri.x, xyzOri.y, xyzOri.z - ys[i] + BASE_INTENSITY);
+            double intensity = xyzOri.z - ys[i];
+            if (i == ys.length - 1) {
+                intensity = 0;
+            } else if (intensity <= 0) {
+                intensity = BASE_INTENSITY;
+            }
+            XYZPoint xyzPoint = new XYZPoint(xyzOri.x, xyzOri.y, intensity);
             corFeature.addFeaturePoint(xyzPoint);
         }
         corFeature.closeFeature();

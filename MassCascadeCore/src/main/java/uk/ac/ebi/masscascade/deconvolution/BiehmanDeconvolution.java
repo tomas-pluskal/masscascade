@@ -267,7 +267,7 @@ public class BiehmanDeconvolution extends CallableTask {
      */
     public Feature buildCenteredFeature(Feature feature, XYList xicData, XYPoint apex, BiehmanWindow window) {
 
-        TreeMap<XYPoint, Double> rtIntMz = new TreeMap<XYPoint, Double>();
+        TreeMap<XYPoint, Double> rtIntMz = new TreeMap<>();
 
         XYList mzData = feature.getMzData();
         double rtShift = apex.x - window.getMaxDp().x;
