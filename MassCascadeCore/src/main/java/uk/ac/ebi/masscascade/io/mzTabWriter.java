@@ -22,25 +22,13 @@
 
 package uk.ac.ebi.masscascade.io;
 
-import com.google.common.collect.Lists;
-import org.apache.log4j.Level;
-import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
-import uk.ac.ebi.masscascade.interfaces.Feature;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
 import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
-import uk.ac.ebi.masscascade.properties.Identity;
-import uk.ac.ebi.masscascade.utilities.TextUtils;
-import uk.ac.ebi.pride.jmztab.MzTabFile;
-import uk.ac.ebi.pride.jmztab.model.SmallMolecule;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.util.Set;
 
 /**
  * Class implementing a mzTab writer. Features, either from a {@link uk.ac.ebi.masscascade.interfaces.container.FeatureContainer}
@@ -97,46 +85,53 @@ public class MzTabWriter extends CallableTask {
     @Override
     public Container call() {
 
-        try {
-            MzTabFile mzTab = new MzTabFile();
-
-            for (Feature feature : container.featureIterator()) {
-
-                if (!feature.hasProperty(PropertyType.Identity)) continue;
-
-                SmallMolecule molecule = new SmallMolecule();
-                molecule.setMassToCharge(feature.getMz());
-                molecule.setRetentionTime(Lists.newArrayList(feature.getRetentionTime()));
-                molecule.setReliability(2);
-
-                Set<Identity> identities = feature.getProperty(PropertyType.Identity, Identity.class);
-                for (Identity identity : identities) {
-                    molecule.setDescription(identity.getName());
-                    molecule.setIdentifier(Lists.newArrayList(identity.getId()));
-                    String notation = identity.getNotation();
-                    if (notation.startsWith("InChI")) {
-                        molecule.setInchiKey(Lists.newArrayList(notation));
-                        molecule.setSmiles(Lists.newArrayList(""));
-                    } else {
-                        molecule.setInchiKey(Lists.newArrayList(""));
-                        molecule.setSmiles(Lists.newArrayList(notation));
-                    }
-                    molecule.setAbundance(1, feature.getIntensity(), 0.0, 0.0);
-                    molecule.setCustomColumn("opt_masscascade_file_id", "" + container.getId());
-                    molecule.setCustomColumn("opt_masscascade_feature_id", "" + feature.getId());
-                }
-
-                mzTab.addSmallMolecule(molecule);
-            }
-
-            File mzTabFile = new File(outPath + File.separator + TextUtils.cleanId(container.getId()) + ".mzTab");
-            FileWriter writer = new FileWriter(mzTabFile);
-            writer.write(mzTab.toMzTab());
-            TextUtils.close(writer);
-        } catch (Exception exception) {
-            exception.printStackTrace();
-            LOGGER.log(Level.ERROR, "Error while parsing / writing mzTab file: " + exception.getMessage());
-        }
+//        try {
+//            Metadata metadata = new Metadata();
+//            metadata.setMZTabID(TextUtils.cleanId(container.getId())[0]);
+//            metadata.setDescription("LC-MS(n)-based small molecule identification");
+//            SortedMap<Integer, SplitList<Param>> sampleProcessingMap = new TreeMap<>();
+//            metadata.setSampleProcessingMap(sampleProcessingMap);
+//            metadata.set
+//
+//            MzTabFile mzTab = new MzTabFile();
+//
+//            for (Feature feature : container.featureIterator()) {
+//
+//                if (!feature.hasProperty(PropertyType.Identity)) continue;
+//
+//                SmallMolecule molecule = new SmallMolecule();
+//                molecule.setMassToCharge(feature.getMz());
+//                molecule.setRetentionTime(Lists.newArrayList(feature.getRetentionTime()));
+//                molecule.setReliability(2);
+//
+//                Set<Identity> identities = feature.getProperty(PropertyType.Identity, Identity.class);
+//                for (Identity identity : identities) {
+//                    molecule.setDescription(identity.getName());
+//                    molecule.setIdentifier(Lists.newArrayList(identity.getId()));
+//                    String notation = identity.getNotation();
+//                    if (notation.startsWith("InChI")) {
+//                        molecule.setInchiKey(Lists.newArrayList(notation));
+//                        molecule.setSmiles(Lists.newArrayList(""));
+//                    } else {
+//                        molecule.setInchiKey(Lists.newArrayList(""));
+//                        molecule.setSmiles(Lists.newArrayList(notation));
+//                    }
+//                    molecule.setAbundance(1, feature.getIntensity(), 0.0, 0.0);
+//                    molecule.setCustomColumn("opt_masscascade_file_id", "" + container.getId());
+//                    molecule.setCustomColumn("opt_masscascade_feature_id", "" + feature.getId());
+//                }
+//
+//                mzTab.addSmallMolecule(molecule);
+//            }
+//
+//            File mzTabFile = new File(outPath + File.separator + TextUtils.cleanId(container.getId()) + ".mzTab");
+//            FileWriter writer = new FileWriter(mzTabFile);
+//            writer.write(mzTab.toMzTab());
+//            TextUtils.close(writer);
+//        } catch (Exception exception) {
+//            exception.printStackTrace();
+//            LOGGER.log(Level.ERROR, "Error while parsing / writing mzTab file: " + exception.getMessage());
+//        }
 
         return null;
     }

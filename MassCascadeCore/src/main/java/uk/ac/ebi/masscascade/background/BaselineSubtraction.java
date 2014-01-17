@@ -48,7 +48,7 @@ public class BaselineSubtraction extends CallableTask {
     private int halfWindowWidth;
     private FeatureContainer featureContainer;
 
-    private static final int BASE_INTENSITY = 10;
+    private static final double BASE_INTENSITY = 0.00001;
 
     /**
      * Constructs a baseline subtraction task.

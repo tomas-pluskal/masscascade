@@ -109,7 +109,7 @@ public class NoiseReduction extends CallableTask {
 
         String id = scanContainer.getId() + IDENTIFIER;
         ScanContainer outScanContainer =
-                scanContainer.getBuilder().newInstance(ScanContainer.class, id, scanContainer.getWorkingDirectory());
+                scanContainer.getBuilder().newInstance(ScanContainer.class, id, scanContainer);
 
         Multimap<Integer, XYTrace> completedTraces = TreeMultimap.create();
 

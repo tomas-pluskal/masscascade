@@ -4,6 +4,7 @@
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
@@ -49,7 +50,38 @@
     <orderEntry type="library" name="Maven: org.jgrapht:jgrapht-jdk1.5:0.7.3" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:guava:11.0.1" level="project" />
     <orderEntry type="library" name="Maven: com.google.code.findbugs:jsr305:1.3.9" level="project" />
-    <orderEntry type="library" name="Maven: uk.ac.ebi.pride:jmztab:1.0.9" level="project" />
+    <orderEntry type="library" name="Maven: uk.ac.ebi.pride:jmztab:2.1.4" level="project" />
+    <orderEntry type="library" name="Maven: commons-dbcp:commons-dbcp:1.4" level="project" />
+    <orderEntry type="library" name="Maven: commons-pool:commons-pool:1.5.4" level="project" />
+    <orderEntry type="library" name="Maven: uk.ac.ebi.pride.jaxb:pride-jaxb:1.0.7" level="project" />
+    <orderEntry type="library" name="Maven: uk.ac.ebi.pride.tools.converter:dao-api:1.0.1-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: uk.ac.ebi.pride.tools.converter:report-api:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: uk.ac.ebi.pride.tools.converter:converter-common:1.1" level="project" />
+    <orderEntry type="library" name="Maven: uk.ac.ebi.jmzidml:jmzidentml:1.1.6" level="project" />
+    <orderEntry type="library" name="Maven: it.unimi.dsi:fastutil:6.5.1" level="project" />
+    <orderEntry type="library" name="Maven: uk.ac.ebi.pride:ion-generator:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: uk.ac.ebi.pride:pride-utilities:0.1.17" level="project" />
+    <orderEntry type="library" name="Maven: ch.qos.logback:logback-core:0.9.24" level="project" />
+    <orderEntry type="library" name="Maven: ch.qos.logback:logback-classic:0.9.24" level="project" />
+    <orderEntry type="library" name="Maven: com.lowagie:itext:4.2.0" level="project" />
+    <orderEntry type="library" name="Maven: org.bouncycastle:bctsp-jdk14:1.38" level="project" />
+    <orderEntry type="library" name="Maven: org.bouncycastle:bcprov-jdk14:1.38" level="project" />
+    <orderEntry type="library" name="Maven: org.bouncycastle:bcmail-jdk14:1.38" level="project" />
+    <orderEntry type="library" name="Maven: jfree:jfreechart:1.0.12" level="project" />
+    <orderEntry type="library" name="Maven: jfree:jcommon:1.0.15" level="project" />
+    <orderEntry type="library" name="Maven: org.swinglabs:pdf-renderer:1.0.5" level="project" />
+    <orderEntry type="library" name="Maven: batik:batik-dom:1.6-1" level="project" />
+    <orderEntry type="library" name="Maven: batik:batik-css:1.6-1" level="project" />
+    <orderEntry type="library" name="Maven: batik:batik-util:1.6-1" level="project" />
+    <orderEntry type="library" name="Maven: batik:batik-gui-util:1.6-1" level="project" />
+    <orderEntry type="library" name="Maven: batik:batik-ext:1.6-1" level="project" />
+    <orderEntry type="library" name="Maven: xml-apis:xmlParserAPIs:2.0.2" level="project" />
+    <orderEntry type="library" name="Maven: batik:batik-xml:1.6-1" level="project" />
+    <orderEntry type="library" name="Maven: batik:batik-svggen:1.6-1" level="project" />
+    <orderEntry type="library" name="Maven: batik:batik-gvt:1.6-1" level="project" />
+    <orderEntry type="library" name="Maven: batik:batik-awt-util:1.6-1" level="project" />
+    <orderEntry type="library" name="Maven: batik:batik-svg-dom:1.6-1" level="project" />
+    <orderEntry type="library" name="Maven: batik:batik-parser:1.6-1" level="project" />
     <orderEntry type="module" module-name="masscascade-visualisation" />
     <orderEntry type="library" name="Maven: java3d:vecmath:1.3.1" level="project" />
     <orderEntry type="library" name="Maven: net.sf.jchart2d:JChart2D:3.3.0" level="project" />
