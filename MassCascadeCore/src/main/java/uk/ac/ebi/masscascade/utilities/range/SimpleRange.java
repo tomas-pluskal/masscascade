@@ -26,6 +26,10 @@ import uk.ac.ebi.masscascade.interfaces.Range;
 
 public class SimpleRange extends ExtendableRange{
 
+    public SimpleRange() {
+        super(0, 0);
+    }
+
     public SimpleRange(double lowerLimit, double upperLimit) {
         super(lowerLimit, upperLimit);
     }

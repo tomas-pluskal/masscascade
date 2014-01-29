@@ -152,7 +152,7 @@ public class MemoryScanContainer extends MemoryContainer implements ScanContaine
                 basePeakData.add(new XYPoint(scan.getRetentionTime(), scan.getBasePeak().get(0).y));
             ticData.get(scanMSn).add(new XYPoint(scan.getRetentionTime(), scan.getTotalIonCurrent()));
         } else {
-            LinkedHashMap<Integer, Scan> scanLevelMap = new LinkedHashMap<Integer, Scan>();
+            LinkedHashMap<Integer, Scan> scanLevelMap = new LinkedHashMap<>();
             scanLevelMap.put(scan.getIndex(), scan);
             scans.add(scanLevelMap);
 

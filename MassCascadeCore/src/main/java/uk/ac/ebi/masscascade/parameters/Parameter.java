@@ -25,6 +25,7 @@ package uk.ac.ebi.masscascade.parameters;
 import com.google.common.collect.TreeMultimap;
 import uk.ac.ebi.masscascade.binning.MzBinning;
 import uk.ac.ebi.masscascade.identification.AdductSingle;
+import uk.ac.ebi.masscascade.interfaces.FeatureSet;
 import uk.ac.ebi.masscascade.interfaces.Option;
 import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
 import uk.ac.ebi.masscascade.interfaces.container.FeatureSetContainer;
@@ -120,6 +121,7 @@ public enum Parameter implements Option {
     EXACT_MASS_LIST("Exact mass list", new TreeMap<Double, String>()),
     ADDUCT_LIST("Adduct list", new ArrayList<AdductSingle>()),
     MZ_FOR_REMOVAL("Masses for removal", new TreeSet<Double>()),
+    FEATURE_SET_LIST("Feature set list", new ArrayList<FeatureSetContainer>()),
 
     /*
      * Ion and isotope parameters.

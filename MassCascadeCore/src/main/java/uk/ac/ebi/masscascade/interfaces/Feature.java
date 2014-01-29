@@ -48,6 +48,13 @@ public interface Feature {
     int getId();
 
     /**
+     * Sets the feature identifier.
+     *
+     * @param id the feature identifier
+     */
+    void setId(int id);
+
+    /**
      * Copies the feature including all properties and msn information but excluding the feature data.
      * <p/>
      * The copy method facilitates operations that manipulate the data of the feature but are not supposed to alter any

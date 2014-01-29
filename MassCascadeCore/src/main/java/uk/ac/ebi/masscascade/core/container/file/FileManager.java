@@ -47,6 +47,7 @@ import uk.ac.ebi.masscascade.properties.Label;
 import uk.ac.ebi.masscascade.properties.Score;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.range.MovingRange;
+import uk.ac.ebi.masscascade.utilities.range.SimpleRange;
 import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
@@ -168,6 +169,7 @@ public class FileManager implements RunManager, Serializable {
         kryo.register(LinkedHashMap.class);
         kryo.register(LinkedHashSet.class);
         kryo.register(MsnManager.class);
+        kryo.register(SimpleRange.class);
     }
 
     /**

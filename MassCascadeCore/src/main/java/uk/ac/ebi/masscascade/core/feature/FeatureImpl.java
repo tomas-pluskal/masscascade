@@ -55,7 +55,7 @@ public class FeatureImpl implements Feature {
 
     private static final Logger LOGGER = Logger.getLogger(Feature.class);
 
-    private final int id;
+    private int id;
 
     private double minIntensity;
     private double area;
@@ -391,6 +391,16 @@ public class FeatureImpl implements Feature {
      * @return the peak id
      */
     @Override
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    /**
+     * Gets the peak id.
+     *
+     * @return the peak id
+     */
+    @Override
     public int getId() {
         return id;
     }
@@ -525,7 +535,7 @@ public class FeatureImpl implements Feature {
     }
 
     private void recoverMSn(Map<Constants.MSN, Set<Integer>> oldMap, Map<Constants.MSN, Set<Integer>> newMap,
-            Constants.MSN msn) {
+                            Constants.MSN msn) {
 
         if (oldMap.containsKey(msn)) {
             Set<Integer> resultSet = new HashSet<>();
@@ -542,7 +552,7 @@ public class FeatureImpl implements Feature {
     /**
      * Adds a featureset to a particular MSn level.
      *
-     * @param msn      a MSn level
+     * @param msn        a MSn level
      * @param featureSet a featureset
      */
     @Override

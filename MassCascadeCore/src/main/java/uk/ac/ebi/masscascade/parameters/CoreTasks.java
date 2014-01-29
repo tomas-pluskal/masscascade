@@ -24,6 +24,7 @@ package uk.ac.ebi.masscascade.parameters;
 
 import uk.ac.ebi.masscascade.alignment.FastDtwAlignment;
 import uk.ac.ebi.masscascade.alignment.Obiwarp;
+import uk.ac.ebi.masscascade.alignment.ratiosets.RatioFeatureSets;
 import uk.ac.ebi.masscascade.background.*;
 import uk.ac.ebi.masscascade.binning.MzFileBinning;
 import uk.ac.ebi.masscascade.binning.RtBinning;
@@ -88,6 +89,7 @@ public enum CoreTasks implements Index {
     GAP_FILLING(SplineFilling.class, "GF"),
 
     // feature picker and extractor
+    RATIO_SETS(RatioFeatureSets.class, "RFS"),
     WAVELET(WaveletPeakPicking.class, "WV"),
     MASS_TRACE_BUILDER(SequentialFeatureBuilder.class, "TB"),
     MASS_TRACE_EXTRACTION(ProfileJoiner.class, "MT"),
