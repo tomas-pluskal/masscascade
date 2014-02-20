@@ -36,13 +36,16 @@ public class ExXYZTrace implements Trace, Comparable<Trace>, Iterable<XYZPoint> 
     private int n;
     private double avg;
     private double rtSum;
+    private double intRSum;
+    private double intRSumSq;
     private double intSum;
     private double intSumSq;
+
 
     /**
      * Constructs a trace with a rt-m/z-intensity triple as anchor.
      */
-    public ExXYZTrace(double mz, double intensity, double rt) {
+    public ExXYZTrace(double mz, double intensity, double ratio, double rt) {
 
         this.mzAnchor = mz;
         mzs = Lists.newArrayList(new XYZPoint(rt, mz, intensity));
@@ -50,26 +53,10 @@ public class ExXYZTrace implements Trace, Comparable<Trace>, Iterable<XYZPoint> 
         n = 1;
         avg = mzAnchor;
         rtSum = rt;
+        intRSum = ratio;
+        intRSumSq = ratio * ratio;
         intSum = intensity;
         intSumSq = intensity * intensity;
-    }
-
-    /**
-     * Constructs a trace with set parameters.
-     *
-     * @param anchor a m/z anchor
-     * @param mzs    a list of rt-m/z-intensity points
-     * @param avg    an average for the rt-m/z-intensity points
-     */
-    public ExXYZTrace(double anchor, List<XYZPoint> mzs, double rtSum, double avg, double avgInt) {
-
-        this.mzAnchor = anchor;
-        this.mzs = mzs;
-        this.n = mzs.size();
-        this.avg = avg;
-        this.rtSum = rtSum;
-        this.intSum = avgInt;
-        this.intSumSq = avgInt * avgInt;
     }
 
     /**
@@ -77,10 +64,12 @@ public class ExXYZTrace implements Trace, Comparable<Trace>, Iterable<XYZPoint> 
      *
      * @param rtMzIPair the rt-m/z-intensity pair
      */
-    public void add(XYZPoint rtMzIPair) {
+    public void add(XYZPoint rtMzIPair, double ratio) {
 
         mzs.add(rtMzIPair);
         avg = ((avg * n) + rtMzIPair.y) / (n + 1);
+        intRSum += ratio;
+        intRSumSq += ratio * ratio;
         intSum += rtMzIPair.z;
         intSumSq += rtMzIPair.z * rtMzIPair.z;
         rtSum += rtMzIPair.x;
@@ -159,6 +148,20 @@ public class ExXYZTrace implements Trace, Comparable<Trace>, Iterable<XYZPoint> 
     }
 
     /**
+     * Returns the intensity ratio average of the trace.
+     *
+     * @return the intensity ratio average
+     */
+    public double getAvgIntRatio() {
+
+        double mean = 0.0;
+        if (n > 0) {
+            mean = this.intRSum / this.n;
+        }
+        return mean;
+    }
+
+    /**
      * Returns the intensity std. deviation of the trace.
      *
      * @return the intensity std. deviation
@@ -170,6 +173,21 @@ public class ExXYZTrace implements Trace, Comparable<Trace>, Iterable<XYZPoint> 
             deviation = Math.sqrt((intSumSq - intSum * intSum / n) / (n - 1));
         }
         return deviation;
+    }
+
+    /**
+     * Returns the ratio intensity std. deviation of the trace.
+     *
+     * @return the ratio intensity std. deviation
+     */
+    public double getStdDevIntRatio() {
+
+        double deviation = 1.0; // careful
+        if (n > 1) {
+            deviation = Math.sqrt((intRSumSq - intRSum * intRSum / n) / (n - 1));
+        }
+
+        return deviation == 0 ? 1 : deviation;
     }
 
     public double getAvgRt() {

@@ -157,7 +157,7 @@ public class RatioFeatureSets extends CallableTask {
         private void add(int bin, Feature feature, double maxIntensity) {
 
             double intensityRatio = feature.getIntensity() / maxIntensity;
-            Trace trace = new ExXYZTrace(feature.getMz(), intensityRatio, feature.getRetentionTime());
+            Trace trace = new ExXYZTrace(feature.getMz(), maxIntensity, intensityRatio, feature.getRetentionTime());
             if (binToFeatures[bin] == null) {
                 TreeSet<Trace> traceTreeSet = new TreeSet<>();
                 traceTreeSet.add(trace);
@@ -168,7 +168,7 @@ public class RatioFeatureSets extends CallableTask {
                 ExXYZTrace closest = (ExXYZTrace) DataUtils.getClosestValue(trace, traceTreeSet);
 
                 if (closest != null && new ToleranceRange(closest.getAvg(), PPM).contains(trace.getAnchor())) {
-                    closest.add(feature.getCenter());
+                    closest.add(new XYZPoint(feature.getRetentionTime(), feature.getMz(), maxIntensity), intensityRatio);
                 } else {
                     binToFeatures[bin].add(trace);
                 }
@@ -231,14 +231,16 @@ public class RatioFeatureSets extends CallableTask {
             for (Trace trace : traceTreeSet) {
                 ExXYZTrace exTrace = (ExXYZTrace) trace;
                 if (exTrace.size() == max) {
-                    double avgInt = exTrace.getAvgInt();
-                    double sigma = exTrace.getStdDevInt();
+                    double avgMaxInt = exTrace.getAvgInt();
+                    double avgIntRatio = exTrace.getAvgIntRatio();
+                    double sigma = exTrace.getStdDevIntRatio();
 
                     double mz = exTrace.getAvg();
                     double rt = exTrace.getAvgRt();
-                    double intensity = avgInt / sigma;
+                    double intensity = avgMaxInt * (avgIntRatio / sigma);
 
-//                    System.out.println(mz + " " + intensity + " " + avgInt + " " + sigma);
+                    System.out.println("Sigma: " + sigma);
+                    System.out.println(intensity);
 
                     if (range == null) {
                         range = new ExtendableRange(rt);
