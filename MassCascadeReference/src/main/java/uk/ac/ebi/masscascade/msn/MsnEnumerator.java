@@ -111,7 +111,9 @@ public class MsnEnumerator extends CallableSearch {
                 FeatureSet msnFeatureSet = feature.getMsnSpectra(Constants.MSN.MS2).get(0);
                 for (Identity identity : feature.getProperty(PropertyType.Identity, Identity.class)) {
                     String notation = identity.getNotation();
+
                     if (notation == null || notation.isEmpty()) continue;
+                    if (notation.contains("-") || notation.contains("+")) continue;
 
                     TreeMap<Double, List<String>> massToSmiles = enumerate(notation, depth);
                     for (Feature msnFeature : msnFeatureSet) {
