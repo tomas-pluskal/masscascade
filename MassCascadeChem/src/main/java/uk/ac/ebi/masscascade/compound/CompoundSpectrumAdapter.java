@@ -128,6 +128,10 @@ public class CompoundSpectrumAdapter {
         Map<Integer, Integer> drawIndexToId = new HashMap<>();
         XYList data = new XYList();
         for (Feature feature : features) {
+            if (cToPIdMap != null) {
+                if (!cToPIdMap.containsKey(containerI) || !cToPIdMap.get(containerI).contains(feature.getId()))
+                    continue;
+            }
             data.add(feature.getMzIntDp());
             drawIndexToId.put(feature.getId(), mainPeak++);
         }
