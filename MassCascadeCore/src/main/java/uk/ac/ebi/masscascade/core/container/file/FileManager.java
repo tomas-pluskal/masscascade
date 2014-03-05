@@ -212,7 +212,7 @@ public class FileManager implements RunManager, Serializable {
 
         long start = -1L;
         try {
-            Output output = new Output(1024 * 256 * 32);
+            Output output = new Output(1024 * 256 * 32 * 4);
             kryo.writeObject(output, object);
             output.flush();
             output.close();

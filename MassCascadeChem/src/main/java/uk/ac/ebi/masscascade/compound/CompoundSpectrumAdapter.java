@@ -186,6 +186,9 @@ public class CompoundSpectrumAdapter {
                 if (feature.hasProperty(PropertyType.Adduct)) {
                     HashMultimap<Integer, Adduct> adductMap = HashMultimap.create();
                     for (Adduct adduct : feature.getProperty(PropertyType.Adduct, Adduct.class)) {
+                        if (drawIndexToId.get(adduct.getChildId()) == null || drawIndexToId.get(adduct.getParentId()) == null) {
+                            continue;
+                        }
                         if (adduct.getParentId().equals(feature.getId()))
                             adductMap.put(drawIndexToId.get(adduct.getChildId()), adduct);
                         else adductMap.put(drawIndexToId.get(adduct.getParentId()), adduct);
@@ -202,6 +205,9 @@ public class CompoundSpectrumAdapter {
                     for (int id : parentIds) {
                         for (Isotope isotope : featureSet.getFeature(id).getProperty(PropertyType.Isotope,
                                 Isotope.class)) {
+                            if (drawIndexToId.get(isotope.getChildId()) == null) {
+                                continue;
+                            }
                             isoMap.put(drawIndexToId.get(isotope.getChildId()), isotope);
                         }
                     }
