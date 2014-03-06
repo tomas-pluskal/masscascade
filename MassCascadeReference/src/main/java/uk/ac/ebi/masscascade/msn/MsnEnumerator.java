@@ -164,7 +164,7 @@ public class MsnEnumerator extends CallableSearch {
             TextUtils tx = new TextUtils();
             while ((line = tx.readLineFromStream(bufStream)) != null) {
                 String[] elements = line.split("\\s");
-                double mass = Double.parseDouble(elements[1]);
+                double mass = ((int) (Double.parseDouble(elements[1]) * 1000d)) / 1000d;
                 String fragment = elements[2];
 
                 if (massToSmiles.containsKey(mass)) {
