@@ -73,9 +73,8 @@ public class ElementJudge implements Judge {
         List<CompoundSpectrum> filteredCS = new ArrayList<>();
 
         for (CompoundSpectrum cs : compoundSpectra) {
-            Iterator<CompoundEntity> iter = cs.getCompounds().iterator();
-            while (iter.hasNext()) {
-                CompoundEntity ce = iter.next();
+            List<CompoundEntity> resultCEs = new ArrayList<>();
+            for (CompoundEntity ce : cs.getCompounds()) {
                 boolean filter = false;
                 String notation = ce.getNotation(ce.getId());
                 IAtomContainer molecule = NotationUtil.getMoleculePlain(notation);
@@ -91,11 +90,13 @@ public class ElementJudge implements Judge {
                 }
                 if (filter) {
                     LOGGER.log(Level.DEBUG, "Removed " + notation);
-                    iter.remove();
                     removed++;
+                } else {
+                    resultCEs.add(ce);
                 }
             }
 
+            cs.setCompounds(resultCEs);
             if (cs.getCompounds().size() > 0) {
                 filteredCS.add(cs);
             }

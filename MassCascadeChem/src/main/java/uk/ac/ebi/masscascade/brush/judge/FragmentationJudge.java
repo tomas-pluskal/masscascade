@@ -71,9 +71,8 @@ public class FragmentationJudge implements Judge {
                 continue;
             }
 
-            Iterator<CompoundEntity> iter = cs.getCompounds().iterator();
-            while (iter.hasNext()) {
-                CompoundEntity ce = iter.next();
+            List<CompoundEntity> resultCEs = new ArrayList<>();
+            for (CompoundEntity ce : cs.getCompounds()) {
                 List<XYPoint> msn2Explained = new ArrayList<>();
 
                 if (ce.getIndexToIdentity2() == null) {
@@ -86,12 +85,12 @@ public class FragmentationJudge implements Judge {
                 double score = scorer.getScore(msn2Explained, msn2) / 2d;
                 if (score < 100) {
                     LOGGER.log(Level.DEBUG, "Removed: " + ce.getNotation(ce.getId()) + " - " + score);
-                    iter.remove();
                     removed++;
                 } else if (score < 350) {
                     ce.addScore((int) score);
                     ce.setStatus(Status.INTERMEDIATE);
                     ce.setEvidence(Evidence.MSI_2);
+                    resultCEs.add(ce);
                 } else {
                     ce.addScore((int) score);
                     if (ce.getStatus() == Status.INTERMEDIATE) {
@@ -100,10 +99,12 @@ public class FragmentationJudge implements Judge {
                         ce.setStatus(Status.INTERMEDIATE);
                     }
                     ce.setEvidence(Evidence.MSI_2);
+                    resultCEs.add(ce);
                 }
                 LOGGER.log(Level.DEBUG, "Score: " + ce.getNotation(ce.getId()) + " - " + score);
             }
 
+            cs.setCompounds(resultCEs);
             if (cs.getCompounds().size() > 0) {
                 filteredCS.add(cs);
             }

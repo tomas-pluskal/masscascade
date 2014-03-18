@@ -30,14 +30,12 @@ import uk.ac.ebi.masscascade.interfaces.Feature;
 import uk.ac.ebi.masscascade.interfaces.Trace;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.utilities.DataUtils;
+import uk.ac.ebi.masscascade.utilities.TextUtils;
 import uk.ac.ebi.masscascade.utilities.comparator.FeatureMassComparator;
 import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYTrace;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FeatureBinGenerator {
 
@@ -120,16 +118,35 @@ public class FeatureBinGenerator {
         int index = -1;
         FeatureMap timeBins = new FeatureMap();
         for (int groupId : featureContainers.keySet()) {
+            List<Container> featureCs = new ArrayList<>(featureContainers.get(groupId));
+
+            Collections.sort(featureCs, new Comparator<Container>() { // really needs to be changed, dirty hack
+
+                @Override
+                public int compare(Container o1, Container o2) {
+                    return o1.getId().compareTo(o2.getId());
+                }
+            });
+
+            // iterate over every container in the group
             for (Container container : featureContainers.get(groupId)) {
+                // get all features...
                 List<Feature> features = Lists.newArrayList(container.featureIterator());
+                // and sort them by m/z in ascending order
                 Collections.sort(features, new FeatureMassComparator());
                 index++;
+                // itearte over every feature
                 for (Feature feature : features) {
+                    // get the retention time,
                     double rt = feature.getRetentionTime();
+                    // and representative m/z signal
                     XYTrace mzTrace = new XYTrace(feature.getMzIntDp());
+                    // search for the closest feature trace in the trace map
                     Trace closestMzTrace = DataUtils.getClosestKey(mzTrace, timeBins);
 
+                    // create a new feature bin
                     FeatureBin timeBin = new FeatureBin(index, groupId, feature, featureContainers.size());
+                    // if there is a proximate trace
                     if (closestMzTrace != null && timeBins.containsKey(closestMzTrace)) {
 
                         if (new ToleranceRange(closestMzTrace.getAvg(), ppm).contains(feature.getMz())) {
@@ -147,11 +164,14 @@ public class FeatureBinGenerator {
                             if (cTimeBin.getRt() - sec <= rt && cTimeBin.getRt() + sec > rt) {
                                 cTimeBin.add(index, groupId, feature);
                                 timeBins.add(closestMzTrace, cTimeBin, cIndex);
-                            } else timeBins.put(closestMzTrace, timeBin);
+                            } else {
+                                timeBins.put(closestMzTrace, timeBin);
+                            }
 
                             continue;
                         }
                     }
+                    // else add to the trace map
                     timeBins.put(mzTrace, timeBin);
                 }
             }

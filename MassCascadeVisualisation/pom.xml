@@ -46,5 +46,10 @@
             <artifactId>jogl-all-main</artifactId>
             <version>2.0-rc11</version>
         </dependency>
+        <dependency>
+            <groupId>net.sf.jchart2d</groupId>
+            <artifactId>jchart2d</artifactId>
+            <version>3.3.2</version>
+        </dependency>
     </dependencies>
 </project>

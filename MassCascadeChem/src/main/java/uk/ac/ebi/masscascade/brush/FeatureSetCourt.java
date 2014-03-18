@@ -86,11 +86,13 @@ public class FeatureSetCourt implements Callable<List<CompoundSpectrum>> {
             return compoundSpectra;
         }
 
-        Iterator<Judge> iter = judges.iterator();
-        do {
-            Judge judge = iter.next();
+        if (judges.size() == 0) {
+            return compoundSpectra;
+        }
+
+        for (Judge judge : judges) {
             compoundSpectra = judge.judge(compoundSpectra);
-        } while (iter.hasNext());
+        }
 
         return compoundSpectra;
     }

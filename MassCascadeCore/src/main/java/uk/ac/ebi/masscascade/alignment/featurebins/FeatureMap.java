@@ -46,9 +46,11 @@ public class FeatureMap extends TreeMap<Trace, List<FeatureBin>> {
      */
     public void add(Trace mzTrace, FeatureBin timeBin, int index) {
 
-        List<FeatureBin> timeBins = get(mzTrace);
+        List<FeatureBin> timeBins = this.get(mzTrace);
         timeBins.remove(index);
         timeBins.add(timeBin);
+
+        super.put(mzTrace, timeBins);
     }
 
     /**
@@ -59,10 +61,11 @@ public class FeatureMap extends TreeMap<Trace, List<FeatureBin>> {
      */
     public void put(Trace key, FeatureBin value) {
 
-        if (containsKey(key)) {
-            ((XYTrace) key).add(new XYPoint(value.getMz(), 0));
-            List<FeatureBin> bins = get(key);
+        if (this.containsKey(key)) {
+            List<FeatureBin> bins = this.get(key);
             bins.add(value);
+
+            ((XYTrace) key).add(new XYPoint(value.getMz(), 0));
             super.put(key, bins);
         } else {
             List<FeatureBin> bins = new ArrayList<>();

@@ -94,10 +94,9 @@ public class IsotopeJudge implements Judge {
                 intensities[j] = intensities[j] / maxIntensity;
             }
 
-            Iterator<CompoundEntity> iter = cs.getCompounds().iterator();
-            while (iter.hasNext()) {
+            List<CompoundEntity> resultCEs = new ArrayList<>();
+            for (CompoundEntity ce : cs.getCompounds()) {
                 String isoLog = "";
-                CompoundEntity ce = iter.next();
                 boolean filter = false;
                 String notation = ce.getNotation(ce.getId());
                 IAtomContainer molecule = NotationUtil.getMoleculePlain(notation);
@@ -122,15 +121,16 @@ public class IsotopeJudge implements Judge {
 
                 if (filter) {
                     LOGGER.log(Level.DEBUG, "Removed " + notation + ":\n" + isoLog);
-                    iter.remove();
                     removed++;
                 } else {
                     ce.setStatus(Status.INTERMEDIATE);
                     ce.setEvidence(Evidence.MSI_3);
                     ce.addScore(200);
+                    resultCEs.add(ce);
                 }
             }
 
+            cs.setCompounds(resultCEs);
             if (cs.getCompounds().size() > 0) {
                 filteredCS.add(cs);
             }
