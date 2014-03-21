@@ -30,12 +30,15 @@ import uk.ac.ebi.masscascade.interfaces.Feature;
 import uk.ac.ebi.masscascade.interfaces.Trace;
 import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.utilities.DataUtils;
-import uk.ac.ebi.masscascade.utilities.TextUtils;
 import uk.ac.ebi.masscascade.utilities.comparator.FeatureMassComparator;
 import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYTrace;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
 public class FeatureBinGenerator {
 
@@ -76,9 +79,14 @@ public class FeatureBinGenerator {
     public static HashMultimap<Integer, Integer> createContainerToFeatureMap(
             Multimap<Integer, Container> featureContainers, double ppm, double sec, double missing) {
 
+        System.out.println("Feature mappings: " + featureContainers.size());
+
         HashMultimap<Integer, Integer> cToPIdMap = HashMultimap.create();
 
         FeatureMap timeBins = group(featureContainers, ppm, sec);
+
+        System.out.println("Map before: " + timeBins.size());
+
         for (List<FeatureBin> bins : timeBins.values()) {
             for (FeatureBin timeBin : bins) {
                 for (int groupId : featureContainers.keySet()) {
@@ -93,19 +101,21 @@ public class FeatureBinGenerator {
             }
         }
 
+        System.out.println("Map after: " + timeBins.size());
+
         return cToPIdMap;
     }
 
     /**
      * Groups feature container by their m/z and time proximity. The resulting map contains averaged m/z to cross-sample
      * m/z associations for specific times.
-     *
-     *                  s_1   s_2   s_3
+     * <p/>
+     * s_1   s_2   s_3
      * avg mz_1 - rt_a   x     x     x
-     *            rt_b   x           x
-     *            rt_c   x     x
+     * rt_b   x           x
+     * rt_c   x     x
      * avg mz_2 - rt_a   x           x
-     *            rt_b   x     x     x
+     * rt_b   x     x     x
      * avg mz_3 - rt_a   x     x     x
      *
      * @param featureContainers the feature containers
@@ -117,21 +127,22 @@ public class FeatureBinGenerator {
 
         int index = -1;
         FeatureMap timeBins = new FeatureMap();
-        for (int groupId : featureContainers.keySet()) {
+
+        // tmp solution: not working
+        List<Integer> groups = new ArrayList<>(featureContainers.keySet());
+        Collections.sort(groups);
+
+        for (int groupId : groups) {
             List<Container> featureCs = new ArrayList<>(featureContainers.get(groupId));
 
-            Collections.sort(featureCs, new Comparator<Container>() { // really needs to be changed, dirty hack
-
-                @Override
-                public int compare(Container o1, Container o2) {
-                    return o1.getId().compareTo(o2.getId());
-                }
-            });
+            // tmp solution: possibly working, needs more testing
+            Collections.sort(featureCs, new ContainerComparator());
 
             // iterate over every container in the group
-            for (Container container : featureContainers.get(groupId)) {
+            for (Container container : featureCs) {
                 // get all features...
                 List<Feature> features = Lists.newArrayList(container.featureIterator());
+                System.out.println(features.size());
                 // and sort them by m/z in ascending order
                 Collections.sort(features, new FeatureMassComparator());
                 index++;
@@ -178,5 +189,13 @@ public class FeatureBinGenerator {
         }
 
         return timeBins;
+    }
+}
+
+class ContainerComparator implements Comparator<Container> {
+
+    @Override
+    public int compare(Container o1, Container o2) {
+        return o1.getId().compareTo(o2.getId());
     }
 }
