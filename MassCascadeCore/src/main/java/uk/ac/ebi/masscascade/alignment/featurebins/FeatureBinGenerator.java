@@ -79,13 +79,9 @@ public class FeatureBinGenerator {
     public static HashMultimap<Integer, Integer> createContainerToFeatureMap(
             Multimap<Integer, Container> featureContainers, double ppm, double sec, double missing) {
 
-        System.out.println("Feature mappings: " + featureContainers.size());
-
         HashMultimap<Integer, Integer> cToPIdMap = HashMultimap.create();
 
         FeatureMap timeBins = group(featureContainers, ppm, sec);
-
-        System.out.println("Map before: " + timeBins.size());
 
         for (List<FeatureBin> bins : timeBins.values()) {
             for (FeatureBin timeBin : bins) {
@@ -100,8 +96,6 @@ public class FeatureBinGenerator {
                 }
             }
         }
-
-        System.out.println("Map after: " + timeBins.size());
 
         return cToPIdMap;
     }
@@ -142,7 +136,6 @@ public class FeatureBinGenerator {
             for (Container container : featureCs) {
                 // get all features...
                 List<Feature> features = Lists.newArrayList(container.featureIterator());
-                System.out.println(features.size());
                 // and sort them by m/z in ascending order
                 Collections.sort(features, new FeatureMassComparator());
                 index++;
