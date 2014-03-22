@@ -80,7 +80,6 @@ public class FeatureBinGenerator {
             Multimap<Integer, Container> featureContainers, double ppm, double sec, double missing) {
 
         HashMultimap<Integer, Integer> cToPIdMap = HashMultimap.create();
-
         FeatureMap timeBins = group(featureContainers, ppm, sec);
 
         for (List<FeatureBin> bins : timeBins.values()) {

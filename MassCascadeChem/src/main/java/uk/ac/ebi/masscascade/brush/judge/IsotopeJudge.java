@@ -75,7 +75,7 @@ public class IsotopeJudge implements Judge {
         for (CompoundSpectrum cs : compoundSpectra) {
             Set<Integer> isotopes = cs.getIndexToIsotope().keySet();
 
-            if (isotopes.isEmpty()) {
+            if (isotopes.isEmpty() || isotopes.size() == 1) {
                 filteredCS.add(cs);
                 continue;
             }
