@@ -24,6 +24,7 @@ package uk.ac.ebi.masscascade.identification;
 
 import org.apache.commons.math3.util.FastMath;
 import org.apache.log4j.Level;
+import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.exception.MassCascadeException;
 import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Feature;

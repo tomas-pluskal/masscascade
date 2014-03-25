@@ -30,6 +30,9 @@ import uk.ac.ebi.masscascade.interfaces.container.Container;
 import uk.ac.ebi.masscascade.interfaces.container.FeatureContainer;
 
 import javax.swing.table.AbstractTableModel;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -80,7 +83,10 @@ public class FeatureBinTableModel extends AbstractTableModel implements Iterable
         for (Map.Entry<Integer, Integer> entry : featureBins.get(rowIndex).getContainerIndexToFeatureId().entrySet()) {
             int counter = 0;
             for (int groupId : profileContainers.keySet()) {
-                for (Container container : profileContainers.get(groupId)) {
+                List<Container> featureCs = new ArrayList<>(profileContainers.get(groupId));
+                // tmp solution: possibly working, needs more testing
+                Collections.sort(featureCs, new ContainerComparator());
+                for (Container container : featureCs) {
                     if (counter == entry.getKey()) {
                         Feature feature = ((FeatureContainer) container).getFeature(entry.getValue());
                         String id = "(" + entry.getKey() + "-" + feature.getId() + ")";
@@ -153,7 +159,10 @@ public class FeatureBinTableModel extends AbstractTableModel implements Iterable
             int index = col - FeatureBin.COLUMNS;
             int counter = 0;
             for (int groupId : profileContainers.keySet()) {
-                for (Container container : profileContainers.get(groupId)) {
+                List<Container> featureCs = new ArrayList<>(profileContainers.get(groupId));
+                // tmp solution: possibly working, needs more testing
+                Collections.sort(featureCs, new ContainerComparator());
+                for (Container container : featureCs) {
                     if (counter == index) {
                         return "(" + (col - FeatureBin.COLUMNS) + ") " + container.getId();
                     }
@@ -220,5 +229,13 @@ public class FeatureBinTableModel extends AbstractTableModel implements Iterable
     @Override
     public Iterator<FeatureBin> iterator() {
         return featureBins.iterator();
+    }
+}
+
+class ContainerComparator implements Comparator<Container> {
+
+    @Override
+    public int compare(Container o1, Container o2) {
+        return o1.getId().compareTo(o2.getId());
     }
 }

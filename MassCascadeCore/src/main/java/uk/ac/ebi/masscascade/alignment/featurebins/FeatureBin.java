@@ -23,18 +23,25 @@
 package uk.ac.ebi.masscascade.alignment.featurebins;
 
 import org.apache.commons.math3.util.FastMath;
+import org.mozilla.intl.chardet.nsUTF8Verifier;
+import uk.ac.ebi.masscascade.core.PropertyType;
 import uk.ac.ebi.masscascade.core.chromatogram.MassChromatogram;
 import uk.ac.ebi.masscascade.interfaces.Chromatogram;
 import uk.ac.ebi.masscascade.interfaces.Feature;
 import uk.ac.ebi.masscascade.interfaces.Range;
 import uk.ac.ebi.masscascade.interfaces.Scan;
 import uk.ac.ebi.masscascade.interfaces.container.ScanContainer;
+import uk.ac.ebi.masscascade.properties.Identity;
 import uk.ac.ebi.masscascade.utilities.NumberAdapter;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A binned feature row across samples. This row keeps track of the average value of its core values and collects
@@ -47,7 +54,7 @@ public class FeatureBin extends NumberAdapter {
 
     private double mz;
     private double rt;
-    private String label;
+    private Set<String> labels;
     private double area;
     private double mzDev;
     private Chromatogram chromatogram;
@@ -68,7 +75,7 @@ public class FeatureBin extends NumberAdapter {
 
         mz = 0;
         rt = 0;
-        label = "";
+        labels = new HashSet<>();
         area = 0;
         mzDev = 0;
         chromatogram = new MassChromatogram();
@@ -122,6 +129,12 @@ public class FeatureBin extends NumberAdapter {
         }
         containerIndexToFeatureId.put(index, feature.getId());
 
+        if (feature.hasProperty(PropertyType.Identity)) {
+            for (Identity identity : feature.getProperty(PropertyType.Identity, Identity.class)) {
+                labels.add(identity.getName());
+            }
+        }
+
         nFeatures++;
     }
 
@@ -159,8 +172,8 @@ public class FeatureBin extends NumberAdapter {
      *
      * @return the label
      */
-    public String getLabel() {
-        return label;
+    public Set<String> getLabel() {
+        return labels;
     }
 
     /**
