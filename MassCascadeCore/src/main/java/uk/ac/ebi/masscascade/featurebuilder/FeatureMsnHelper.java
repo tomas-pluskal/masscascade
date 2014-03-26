@@ -46,7 +46,7 @@ public class FeatureMsnHelper {
     private List<Map<Integer, Map<Integer, Double>>> msnMap;
 
     // delta between precursor ion m/z and scan signal m/z
-    private static final double EPSILON = 0.001;
+    private static final double EPSILON = 0.05;
 
     /**
      * Constructs the msn feature helper with a MSn scan container. If the scan container does not contain MSn scans,
@@ -83,9 +83,9 @@ public class FeatureMsnHelper {
 
                 if (scan.getParentScan() == -1) continue;
 
-                if (currentMap.containsKey(scan.getParentScan()))
+                if (currentMap.containsKey(scan.getParentScan())) {
                     currentMap.get(scan.getParentScan()).put(scan.getIndex(), scan.getParentMz());
-                else {
+                } else {
                     Map<Integer, Double> dIndexdMass = Maps.newHashMap();
                     dIndexdMass.put(scan.getIndex(), scan.getParentMz());
                     currentMap.put(scan.getParentScan(), dIndexdMass);
