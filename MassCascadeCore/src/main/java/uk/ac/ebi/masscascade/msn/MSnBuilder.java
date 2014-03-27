@@ -34,6 +34,7 @@ import uk.ac.ebi.masscascade.parameters.Constants;
 import uk.ac.ebi.masscascade.parameters.Parameter;
 import uk.ac.ebi.masscascade.parameters.ParameterMap;
 import uk.ac.ebi.masscascade.utilities.DataUtils;
+import uk.ac.ebi.masscascade.utilities.comparator.PointIntensityComparator;
 import uk.ac.ebi.masscascade.utilities.range.ExtendableRange;
 import uk.ac.ebi.masscascade.utilities.range.ToleranceRange;
 import uk.ac.ebi.masscascade.utilities.xyz.XYList;
@@ -41,11 +42,17 @@ import uk.ac.ebi.masscascade.utilities.xyz.XYPoint;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZPoint;
 import uk.ac.ebi.masscascade.utilities.xyz.XYZTrace;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Class implementing an MSn builder method. The method compiles a representative MSn spectra for each feature that has
@@ -63,11 +70,16 @@ public class MSnBuilder extends CallableTask {
 
     private double ppm;
     private double minIntensity;
+    private int minFeatureWidth;
     private ScanContainer scanContainer;
     private FeatureSetContainer featureSetContainer;
 
-    private int globalMsnId = 1;
-    private final TreeMap<Trace, Boolean> traceToExtended = new TreeMap<>();
+    private int globalMsnId;
+    private double lastRt;
+    private double currRt;
+    private TreeSet<Trace> traces;
+    private List<Trace> tracesClosed;
+    private TreeSet<Trace> tracesExtended;
 
     /**
      * Constructor for a MSn builder task.
@@ -79,6 +91,9 @@ public class MSnBuilder extends CallableTask {
     public MSnBuilder(ParameterMap params) throws MassCascadeException {
 
         super(MSnBuilder.class);
+
+        globalMsnId = 1;
+
         setParameters(params);
     }
 
@@ -94,6 +109,7 @@ public class MSnBuilder extends CallableTask {
         ppm = params.get(Parameter.MZ_WINDOW_PPM, Double.class);
         minIntensity = params.get(Parameter.MIN_FEATURE_INTENSITY, Double.class);
         scanContainer = params.get(Parameter.SCAN_CONTAINER, ScanContainer.class);
+        minFeatureWidth = params.get(Parameter.MIN_FEATURE_WIDTH, Integer.class);
         featureSetContainer = params.get(Parameter.FEATURE_SET_CONTAINER, FeatureSetContainer.class);
     }
 
@@ -126,84 +142,156 @@ public class MSnBuilder extends CallableTask {
 
             if (entry.getKey().getLvl() < 2 || entry.getKey().getLvl() > 5) continue;
 
-            traceToExtended.clear();
+            traces = new TreeSet<>();
+            tracesClosed = new ArrayList<>();
+            tracesExtended = new TreeSet<>();
+            currRt = 0;
+            lastRt = 0;
 
-            for (int scanId : entry.getValue()) {
+            List<Integer> scanIds = new ArrayList<>(entry.getValue());
+            Collections.sort(scanIds);
+            for (int scanId : scanIds) {
+
                 Scan scan = scanContainer.getScan(scanId);
                 if (scan == null) continue;
 
-                double rt = scan.getRetentionTime();
-                XYList scanDps = scan.getData();
-                for (int i = 0; i < scanDps.size(); i++) {
+                currRt = scan.getRetentionTime();
+                if (lastRt == 0) lastRt = FastMath.max(0, currRt - 1);
 
-                    XYPoint currentDp = scanDps.get(i);
-                    double nextDpMz = (currentDp == scanDps.getLast()) ? Double.MAX_VALUE : scanDps.get(i + 1).x;
-
-                    XYZTrace signalTrace = new XYZTrace(currentDp, rt);
-                    XYZTrace closestTrace = (XYZTrace) DataUtils.getClosestKey(signalTrace, traceToExtended);
-
-                    if (closestTrace == null) addTrace(signalTrace);
-                    else if (traceToExtended.containsKey(signalTrace)) {
-                        if (!traceToExtended.get(signalTrace)) appendTrace(signalTrace, closestTrace);
-                    } else if (isCloserThanNext(closestTrace.getAvg(), currentDp.x, nextDpMz)) {
-                        if (isWithinParameter(closestTrace.getAvg(), currentDp.x, traceToExtended.get(closestTrace)))
-                            appendTrace(signalTrace, closestTrace);
-                        else addTrace(signalTrace);
-                    } else addTrace(signalTrace);
+                if (traces.isEmpty()) {
+                    for (XYPoint dataPoint : scan.getData()) {
+                        XYZTrace trace = new XYZTrace(dataPoint, currRt);
+                        trace.push(new XYZPoint(lastRt, trace.get(0).y, Constants.MIN_ABUNDANCE));
+                        traces.add(trace);
+                    }
+                    continue;
                 }
 
-                Iterator<Map.Entry<Trace, Boolean>> iter = traceToExtended.entrySet().iterator();
-                while (iter.hasNext()) iter.next().setValue(false);
+                searchExistingTraces(scan);
+                updateTraceMaps();
+
+                lastRt = currRt;
             }
 
-            annotateFeature(feature, entry.getKey(), traceToExtended);
+            currRt += 1;
+            for (Trace trace : traces) {
+                addToContainer(trace);
+            }
+
+            annotateFeature(feature, entry.getKey());
         }
     }
 
-    private boolean isCloserThanNext(double avg, double curMz, double nextMz) {
-        return FastMath.abs(avg - curMz) <= FastMath.abs(avg - nextMz);
+    private void searchExistingTraces(Scan scan) {
+
+        XYList dataPoints = scan.getData();
+        Collections.sort(dataPoints, new Comparator<XYPoint>() {
+            @Override
+            public int compare(XYPoint o1, XYPoint o2) {
+                double x1 = o1.x;
+                double x2 = o2.x;
+
+                if (x1 == x2) {
+                    return 0;
+                } else if (x1 < x2) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            }
+        });
+
+        for (int signalPos = 0; signalPos < dataPoints.size(); signalPos++) {
+
+            XYPoint signal = dataPoints.get(signalPos);
+
+            double nextSignal =
+                    (signalPos == dataPoints.size() - 1) ? Double.MAX_VALUE : dataPoints.get(signalPos + 1).x;
+
+            XYZTrace signalTrace = new XYZTrace(signal, currRt);
+            XYZTrace closestTrace = (XYZTrace) DataUtils.getClosestValue(signalTrace, traces);
+
+            // (1) signal m/z not in the map >> map empty || null
+            if (closestTrace == null) addTrace(signalTrace);
+                // (2) signal m/z is in the map >> exact match
+            else if (traces.contains(signalTrace)) {
+                if (!tracesExtended.contains(signalTrace)) appendTrace(signalTrace, closestTrace);
+                // (3) signal m/z is in the map >> closest key
+            } else if (FastMath.abs(closestTrace.getAvg() - signal.x) <= FastMath.abs(closestTrace.getAvg() - nextSignal)) {
+                // check if the signal m/z is within the tolerance range and was not already extended
+                if (new ToleranceRange(closestTrace.getAvg(), ppm).contains(signal.x) && !tracesExtended.contains(
+                        closestTrace)) appendTrace(signalTrace, closestTrace);
+                else addTrace(signalTrace);
+                // (4) signal m/z is outside the tolerance range of the closest key in the map
+            } else addTrace(signalTrace);
+        }
     }
 
-    private boolean isWithinParameter(double avg, double mz, boolean extended) {
-        return (new ToleranceRange(avg, ppm).contains(mz) && !extended);
+    private void updateTraceMaps() {
+
+        Iterator<Trace> iterator = traces.iterator();
+        Trace trace;
+        while (iterator.hasNext()) {
+            trace = iterator.next();
+            if (!tracesExtended.contains(trace)) {
+                addToContainer(trace);
+                iterator.remove();
+            }
+        }
+
+        traces.addAll(tracesExtended);
+        tracesExtended.clear();
     }
 
     private void addTrace(XYZTrace trace) {
 
-        XYZPoint dp = trace.getData().get(0);
-        trace.push(new XYZPoint(dp.x - 1, dp.y, Constants.MIN_ABUNDANCE));
-        traceToExtended.put(trace, true);
+        trace.push(new XYZPoint(lastRt, trace.get(0).y, Constants.MIN_ABUNDANCE));
+        tracesExtended.add(trace);
     }
 
     private void appendTrace(XYZTrace signalTrace, XYZTrace closestTrace) {
 
-        closestTrace.add(signalTrace.get(0));
-        traceToExtended.put(closestTrace, true);
+        closestTrace.add(signalTrace.get(0), signalTrace.getMsnMap());
+        tracesExtended.add(closestTrace);
     }
 
-    private void annotateFeature(Feature feature, Constants.MSN msn, TreeMap<Trace, Boolean> traceToExtended) {
+    private void addToContainer(Trace trace) {
+
+        if (trace.size() <= minFeatureWidth) {
+            return;
+        }
+
+        tracesClosed.add(trace);
+    }
+
+    private void annotateFeature(Feature feature, Constants.MSN msn) {
 
         Set<Feature> spectrumFeatures = new HashSet<>();
         XYList spectrumData = new XYList();
 
-        int totalMsnScans = feature.getMsnScans().get(msn).size();
-        for (Trace trace : traceToExtended.keySet()) {
-            if (trace.size() - 1 != totalMsnScans) continue;
+        for (Trace trace : tracesClosed) {
 
             XYZTrace xyzTrace = (XYZTrace) trace;
 
             Range mzRange = new ExtendableRange(xyzTrace.get(0).y);
             Feature msnFeature = new FeatureImpl(globalMsnId++, xyzTrace.get(0), mzRange);
-            for (int i = 1; i < trace.size(); i++) msnFeature.addFeaturePoint(xyzTrace.get(i));
-            msnFeature.closeFeature(((XYZTrace) trace).get(trace.size() - 1).x + 1);
+            for (int i = 1; i < xyzTrace.size(); i++) {
+                msnFeature.addFeaturePoint(xyzTrace.get(i));
+            }
+            msnFeature.closeFeature(xyzTrace.get(xyzTrace.size() - 1).x + 1);
 
-            if (msnFeature.getIntensity() < minIntensity) continue;
+            if (msnFeature.getIntensity() < minIntensity) {
+                continue;
+            }
 
             spectrumFeatures.add(msnFeature);
             spectrumData.add(msnFeature.getMzIntDp());
+
         }
 
-        if (spectrumFeatures.size() == 0) return;
+        if (spectrumFeatures.size() == 0) {
+            return;
+        }
 
         Range rtRange = new ExtendableRange(spectrumFeatures.iterator().next().getRetentionTime());
         double rt = 0;
