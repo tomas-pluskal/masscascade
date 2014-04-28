@@ -226,7 +226,16 @@ public class SequentialFeatureBuilder extends CallableTask {
         Range mzRange = new ExtendableRange(trace.get(0).y);
         Feature feature = new FeatureImpl(globalFeatureId, trace.get(0), mzRange);
         for (int i = 1; i < trace.size(); i++) feature.addFeaturePoint(trace.get(i));
-        feature.closeFeature(currRt);
+
+        try {
+            feature.closeFeature(currRt);
+        } catch (Exception exception) {
+            System.out.print("Seq Feature Builder Error: " + exception.getMessage());
+            for (XYZPoint point : trace) {
+                System.out.println(point.x + " " + point.y + " " + point.z);
+            }
+            return;
+        }
 
         if (feature.getIntensity() >= minIntensity) {
 
