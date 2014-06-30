@@ -274,7 +274,13 @@ public class FeatureImpl implements Feature {
             mzs[k] = dp.y;
             ints[k] = dp.z;
 
-            if (dp.equals(baseSignal)) rtIntCenter = MathUtils.getParabolaVertex(data.get(i - 1), dp, data.get(i + 1));
+            if (dp.equals(baseSignal)) {
+                rtIntCenter = MathUtils.getParabolaVertex(data.get(i - 1), dp, data.get(i + 1));
+                if (Double.isNaN(rtIntCenter.x)) {
+                    rtIntCenter = new XYPoint(dp.x, dp.z);
+                    // System.out.println(data.get(i - 1).x + " " + dp.x + " " + data.get(i + 1).x);
+                }
+            }
         }
 
         double meanMz = cMean.evaluate(mzs, ints);

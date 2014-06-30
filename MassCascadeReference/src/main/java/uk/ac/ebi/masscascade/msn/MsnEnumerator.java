@@ -113,7 +113,7 @@ public class MsnEnumerator extends CallableSearch {
                     String notation = identity.getNotation();
 
                     if (notation == null || notation.isEmpty()) continue;
-                    if (notation.contains("-") || notation.contains("+")) continue;
+                    if ((notation.contains("-") || notation.contains("+")) && !notation.startsWith("InChI")) continue;
 
                     TreeMap<Double, List<String>> massToSmiles = enumerate(notation, depth);
                     for (Feature msnFeature : msnFeatureSet) {

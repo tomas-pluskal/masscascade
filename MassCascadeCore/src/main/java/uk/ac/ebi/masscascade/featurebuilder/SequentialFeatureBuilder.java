@@ -83,8 +83,7 @@ public class SequentialFeatureBuilder extends CallableTask {
      * Constructs a feature builder task.
      *
      * @param params the parameter map holding all required task parameters
-     * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *          if the task fails
+     * @throws uk.ac.ebi.masscascade.exception.MassCascadeException if the task fails
      */
     public SequentialFeatureBuilder(ParameterMap params) throws MassCascadeException {
 
@@ -101,8 +100,7 @@ public class SequentialFeatureBuilder extends CallableTask {
      * Sets the task class variables using the parameter map.
      *
      * @param params the parameter map containing the <code> Parameter </code> to <code> Object </code> relations.
-     * @throws uk.ac.ebi.masscascade.exception.MassCascadeException
-     *          if the parameter map does not contain all variables required by this class
+     * @throws uk.ac.ebi.masscascade.exception.MassCascadeException if the parameter map does not contain all variables required by this class
      */
     @Override
     public void setParameters(ParameterMap params) throws MassCascadeException {
@@ -225,15 +223,15 @@ public class SequentialFeatureBuilder extends CallableTask {
 
         Range mzRange = new ExtendableRange(trace.get(0).y);
         Feature feature = new FeatureImpl(globalFeatureId, trace.get(0), mzRange);
-        for (int i = 1; i < trace.size(); i++) feature.addFeaturePoint(trace.get(i));
+        for (int i = 1; i < trace.size(); i++) {
+            feature.addFeaturePoint(trace.get(i));
+        }
 
         try {
             feature.closeFeature(currRt);
         } catch (Exception exception) {
-            System.out.print("Seq Feature Builder Error: " + exception.getMessage());
-            for (XYZPoint point : trace) {
-                System.out.println(point.x + " " + point.y + " " + point.z);
-            }
+            LOGGER.warn("Seq Feature Builder Error: " + exception.getMessage() + " " +
+                    trace.getData().get(0).x + " " + trace.getData().get(0).y);
             return;
         }
 

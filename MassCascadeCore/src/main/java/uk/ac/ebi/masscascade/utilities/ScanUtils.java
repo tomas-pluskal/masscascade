@@ -137,16 +137,16 @@ public class ScanUtils {
                 continue;
             }
 
-            if (acquisitionMode != Constants.ACQUISITION_MODE.CENTROID) {
-                if ((i > 0) && (xyList.get(i - 1).y > 0)) {
-                    newXYList.add(xyList.get(i));
-                    continue;
-                }
-                if ((i < xyList.size() - 1) && (xyList.get(i + 1).y > 0)) {
-                    newXYList.add(xyList.get(i));
-                    continue;
-                }
-            }
+//            if (acquisitionMode != Constants.ACQUISITION_MODE.CENTROID) {
+//                if ((i > 0) && (xyList.get(i - 1).y > 0)) {
+//                    newXYList.add(xyList.get(i));
+//                    continue;
+//                }
+//                if ((i < xyList.size() - 1) && (xyList.get(i + 1).y > 0)) {
+//                    newXYList.add(xyList.get(i));
+//                    continue;
+//                }
+//            }
         }
 
         if (newXYList.size() == xyList.size()) return xyList;
