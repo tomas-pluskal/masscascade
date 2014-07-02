@@ -164,6 +164,7 @@ public class MsnEnumerator extends CallableSearch {
             TextUtils tx = new TextUtils();
             while ((line = tx.readLineFromStream(bufStream)) != null) {
                 String[] elements = line.split("\\s");
+                if (elements[1].equals("expecting")) continue;
                 double mass = ((int) (Double.parseDouble(elements[1]) * 1000d)) / 1000d;
                 String fragment = elements[2];
 
