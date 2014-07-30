@@ -41,7 +41,7 @@ public class FileLoader {
     public enum TESTFILE {
 
         QC1("/uk/ac/ebi/masscascade/data/QC1.mzML"), QC2("/uk/ac/ebi/masscascade/data/QC2.mzML"), SAMPLE(
-                "/uk/ac/ebi/masscascade/data/Sample.mzML");
+                "/uk/ac/ebi/masscascade/data/Sample.mzML"), CDF("/uk/ac/ebi/masscascade/data/wt15.CDF");
 
         private final String path;
 

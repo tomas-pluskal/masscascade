@@ -84,7 +84,7 @@ public class Constants {
      * Supported file formats.
      */
     public enum FILE_FORMATS {
-        RAW, MZML, CML
+        RAW, CDF, MZML, CML
     }
 
     /*

@@ -50,5 +50,10 @@
             <name>Maven FreeHEP</name>
             <url>http://java.freehep.org/maven2</url>
         </repository>
+        <repository>
+            <id>unidata</id>
+            <name>Unidata</name>
+            <url>https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases/</url>
+        </repository>
     </repositories>
 </project>

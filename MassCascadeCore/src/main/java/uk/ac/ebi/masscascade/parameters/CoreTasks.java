@@ -48,6 +48,7 @@ import uk.ac.ebi.masscascade.interfaces.CallableTask;
 import uk.ac.ebi.masscascade.interfaces.Index;
 import uk.ac.ebi.masscascade.interfaces.Task;
 import uk.ac.ebi.masscascade.io.MzTabWriter;
+import uk.ac.ebi.masscascade.io.NetCDFReader;
 import uk.ac.ebi.masscascade.io.PsiMzmlReader;
 import uk.ac.ebi.masscascade.io.XCaliburReader;
 import uk.ac.ebi.masscascade.msn.MSnBuilder;
@@ -68,6 +69,7 @@ public enum CoreTasks implements Index {
     // reader and writer
     MZTAB_WRITER(MzTabWriter.class, PLACEHOLDER()),
     PSI_READER(PsiMzmlReader.class, PLACEHOLDER()),
+    CDF_READER(NetCDFReader.class, PLACEHOLDER()),
     RAW_READER(XCaliburReader.class, PLACEHOLDER()),
 
     // smoother

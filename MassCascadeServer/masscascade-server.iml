@@ -82,6 +82,19 @@
     <orderEntry type="library" name="Maven: batik:batik-awt-util:1.6-1" level="project" />
     <orderEntry type="library" name="Maven: batik:batik-svg-dom:1.6-1" level="project" />
     <orderEntry type="library" name="Maven: batik:batik-parser:1.6-1" level="project" />
+    <orderEntry type="library" name="Maven: edu.ucar:netcdf:4.3.22" level="project" />
+    <orderEntry type="library" name="Maven: edu.ucar:udunits:4.3.22" level="project" />
+    <orderEntry type="library" name="Maven: commons-httpclient:commons-httpclient:3.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.slf4j:jcl-over-slf4j:1.7.5" level="project" />
+    <orderEntry type="library" name="Maven: joda-time:joda-time:2.2" level="project" />
+    <orderEntry type="library" name="Maven: org.jdom:jdom2:2.0.4" level="project" />
+    <orderEntry type="library" name="Maven: net.jcip:jcip-annotations:1.0" level="project" />
+    <orderEntry type="library" name="Maven: com.sun.jna:jna:3.0.9" level="project" />
+    <orderEntry type="library" name="Maven: org.quartz-scheduler:quartz:2.1.1" level="project" />
+    <orderEntry type="library" name="Maven: c3p0:c3p0:0.9.1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.google.protobuf:protobuf-java:2.5.0" level="project" />
+    <orderEntry type="library" name="Maven: net.sf.ehcache:ehcache-core:2.6.2" level="project" />
+    <orderEntry type="library" name="Maven: com.sleepycat:je:4.0.92" level="project" />
     <orderEntry type="module" module-name="masscascade-visualisation" />
     <orderEntry type="library" name="Maven: java3d:vecmath:1.3.1" level="project" />
     <orderEntry type="library" name="Maven: net.sf.jchart2d:JChart2D:3.3.0" level="project" />
