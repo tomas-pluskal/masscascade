@@ -173,6 +173,8 @@ public class NetCDFReader extends CallableTask {
             Collections.sort(indices);
 
             for (int index : indices) {
+                scanNumber = index;
+
                 int[] scanStartPosition = new int[1];
                 int[] scanLength = new int[1];
                 Integer[] startAndLength = scansIndex.get(index);
